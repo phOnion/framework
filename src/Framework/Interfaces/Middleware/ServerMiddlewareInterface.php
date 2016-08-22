@@ -14,5 +14,5 @@ use Psr\Http\Message;
 
 interface ServerMiddlewareInterface extends MiddlewareInterface
 {
-    public function handle(Message\ServerRequestInterface $request, FrameInterface $frame);
+    public function handle(Message\ServerRequestInterface $request, FrameInterface $frame = null);
 }
