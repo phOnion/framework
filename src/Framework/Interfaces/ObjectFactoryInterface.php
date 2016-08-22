@@ -20,5 +20,4 @@ interface ObjectFactoryInterface
      * @return object
      */
     public function __invoke(ContainerInterface $container);
-
 }

@@ -213,7 +213,7 @@ class Container implements ContainerInterface
         if (!is_object($this->definitions['shared'][$identifier])) {
             $referenceKey = $this->definitions['shared'][$identifier];
 
-                $this->definitions['shared'][$identifier]
+            $this->definitions['shared'][$identifier]
                     = $this->retrieveInvokable($referenceKey);
 
             if ($this->definitions['shared'][$identifier] === null) {

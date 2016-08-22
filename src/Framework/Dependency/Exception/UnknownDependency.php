@@ -14,5 +14,4 @@ use Interop\Container\Exception\NotFoundException;
 
 class UnknownDependency extends \Exception implements NotFoundException
 {
-
 }
