@@ -43,7 +43,7 @@ class ErrorHandlerMiddlewareFactory implements ObjectFactoryInterface
         }
 
         foreach ($configuration->get('error_handlers') as $handler) {
-            $stack->withMiddleware($container->get($handler));
+            $stack = $stack->withMiddleware($container->get($handler));
         }
 
         return new ErrorHandlerMiddleware($stack);
