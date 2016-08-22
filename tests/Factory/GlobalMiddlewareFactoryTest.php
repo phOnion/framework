@@ -12,7 +12,7 @@ use Onion\Framework\Factory\GlobalMiddlewareFactory;
 use Onion\Framework\Interfaces\ObjectFactoryInterface;
 use Onion\Framework\Interfaces\Middleware\StackInterface;
 
-class MiddlewareChainFactoryTest extends \PHPUnit_Framework_TestCase
+class GlobalMiddlewareFactoryTest extends \PHPUnit_Framework_TestCase
 {
     public function testObjectConstruction()
     {
