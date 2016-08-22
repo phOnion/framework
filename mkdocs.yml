@@ -1,5 +1,4 @@
 site_name: Onion - Framework
 pages:
  - Intro: index.md
- - Configuration: configuration.md
 theme: readthedocs
