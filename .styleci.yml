@@ -1,0 +1,18 @@
+preset: psr2
+risky: false
+linting: true
+finder:
+  exclude:
+    - "tests"
+  name:
+    - "*.php"
+  not-name:
+    - "*Stub.php"
+  not-contains:
+    - "config"
+  path:
+    - "src/"
+  not-path:
+    - "vendor/"
+  depth:
+    - "< 5"
