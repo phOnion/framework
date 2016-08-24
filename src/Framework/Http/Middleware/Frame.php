@@ -13,7 +13,6 @@ namespace Onion\Framework\Http\Middleware;
 use Onion\Framework\Interfaces\Application;
 use Onion\Framework\Interfaces\Middleware\FrameInterface;
 use Onion\Framework\Interfaces\Middleware\MiddlewareInterface;
-use Onion\Framework\Interfaces\Middleware\ClientMiddlewareInterface;
 use Onion\Framework\Interfaces\Middleware\ServerMiddlewareInterface;
 use Psr\Http\Message;
 
@@ -46,7 +45,7 @@ class Frame implements FrameInterface
      */
     public function next(Message\RequestInterface $request)
     {
-        $response = $this->middleware->handle($request, $this->frame);
+        $response = $this->middleware->process($request, $this->frame);
         if (!$response instanceof Message\ResponseInterface) {
             throw new \RuntimeException(sprintf(
                 'Middleware "%s" does not return a response. Response type is: %s',
