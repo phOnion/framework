@@ -12,11 +12,8 @@ namespace Onion\Framework\Interfaces\Middleware;
 
 use Psr\Http\Message;
 
-interface StackInterface
+interface StackInterface extends MiddlewareInterface
 {
-    public function withMiddleware(MiddlewareInterface $middleware);
-    public function withoutMiddleware(MiddlewareInterface $middleware);
-
     /**
      * @param Message\RequestInterface $request
      *
