@@ -11,6 +11,8 @@
 namespace Onion\Framework\Http\Middleware;
 
 use Onion\Framework\Interfaces\Middleware\FrameInterface;
+use Onion\Framework\Interfaces\Middleware\MiddlewareInterface;
+use Onion\Framework\Interfaces\Middleware\ServerMiddlewareInterface;
 use Onion\Framework\Interfaces\Middleware\StackInterface;
 use Psr\Http\Message;
 
@@ -23,8 +25,14 @@ class Pipe implements StackInterface
 
     protected $middleware = [];
 
-    public function __construct()
+    /**
+     * Pipe constructor.
+     *
+     * @param MiddlewareInterface[]|ServerMiddlewareInterface[] $middleware
+     */
+    public function __construct(array $middleware)
     {
+        $this->middleware = $middleware;
         $this->stack = new \SplStack();
     }
 
