@@ -11,6 +11,7 @@
 
 namespace Onion\Framework\Interfaces\Middleware;
 
+use Psr\Http\Message;
 /**
  * Interface MiddlewareInterface
  *
@@ -18,5 +19,11 @@ namespace Onion\Framework\Interfaces\Middleware;
  */
 interface MiddlewareInterface
 {
-
+    /**
+     * @param Message\RequestInterface $request
+     * @param FrameInterface           $frame
+     *
+     * @return Message\ResponseInterface
+     */
+    public function process(Message\RequestInterface $request, FrameInterface $frame = null);
 }

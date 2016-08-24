@@ -12,7 +12,7 @@ namespace Onion\Framework\Interfaces\Middleware;
 
 use Psr\Http\Message;
 
-interface ServerMiddlewareInterface extends MiddlewareInterface
+interface ServerMiddlewareInterface
 {
-    public function handle(Message\ServerRequestInterface $request, FrameInterface $frame = null);
+    public function process(Message\ServerRequestInterface $request, FrameInterface $frame = null);
 }
