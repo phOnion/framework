@@ -94,9 +94,7 @@ class Container implements ContainerInterface
                 $dependency = $this->retrieveInvokable($key);
             }
 
-            if ((class_exists($key) || interface_exists($key))
-                && !$dependency instanceof $key
-            ) {
+            if ((class_exists($key) || interface_exists($key)) && !$dependency instanceof $key) {
                 throw new Exception\ContainerErrorException(
                     sprintf(
                         'Resolved dependency is not instance of "%s"',
@@ -214,7 +212,7 @@ class Container implements ContainerInterface
             $referenceKey = $this->definitions['shared'][$identifier];
 
             $this->definitions['shared'][$identifier]
-                    = $this->retrieveInvokable($referenceKey);
+                = $this->retrieveInvokable($referenceKey);
 
             if ($this->definitions['shared'][$identifier] === null) {
                 $this->definitions['shared'][$identifier]
