@@ -10,10 +10,12 @@
  */
 namespace Onion\Framework;
 
+use Onion\Framework\Interfaces\Middleware\FrameInterface;
+use Onion\Framework\Interfaces\Middleware\MiddlewareInterface;
 use Onion\Framework\Interfaces\Middleware\StackInterface;
 use \Psr\Http\Message;
 
-class Application
+class Application implements MiddlewareInterface
 {
     /**
      * @var StackInterface
@@ -26,6 +28,17 @@ class Application
     }
 
     public function run(Message\RequestInterface $request)
+    {
+        return $this->process($request, null);
+    }
+
+    /**
+     * @param Message\RequestInterface $request
+     * @param FrameInterface           $frame
+     *
+     * @return Message\ResponseInterface
+     */
+    public function process(Message\RequestInterface $request, FrameInterface $frame = null)
     {
         ob_start();
         $response = $this->stack->handle($request);
