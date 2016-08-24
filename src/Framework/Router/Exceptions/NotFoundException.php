@@ -14,4 +14,5 @@ use Onion\Framework\Interfaces\Router\Exception\NotFoundException as RouteNotFou
 
 class NotFoundException extends \Exception implements RouteNotFoundException
 {
+
 }
