@@ -10,11 +10,11 @@
  */
 namespace Onion\Framework\Http\Middleware;
 
-use Onion\Framework\Interfaces\Middleware\MiddlewareInterface;
+use Onion\Framework\Interfaces\Middleware\FrameInterface;
 use Onion\Framework\Interfaces\Middleware\StackInterface;
 use Psr\Http\Message;
 
-class Stack implements StackInterface
+class Pipe implements StackInterface
 {
     /**
      * @var \SplStack
@@ -30,6 +30,18 @@ class Stack implements StackInterface
 
     public function handle(Message\RequestInterface $request)
     {
+        return $this->process($request, null);
+    }
+
+    /**
+     * @param Message\RequestInterface $request
+     * @param FrameInterface           $frame
+     *
+     * @return Message\ResponseInterface
+     * @throws \RuntimeException
+     */
+    public function process(Message\RequestInterface $request, FrameInterface $frame = null)
+    {
         foreach ($this->middleware as $middleware) {
             $this->stack[] = new Frame(
                 $middleware,
@@ -42,28 +54,10 @@ class Stack implements StackInterface
             return $this->stack->top()->next($request);
         }
 
-        throw new \RuntimeException('No middleware defined, nothing to do');
-    }
-
-    public function withMiddleware(MiddlewareInterface $middleware)
-    {
-        $self = clone $this;
-        $self->middleware[] = $middleware;
-
-        return $self;
-    }
-
-    public function withoutMiddleware(MiddlewareInterface $middleware)
-    {
-        if ($this->stack->offsetExists($middleware)) {
-            $self = clone $this;
-            $self->stack->offsetUnset($middleware);
-            return $self;
+        if ($frame !== null) {
+            return $frame->next($request);
         }
 
-        throw new \InvalidArgumentException(sprintf(
-            'Middleware "%s" not found in current stack, unable to remove',
-            get_class($middleware)
-        ));
+        throw new \RuntimeException('No middleware defined, nothing to do');
     }
 }
