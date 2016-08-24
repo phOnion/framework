@@ -14,6 +14,7 @@ use Onion\Framework\Interfaces;
 
 class Flat implements Interfaces\Router\ParserInterface
 {
+
     public function parse($path)
     {
         $components = parse_url((string) $path);
