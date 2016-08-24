@@ -18,5 +18,4 @@ namespace Onion\Framework\Interfaces\Middleware;
  */
 interface MiddlewareInterface
 {
-
 }
