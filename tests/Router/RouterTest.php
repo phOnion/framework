@@ -37,7 +37,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $route->setName('home')->will(function () use ($route) {
             return $route->reveal();
         });
-        $route->setCallable([])->will(function () use ($route) {
+        $route->setMiddleware([])->will(function () use ($route) {
             return $route->reveal();
         });
         $route->setPattern('/')->will(function () use ($route) {
@@ -48,7 +48,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         });
         $route->getSupportedMethods()->willReturn(['GET']);
         $route->getPattern()->willReturn('/');
-        $route->getCallable()->willReturn([]);
+        $route->getMiddleware()->willReturn([]);
         $route->getName()->willReturn('home');
 //        $route->serialize()->willReturn('cool');
         $this->route = $route->reveal();
@@ -130,9 +130,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $route = $this->prophesize(RouteInterface::class);
         $route->getName()->willReturn(null);
         $route->getPattern()->willReturn('/(?P<foo>.*)');
-        $route->getCallable()->willReturn([]);
+        $route->getMiddleware()->willReturn([]);
         $route->setPattern('/(?P<foo>.*)')->willReturn(null);
-        $route->setCallable([])->willReturn(null);
+        $route->setMiddleware([])->willReturn(null);
         $route->setParams(['foo' => 'bar'])->willReturn(null);
         $route->getParams()->willReturn(['foo' => 'bar']);
         $route->setSupportedMethods(['get'])->willReturn(null);
@@ -162,9 +162,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $route = $this->prophesize(RouteInterface::class);
         $route->getName()->willReturn(null);
         $route->getPattern()->willReturn('/(?P<foo>[\w]+)');
-        $route->getCallable()->willReturn([]);
+        $route->getMiddleware()->willReturn([]);
         $route->setPattern('/(?P<foo>[\w]+)')->willReturn(null);
-        $route->setCallable([])->willReturn(null);
+        $route->setMiddleware([])->willReturn(null);
         $route->setParams(['foo' => 'bar'])->willReturn(null);
         $route->getParams()->willReturn(['foo' => 'bar']);
         $route->setSupportedMethods(['get'])->willReturn(null);

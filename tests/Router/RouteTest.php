@@ -5,7 +5,6 @@
 
 namespace Tests\Router;
 
-
 use Onion\Framework\Router\Route;
 
 class RouteTest extends \PHPUnit_Framework_TestCase
@@ -24,12 +23,12 @@ class RouteTest extends \PHPUnit_Framework_TestCase
     {
         $this->route->setName('home');
         $this->route->setMethods(['get']);
-        $this->route->setCallable([]);
+        $this->route->setMiddleware([]);
         $this->route->setPattern('/');
         $this->route->setParams(['foo' => 'bar']);
 
         $this->assertSame('home', $this->route->getName());
-        $this->assertContainsOnlyInstancesOf(\Closure::class, $this->route->getCallable());
+        $this->assertContainsOnlyInstancesOf(\Closure::class, $this->route->getMiddleware());
         $this->assertSame('/', $this->route->getPattern());
         $this->assertCount(1, $this->route->getSupportedMethods());
         $this->assertContains('GET', $this->route->getSupportedMethods());
