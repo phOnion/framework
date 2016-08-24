@@ -16,7 +16,7 @@ class Route implements Interfaces\Router\RouteInterface
 {
     protected $name;
     protected $supportedMethods = [];
-    protected $callable;
+    protected $middleware;
     protected $path;
     protected $params = [];
 
@@ -34,9 +34,9 @@ class Route implements Interfaces\Router\RouteInterface
         return $this;
     }
 
-    public function setCallable(array $callable)
+    public function setMiddleware(array $callable)
     {
-        $this->callable = $callable;
+        $this->middleware = $callable;
 
         return $this;
     }
@@ -67,9 +67,9 @@ class Route implements Interfaces\Router\RouteInterface
     }
 
 
-    public function getCallable()
+    public function getMiddleware()
     {
-        return $this->callable;
+        return $this->middleware;
     }
 
     public function getParams()
@@ -82,7 +82,7 @@ class Route implements Interfaces\Router\RouteInterface
      */
     public function __clone()
     {
-        $this->callable = null;
+        $this->middleware = null;
         $this->name = null;
         $this->type = 'static';
     }
@@ -90,7 +90,7 @@ class Route implements Interfaces\Router\RouteInterface
     public function serialize()
     {
         return serialize([
-            'handler' => $this->getCallable(),
+            'handler' => $this->getMiddleware(),
             'name' => $this->getName(),
             'pattern' => $this->getPattern(),
             'methods' => $this->getSupportedMethods()
@@ -100,7 +100,7 @@ class Route implements Interfaces\Router\RouteInterface
     public function unserialize($serialized)
     {
         $data = unserialize($serialized);
-        $this->setCallable($data['handler'])
+        $this->setMiddleware($data['handler'])
             ->setPattern($data['pattern'])
             ->setName($data['name'])
             ->setSupportedMethods($data['methods']);
@@ -118,7 +118,7 @@ class Route implements Interfaces\Router\RouteInterface
         return [
             'name' => $this->getName(),
             'pattern' => $this->getPattern(),
-            'handler' => $this->getCallable(),
+            'handler' => $this->getMiddleware(),
             'methods' => $this->getSupportedMethods()
         ];
     }
