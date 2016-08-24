@@ -199,7 +199,7 @@ class Router implements Interfaces\Router\RouterInterface
             ->parse($pattern);
 
         $route->setPattern($parsedPattern);
-        $route->setCallable($handler);
+        $route->setMiddleware($handler);
 
         return $route;
     }
