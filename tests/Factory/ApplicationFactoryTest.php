@@ -8,7 +8,7 @@ namespace Tests\Factory;
 use Interop\Container\ContainerInterface;
 use Onion\Framework\Application;
 use Onion\Framework\Factory\ApplicationFactory;
-use Onion\Framework\Http\Middleware\Stack;
+use Onion\Framework\Http\Middleware\Pipe;
 use Onion\Framework\Interfaces\Middleware\StackInterface;
 use Onion\Framework\Interfaces\ObjectFactoryInterface;
 
@@ -18,7 +18,7 @@ class ApplicationFactoryTest extends \PHPUnit_Framework_TestCase
     {
         $stack = $this->prophesize(StackInterface::class);
         $container = $this->prophesize(ContainerInterface::class);
-        $container->get(Stack::class)->willReturn($stack->reveal());
+        $container->get(Pipe::class)->willReturn($stack->reveal());
         $container->get(StackInterface::class)->willReturn($stack->reveal());
 
         $factory = new ApplicationFactory();
