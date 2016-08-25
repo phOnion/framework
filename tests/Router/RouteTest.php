@@ -39,5 +39,6 @@ class RouteTest extends \PHPUnit_Framework_TestCase
         );
         $this->route->setParams([]);
         $this->assertEquals($this->route, unserialize(serialize($this->route)));
+        $this->assertEquals(new Route(), clone $this->route);
     }
 }
