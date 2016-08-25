@@ -27,7 +27,7 @@ class Router implements Interfaces\Router\RouterInterface
      */
     protected $routeRoot;
     /**
-     * @var \SplStack[][]
+     * @var array
      */
     protected $routes = [];
 
@@ -90,8 +90,8 @@ class Router implements Interfaces\Router\RouterInterface
      * them to the URI and check if they support the current request
      * method
      *
-     * @param string $method Current request method
-     * @param Message\UriInterface $uri Current request URI
+     * @param string               $method Current request method
+     * @param Message\UriInterface $uri    Current request URI
      *
      * @throws Exceptions\MethodNotAllowedException|Interfaces\Router\Exception\NotAllowedException If
      * the matched route does not support the current request method
@@ -100,16 +100,18 @@ class Router implements Interfaces\Router\RouterInterface
      * @throws \RuntimeException if there is no parser defined for the router
      *
      * @return RouteInterface
+     * @throws \InvalidArgumentException
      */
     public function match($method, Message\UriInterface $uri)
     {
         $method = strtoupper($method);
         foreach ($this->routes as $pattern => $route) {
-            try {
-                $matches = $this->getParser()->match(
-                    '~^(?:' . $pattern . ')$~x',
-                    $uri->getPath()
-                );
+            $matches = $this->getParser()->match(
+                '~^(?:' . $pattern . ')$~x',
+                $uri->getPath()
+            );
+
+            if ($matches !== false) {
                 /**
                  * @var $route RouteInterface
                  */
@@ -128,8 +130,6 @@ class Router implements Interfaces\Router\RouterInterface
 
                 $route->setParams(array_filter((array)$matches));
                 return $route;
-            } catch (\InvalidArgumentException $ex) {
-                continue;
             }
         }
 
