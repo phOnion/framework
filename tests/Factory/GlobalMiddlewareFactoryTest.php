@@ -5,7 +5,6 @@
 
 namespace Tests\Factory;
 
-
 use Onion\Framework\Configuration;
 use Onion\Framework\Dependency\Container;
 use Onion\Framework\Factory\GlobalMiddlewareFactory;
@@ -18,10 +17,6 @@ class GlobalMiddlewareFactoryTest extends \PHPUnit_Framework_TestCase
     {
         $config = $this->prophesize(Configuration::class);
         $config->get('middleware')->willReturn([
-            [
-                'stack' => [],
-                'priority' => 0
-            ]
         ]);
         $stack = $this->prophesize(StackInterface::class);
         /**
