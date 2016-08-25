@@ -40,7 +40,7 @@ class Application implements MiddlewareInterface
         $response = $this->process($request, null);
         ob_end_clean();
 
-        $this->emitter->emit($response);
+        return $this->emitter->emit($response);
     }
 
     /**
