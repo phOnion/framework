@@ -28,15 +28,12 @@ class Pipe implements StackInterface, PrototypeObjectInterface
      * Pipe constructor.
      *
      * @param MiddlewareInterface[]|ServerMiddlewareInterface[] $middleware
+     *
+     * @throws \InvalidArgumentException if for some magical reason self::initialize fails
      */
     public function __construct(array $middleware = [])
     {
-        try {
-            $this->initialize($middleware);
-        } catch (\InvalidArgumentException $ex) {
-            // Constructor defaults to an empty array if omitted, will never happen
-            // Note to self: Make sure to update the catch block in case the constructor changes
-        }
+        $this->initialize($middleware);
     }
 
     public function handle(Message\RequestInterface $request)
