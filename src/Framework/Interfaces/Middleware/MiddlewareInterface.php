@@ -12,6 +12,7 @@
 namespace Onion\Framework\Interfaces\Middleware;
 
 use Psr\Http\Message;
+
 /**
  * Interface MiddlewareInterface
  *

@@ -25,7 +25,7 @@ class GlobalMiddlewareFactory implements ObjectFactoryInterface
         $middleware = $container->get(Configuration::class)
             ->get('middleware');
 
-            array_walk(
+        array_walk(
                 $middleware,
                 function (&$value) use ($container) {
                     $value = $container->get($value);
