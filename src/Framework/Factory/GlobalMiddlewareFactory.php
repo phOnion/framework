@@ -26,11 +26,11 @@ class GlobalMiddlewareFactory implements ObjectFactoryInterface
             ->get('middleware');
 
         array_walk(
-                $middleware,
-                function (&$value) use ($container) {
-                    $value = $container->get($value);
-                }
-            );
+            $middleware,
+            function (&$value) use ($container) {
+                $value = $container->get($value);
+            }
+        );
 
         return new Pipe($middleware);
     }
