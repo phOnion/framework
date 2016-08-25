@@ -46,10 +46,9 @@ interface ParserInterface
      * @param string $pattern
      * @param string $path
      *
-     * @throws \InvalidArgumentException When $path does not match the pattern
      *
-     * @return array List of the named parameters of the route. (Should not
-     * return any integer indexes within said array.
+     * @return array|false List of the named parameters of the route. (Should not
+     * return any integer indexes within said array, or false if it is not a match
      */
     public function match($pattern, $path);
 }
