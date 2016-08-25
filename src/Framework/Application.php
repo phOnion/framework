@@ -14,6 +14,7 @@ use Onion\Framework\Interfaces\Middleware\FrameInterface;
 use Onion\Framework\Interfaces\Middleware\MiddlewareInterface;
 use Onion\Framework\Interfaces\Middleware\StackInterface;
 use \Psr\Http\Message;
+use Zend\Diactoros\Response\EmitterInterface;
 
 class Application implements MiddlewareInterface
 {
@@ -22,14 +23,24 @@ class Application implements MiddlewareInterface
      */
     protected $stack;
 
-    public function __construct(StackInterface $stack)
+    /**
+     * @var EmitterInterface
+     */
+    protected $emitter;
+
+    public function __construct(StackInterface $stack, EmitterInterface $emitter)
     {
         $this->stack = $stack;
+        $this->emitter = $emitter;
     }
 
     public function run(Message\RequestInterface $request)
     {
-        return $this->process($request, null);
+        ob_start();
+        $response = $this->process($request, null);
+        ob_end_clean();
+
+        $this->emitter->emit($response);
     }
 
     /**
@@ -40,19 +51,14 @@ class Application implements MiddlewareInterface
      */
     public function process(Message\RequestInterface $request, FrameInterface $frame = null)
     {
-        ob_start();
-        $response = $this->stack->process($request, $frame);
-        foreach ($response->getHeaders() as $header => $headerLine) {
-            /**
-             * @var string[] $headerLine
-             */
-            $first = true;
-            foreach ($headerLine as $value) {
-                header(sprintf('%s: %s', ucwords($header, '-'), $value), $first, $response->getStatusCode());
-                $first = false;
+        try {
+            return $this->stack->handle($request);
+        } catch (\Exception $ex) {
+            if ($frame !== null) {
+                return $frame->next($request);
             }
         }
-        ob_end_clean();
-        echo $response->getBody();
+
+        return null;
     }
 }
