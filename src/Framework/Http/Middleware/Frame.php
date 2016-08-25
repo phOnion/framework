@@ -28,11 +28,19 @@ class Frame implements FrameInterface
     /**
      * MiddlewareDelegate constructor.
      *
-     * @param MiddlewareInterface|null $middleware
-     * @param Frame                    $frame
+     * @param MiddlewareInterface|ServerMiddlewareInterface|null $middleware
+     * @param Frame                                              $frame
+     *
+     * @throws \InvalidArgumentException if middleware does not implement any valid middleware interface
      */
-    public function __construct(MiddlewareInterface $middleware, Frame $frame = null)
+    public function __construct($middleware, Frame $frame = null)
     {
+        if (!$middleware instanceof MiddlewareInterface && !$middleware instanceof ServerMiddlewareInterface) {
+            throw new \InvalidArgumentException(
+                'Middleware provided must implement MiddlewareInterface or ServerMiddlewareInterface'
+            );
+        }
+
         $this->middleware = $middleware;
         $this->frame = $frame;
     }
