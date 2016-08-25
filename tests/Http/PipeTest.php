@@ -68,4 +68,18 @@ class PipeTest extends \PHPUnit_Framework_TestCase
         $pipe = new Pipe([$badMiddleware]);
         $pipe->handle($this->request->reveal());
     }
+
+    public function testCallToNextOnExceptionOnErrorInTheStack()
+    {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('OK');
+
+        $frame = $this->prophesize(FrameInterface::class);
+        $frame->next(Argument::type(RequestInterface::class))
+            ->willThrow(new \Exception('OK'));
+
+        $pipe = new Pipe([null]);
+
+        $pipe->process($this->prophesize(RequestInterface::class)->reveal(), $frame->reveal());
+    }
 }
