@@ -168,4 +168,11 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
         $container->get(\SplFixedArray::class);
     }
+
+    public function testExceptionWHenConstructingWIthBadArgument()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        new Container(null);
+    }
 }
