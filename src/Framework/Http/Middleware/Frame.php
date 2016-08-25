@@ -19,7 +19,7 @@ use Psr\Http\Message;
 class Frame implements FrameInterface
 {
     /**
-     * @var ClientMiddlewareInterface|ServerMiddlewareInterface
+     * @var MiddlewareInterface|ServerMiddlewareInterface
      */
     protected $middleware;
 
