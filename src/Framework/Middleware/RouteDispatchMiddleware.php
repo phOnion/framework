@@ -10,7 +10,7 @@
  */
 namespace Onion\Framework\Middleware;
 
-use Onion\Framework\Interfaces\Common\PrototypeObject;
+use Onion\Framework\Interfaces\Common\PrototypeObjectInterface;
 use Onion\Framework\Interfaces\Middleware\FrameInterface;
 use Onion\Framework\Interfaces\Middleware\ServerMiddlewareInterface;
 use Onion\Framework\Interfaces\Middleware\StackInterface;
@@ -47,7 +47,7 @@ class RouteDispatchMiddleware implements ServerMiddlewareInterface
      */
     public function __construct(RouterInterface $routerInterface, StackInterface $stack)
     {
-        if (!$stack instanceof PrototypeObject) {
+        if (!$stack instanceof PrototypeObjectInterface) {
             throw new \InvalidArgumentException(
                 'The supplied stack must implement Interfaces\Common\PrototypeInterface to allow ' .
                     'late injection of middleware'

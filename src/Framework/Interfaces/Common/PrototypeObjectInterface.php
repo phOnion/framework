@@ -11,7 +11,7 @@
 
 namespace Onion\Framework\Interfaces\Common;
 
-interface PrototypeObject
+interface PrototypeObjectInterface
 {
     public function initialize(...$args);
 }

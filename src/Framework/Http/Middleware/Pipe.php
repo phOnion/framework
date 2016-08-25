@@ -10,14 +10,14 @@
  */
 namespace Onion\Framework\Http\Middleware;
 
-use Onion\Framework\Interfaces\Common\PrototypeObject;
+use Onion\Framework\Interfaces\Common\PrototypeObjectInterface;
 use Onion\Framework\Interfaces\Middleware\FrameInterface;
 use Onion\Framework\Interfaces\Middleware\MiddlewareInterface;
 use Onion\Framework\Interfaces\Middleware\ServerMiddlewareInterface;
 use Onion\Framework\Interfaces\Middleware\StackInterface;
 use Psr\Http\Message;
 
-class Pipe implements StackInterface, PrototypeObject
+class Pipe implements StackInterface, PrototypeObjectInterface
 {
     protected $middleware = [];
 
