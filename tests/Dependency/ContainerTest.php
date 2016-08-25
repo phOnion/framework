@@ -116,10 +116,12 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $container->get(new \stdClass());
     }
 
-    public function testExceptionWhenFactoryDoesNotImplementObjectFactoryInterface() {
+    public function testExceptionWhenFactoryDoesNotImplementObjectFactoryInterface()
+    {
         $container = new Container([
             'factories' => [
-                \stdClass::class => function(){}
+                \stdClass::class => function () {
+                }
             ]
         ]);
 
