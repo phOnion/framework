@@ -84,7 +84,8 @@ class Route implements Interfaces\Router\RouteInterface
     {
         $this->middleware = null;
         $this->name = null;
-        $this->type = 'static';
+        $this->params = [];
+        $this->path = null;
     }
 
     public function serialize()
