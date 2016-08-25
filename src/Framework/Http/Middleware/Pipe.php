@@ -19,7 +19,10 @@ use Psr\Http\Message;
 
 class Pipe implements StackInterface, PrototypeObjectInterface
 {
-    protected $middleware = [];
+    /**
+     * @var \SplFixedArray
+     */
+    protected $middleware;
 
     /**
      * Pipe constructor.
@@ -28,7 +31,12 @@ class Pipe implements StackInterface, PrototypeObjectInterface
      */
     public function __construct(array $middleware = [])
     {
-        $this->middleware = $middleware;
+        try {
+            $this->initialize($middleware);
+        } catch (\InvalidArgumentException $ex) {
+            // Constructor defaults to an empty array if omitted, will never happen
+            // Note to self: Make sure to update the catch block in case the constructor changes
+        }
     }
 
     public function handle(Message\RequestInterface $request)
@@ -47,18 +55,19 @@ class Pipe implements StackInterface, PrototypeObjectInterface
     {
         $stack = null;
         if (0 !== count($this->middleware)) {
-            $iterator = new \ArrayIterator(array_reverse($this->middleware));
-            $iterator->rewind();
-            while ($iterator->valid()) {
-                $stack = new Frame($iterator->current(), $stack);
-                $iterator->next();
+            try {
+                $this->middleware->rewind();
+                while ($this->middleware->valid()) {
+                    $stack = new Frame($this->middleware->current(), $stack);
+                    $this->middleware->next();
+                }
+
+                return $stack->next($request);
+            } catch (\InvalidArgumentException $ex) {
+                if ($frame !== null) {
+                    return $frame->next($request);
+                }
             }
-
-            return $stack->next($request);
-        }
-
-        if ($frame !== null) {
-            return $frame->next($request);
         }
 
         throw new \RuntimeException('No middleware defined, nothing to do');
@@ -79,6 +88,13 @@ class Pipe implements StackInterface, PrototypeObjectInterface
             );
         }
 
-        $this->middleware = $args[0];
+        /*
+         * So the last will be first, and the first last.
+         *
+         * This will flip the array and make it LIFO and will
+         * preserve the definition logic, namely 1st defined will
+         * be the last called.
+         */
+        $this->middleware = \SplFixedArray::fromArray(array_reverse($args[0]));
     }
 }
