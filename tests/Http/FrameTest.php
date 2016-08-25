@@ -11,7 +11,6 @@
 
 namespace Tests\Http;
 
-
 use Onion\Framework\Http\Middleware\Frame;
 use Onion\Framework\Interfaces\Middleware\MiddlewareInterface;
 use Prophecy\Argument;
@@ -49,8 +48,7 @@ class FrameTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame(
             $response->reveal(),
-            $frame->next($request->reveal()
-            )
+            $frame->next($request->reveal())
         );
     }
 
