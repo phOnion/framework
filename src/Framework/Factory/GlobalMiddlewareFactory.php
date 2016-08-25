@@ -28,7 +28,7 @@ class GlobalMiddlewareFactory implements ObjectFactoryInterface
         array_walk(
             $middleware,
             function (&$value) use ($container) {
-                    $value = $container->get($value);
+                $value = $container->get($value);
             }
         );
 
