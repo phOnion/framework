@@ -41,7 +41,7 @@ class Application implements MiddlewareInterface
     public function process(Message\RequestInterface $request, FrameInterface $frame = null)
     {
         ob_start();
-        $response = $this->stack->handle($request);
+        $response = $this->stack->process($request, $frame);
         foreach ($response->getHeaders() as $header => $headerLine) {
             /**
              * @var string[] $headerLine
