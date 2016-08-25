@@ -16,7 +16,7 @@ class Route implements Interfaces\Router\RouteInterface
 {
     protected $name;
     protected $supportedMethods = [];
-    protected $middleware;
+    protected $middleware = [];
     protected $path;
     protected $params = [];
 
@@ -82,10 +82,11 @@ class Route implements Interfaces\Router\RouteInterface
      */
     public function __clone()
     {
-        $this->middleware = null;
+        $this->middleware = [];
         $this->name = null;
         $this->params = [];
         $this->path = null;
+        $this->supportedMethods = [];
     }
 
     public function serialize()
@@ -101,7 +102,7 @@ class Route implements Interfaces\Router\RouteInterface
     public function unserialize($serialized)
     {
         $data = unserialize($serialized);
-        $this->setMiddleware($data['handler'])
+        $this->setMiddleware($data['handler'] ?: [])
             ->setPattern($data['pattern'])
             ->setName($data['name'])
             ->setSupportedMethods($data['methods']);
