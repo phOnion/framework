@@ -10,6 +10,7 @@
  */
 namespace Onion\Framework\Middleware;
 
+use Onion\Framework\Interfaces\Common\PrototypeObject;
 use Onion\Framework\Interfaces\Middleware\FrameInterface;
 use Onion\Framework\Interfaces\Middleware\ServerMiddlewareInterface;
 use Onion\Framework\Interfaces\Middleware\StackInterface;
@@ -17,7 +18,6 @@ use Onion\Framework\Interfaces\Router\RouterInterface;
 use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
 use Onion\Framework\Router\Exceptions\NotFoundException;
 use Psr\Http\Message;
-use Zend\Diactoros\Response\EmptyResponse;
 
 class RouteDispatchMiddleware implements ServerMiddlewareInterface
 {
@@ -32,52 +32,72 @@ class RouteDispatchMiddleware implements ServerMiddlewareInterface
     protected $middleware;
 
     /**
+     * @var StackInterface
+     */
+    protected $stack;
+
+    /**
      * RouteDispatchMiddleware constructor.
      *
-     * @param RouterInterface           $routerInterface
-     * @param StackInterface $chain
+     * @param RouterInterface $routerInterface
+     * @param StackInterface  $stack
+     *
+     * @internal param StackInterface $chain
+     * @throws \InvalidArgumentException
      */
-    public function __construct(RouterInterface $routerInterface, StackInterface $chain)
+    public function __construct(RouterInterface $routerInterface, StackInterface $stack)
     {
+        if (!$stack instanceof PrototypeObject) {
+            throw new \InvalidArgumentException(
+                'The supplied stack must implement Interfaces\Common\PrototypeInterface to allow ' .
+                    'late injection of middleware'
+            );
+        }
+
         $this->router = $routerInterface;
-        $this->middleware = $chain;
+        $this->stack = $stack;
     }
 
-    public function handle(
+    public function process(
         Message\ServerRequestInterface $request,
         FrameInterface $frame = null
     ) {
         try {
-            $middleware = $this->middleware;
+            if (count($this->router) === 0) {
+                throw new \LogicException('No routes added to router');
+            }
+
             $route = $this->router->match($request->getMethod(), $request->getUri());
 
             foreach ($route->getParams() as $param => $value) {
                 $request = $request->withAttribute($param, $value);
             }
 
-            foreach ($route->getCallable() as $callable) {
-                $middleware = $middleware->withMiddleware($callable);
-            }
+            $this->stack->initialize($route->getMiddleware());
 
-            return $middleware->handle($request);
+            return $this->stack->process($request, $frame);
         } catch (NotFoundException $ex) {
             if ($frame !== null) {
                 return $frame->next($request->withAttribute('exception', $ex))
                     ->withStatus(404);
             }
+
+            throw $ex;
         } catch (MethodNotAllowedException $ex) {
             if ($frame !== null) {
                 return $frame->next($request->withAttribute('exception', $ex))
                     ->withStatus(405)
                     ->withHeader('Allowed', implode(', ', $ex->getAllowedMethods()));
             }
+
+            throw $ex;
         } catch (\Exception $ex) {
             if ($frame !== null) {
                 return $frame->next($request->withAttribute('exception', $ex))
                     ->withStatus(500);
             }
-        }
 
-        return new EmptyResponse(500);
+            throw $ex;
+        }
     }
 }
