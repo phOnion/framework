@@ -63,7 +63,6 @@ class RegexParserTest extends \PHPUnit_Framework_TestCase
 
     public function testMatchNoMatchException()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->parser->match('/^\/$/i', 'localhost/');
+        $this->assertFalse($this->parser->match('/^\/$/i', 'localhost/'));
     }
 }

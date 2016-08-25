@@ -33,12 +33,11 @@ class FlatTest extends \PHPUnit_Framework_TestCase
 
     public function testMatching()
     {
-        $this->assertNull($this->parser->match('/', '/'));
+        $this->assertTrue($this->parser->match('/', '/'));
     }
 
     public function testNoMatchException()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->parser->match('/', '/test');
+        $this->assertFalse($this->parser->match('/', '/test'));
     }
 }

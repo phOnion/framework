@@ -65,6 +65,6 @@ class Regex implements Interfaces\Router\ParserInterface
         }
 
 
-        throw new \InvalidArgumentException('No match');
+        return false;
     }
 }

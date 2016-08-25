@@ -31,8 +31,6 @@ class Flat implements Interfaces\Router\ParserInterface
 
     public function match($pattern, $path)
     {
-        if ($pattern !== $path) {
-            throw new \InvalidArgumentException('No match');
-        }
+        return $pattern === $path;
     }
 }
