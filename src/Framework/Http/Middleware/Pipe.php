@@ -10,19 +10,15 @@
  */
 namespace Onion\Framework\Http\Middleware;
 
+use Onion\Framework\Interfaces\Common\PrototypeObject;
 use Onion\Framework\Interfaces\Middleware\FrameInterface;
 use Onion\Framework\Interfaces\Middleware\MiddlewareInterface;
 use Onion\Framework\Interfaces\Middleware\ServerMiddlewareInterface;
 use Onion\Framework\Interfaces\Middleware\StackInterface;
 use Psr\Http\Message;
 
-class Pipe implements StackInterface
+class Pipe implements StackInterface, PrototypeObject
 {
-    /**
-     * @var \SplStack
-     */
-    protected $stack;
-
     protected $middleware = [];
 
     /**
@@ -30,10 +26,9 @@ class Pipe implements StackInterface
      *
      * @param MiddlewareInterface[]|ServerMiddlewareInterface[] $middleware
      */
-    public function __construct(array $middleware)
+    public function __construct(array $middleware = [])
     {
         $this->middleware = $middleware;
-        $this->stack = new \SplStack();
     }
 
     public function handle(Message\RequestInterface $request)
@@ -50,16 +45,16 @@ class Pipe implements StackInterface
      */
     public function process(Message\RequestInterface $request, FrameInterface $frame = null)
     {
-        foreach ($this->middleware as $middleware) {
-            $this->stack[] = new Frame(
-                $middleware,
-                $this->stack->isEmpty() ?
-                    null : $this->stack->top()
-            );
-        }
+        $stack = null;
+        if (0 !== count($this->middleware)) {
+            $iterator = new \ArrayIterator(array_reverse($this->middleware));
+            $iterator->rewind();
+            while ($iterator->valid()) {
+                $stack = new Frame($iterator->current(), $stack);
+                $iterator->next();
+            }
 
-        if (!$this->stack->isEmpty()) {
-            return $this->stack->top()->next($request);
+            return $stack->next($request);
         }
 
         if ($frame !== null) {
@@ -67,5 +62,23 @@ class Pipe implements StackInterface
         }
 
         throw new \RuntimeException('No middleware defined, nothing to do');
+    }
+
+    /**
+     * @param array $args A list of middleware to register with the pipe
+     *
+     * @throws \InvalidArgumentException If the required argument is not passed in the constructor
+     *
+     * @return void
+     */
+    public function initialize(...$args)
+    {
+        if (0 === count($args) || !is_array($args[0])) {
+            throw new \InvalidArgumentException(
+                'An array with middleware must be passed as argument to successfully initialize the Pipe'
+            );
+        }
+
+        $this->middleware = $args[0];
     }
 }
