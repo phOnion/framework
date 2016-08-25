@@ -12,7 +12,7 @@ namespace Onion\Framework\Factory;
 
 use Interop\Container\ContainerInterface;
 use Onion\Framework\Application;
-use Onion\Framework\Http\Middleware\Stack;
+use Onion\Framework\Http\Middleware\Pipe;
 use Onion\Framework\Interfaces;
 
 class ApplicationFactory implements Interfaces\ObjectFactoryInterface
@@ -20,7 +20,7 @@ class ApplicationFactory implements Interfaces\ObjectFactoryInterface
     public function __invoke(ContainerInterface $container)
     {
         return new Application(
-            $container->get(Stack::class)
+            $container->get(Pipe::class)
         );
     }
 }

@@ -5,7 +5,6 @@
 
 namespace Test\Router;
 
-
 use Onion\Framework\Router\Parsers\Regex;
 
 class RegexParserTest extends \PHPUnit_Framework_TestCase

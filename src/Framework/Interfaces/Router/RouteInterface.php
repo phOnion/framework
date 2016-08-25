@@ -12,6 +12,7 @@
 namespace Onion\Framework\Interfaces\Router;
 
 use Onion\Framework\Interfaces\Middleware\MiddlewareInterface;
+use Onion\Framework\Interfaces\Middleware\ServerMiddlewareInterface;
 
 /**
  * This interface is intended to define the skeleton in
@@ -59,12 +60,13 @@ interface RouteInterface extends \Serializable, \JsonSerializable
      * scenarios such as caching the already parsed
      * router.
      *
-     * @see MiddlewareInterface Minimal interface, that ensures compatibility
+     * @see MiddlewareInterface[] Minimal interface, that ensures compatibility
      *          with majority of PSR-7 implementations.
      *
-     * @param array MiddlewareInterface[] The handler to dispatch
+     * @param array MiddlewareInterface[]|ServerMiddlewareInterface[] The handler to dispatch
      *              for the request
-     * @return RouteInterface
+     *
+*@return RouteInterface
      */
     public function setMiddleware(array $callable);
 
@@ -112,7 +114,7 @@ interface RouteInterface extends \Serializable, \JsonSerializable
      * and as an exception case, *only the last* entry
      * *MUST* be used as a handler.
      *
-     * @return MiddlewareInterface[]
+     * @return MiddlewareInterface[]|ServerMiddlewareInterface[]
      */
     public function getMiddleware();
 

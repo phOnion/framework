@@ -5,7 +5,6 @@
 
 namespace Tests\Router;
 
-
 use Onion\Framework\Interfaces\Router\ParserInterface;
 use Onion\Framework\Router\Parsers\Flat;
 

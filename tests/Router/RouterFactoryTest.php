@@ -5,7 +5,6 @@
 
 namespace Tests\Router;
 
-
 use Interop\Container\ContainerInterface;
 use Onion\Framework\Configuration;
 use Onion\Framework\Interfaces\MiddlewareInterface;
@@ -21,7 +20,7 @@ class RouterFactoryTest extends \PHPUnit_Framework_TestCase
      * @var ContainerInterface
      */
     protected $container;
-    protected  function setUp()
+    protected function setUp()
     {
         $this->container = $this->prophesize(ContainerInterface::class);
 //        $this->container->get(Configuration::class)->willReturn($configuration->reveal());

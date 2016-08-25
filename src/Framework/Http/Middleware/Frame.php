@@ -13,14 +13,13 @@ namespace Onion\Framework\Http\Middleware;
 use Onion\Framework\Interfaces\Application;
 use Onion\Framework\Interfaces\Middleware\FrameInterface;
 use Onion\Framework\Interfaces\Middleware\MiddlewareInterface;
-use Onion\Framework\Interfaces\Middleware\ClientMiddlewareInterface;
 use Onion\Framework\Interfaces\Middleware\ServerMiddlewareInterface;
 use Psr\Http\Message;
 
 class Frame implements FrameInterface
 {
     /**
-     * @var ClientMiddlewareInterface|ServerMiddlewareInterface
+     * @var MiddlewareInterface|ServerMiddlewareInterface
      */
     protected $middleware;
 
@@ -29,11 +28,19 @@ class Frame implements FrameInterface
     /**
      * MiddlewareDelegate constructor.
      *
-     * @param MiddlewareInterface|null $middleware
-     * @param Frame                    $frame
+     * @param MiddlewareInterface|ServerMiddlewareInterface|null $middleware
+     * @param Frame                                              $frame
+     *
+     * @throws \InvalidArgumentException if middleware does not implement any valid middleware interface
      */
-    public function __construct(MiddlewareInterface $middleware, Frame $frame = null)
+    public function __construct($middleware, Frame $frame = null)
     {
+        if (!$middleware instanceof MiddlewareInterface && !$middleware instanceof ServerMiddlewareInterface) {
+            throw new \InvalidArgumentException(
+                'Middleware provided must implement MiddlewareInterface or ServerMiddlewareInterface'
+            );
+        }
+
         $this->middleware = $middleware;
         $this->frame = $frame;
     }
@@ -46,7 +53,7 @@ class Frame implements FrameInterface
      */
     public function next(Message\RequestInterface $request)
     {
-        $response = $this->middleware->handle($request, $this->frame);
+        $response = $this->middleware->process($request, $this->frame);
         if (!$response instanceof Message\ResponseInterface) {
             throw new \RuntimeException(sprintf(
                 'Middleware "%s" does not return a response. Response type is: %s',

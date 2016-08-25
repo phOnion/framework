@@ -27,10 +27,10 @@ class ErrorHandlerMiddleware implements ServerMiddlewareInterface
         $this->middleware = $middleware;
     }
 
-    public function handle(Message\ServerRequestInterface $request, FrameInterface $frame = null)
+    public function process(Message\ServerRequestInterface $request, FrameInterface $frame = null)
     {
         if ($request->getAttribute('exception', false) !== false) {
-            return $this->middleware->handle($request);
+            return $this->middleware->process($request, $frame);
         }
 
         return $frame->next($request);

@@ -169,7 +169,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $route->getParams()->willReturn(['foo' => 'bar']);
         $route->setSupportedMethods(['get'])->willReturn(null);
         $route->getSupportedMethods()->willReturn(['GET']);
-        $route->serialize()->will(function() use ($route) {
+        $route->serialize()->will(function () use ($route) {
             return $route->reveal();
         });
 
