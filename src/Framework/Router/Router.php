@@ -257,7 +257,7 @@ class Router implements Interfaces\Router\RouterInterface, Interfaces\Middleware
         $route = $this->match($request->getMethod(), $request->getUri());
 
         foreach ($route->getParams() as $name => $param) {
-            $request->withAttribute($name, $param);
+            $request = $request->withAttribute($name, $param);
         }
 
         $this->stack->initialize($route->getMiddleware());
