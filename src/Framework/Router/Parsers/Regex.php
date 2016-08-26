@@ -47,8 +47,8 @@ class Regex implements Interfaces\Router\ParserInterface
     protected function convertOptionalGroupsToNonCapturable($string)
     {
         return preg_replace(
-            '~/\[([^\[\]]+|(?R))\]~uU',
-            '/(?:$1)?',
+            '~\[(?:/)?([^\[\]]+|(?R))\]~uU',
+            '(?:$1)?',
             $string
         );
     }

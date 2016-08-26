@@ -65,4 +65,12 @@ class RegexParserTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertFalse($this->parser->match('/^\/$/i', 'localhost/'));
     }
+
+    public function testMatchOnOptionalGroups()
+    {
+        $this->assertSame(
+            '/strict(?:/(?P<optional>\p{L}+))?',
+            $this->parser->parse('/strict[/[optional:\p{L}+]]')
+        );
+    }
 }
