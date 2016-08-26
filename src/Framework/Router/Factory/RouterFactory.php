@@ -13,6 +13,7 @@ namespace Onion\Framework\Router\Factory;
 use Interop\Container\ContainerInterface;
 use Onion\Framework\Configuration;
 use Onion\Framework\Interfaces;
+use Onion\Framework\Interfaces\Middleware\StackInterface;
 use Onion\Framework\Router\Router;
 
 class RouterFactory implements Interfaces\ObjectFactoryInterface
@@ -28,7 +29,7 @@ class RouterFactory implements Interfaces\ObjectFactoryInterface
          */
         $routes = $configuration->get('routes');
 
-        $router = new Router();
+        $router = new Router($container->get(StackInterface::class));
         $router->setParser(
             $container->get(Interfaces\Router\ParserInterface::class)
         )->setRouteRootObject(

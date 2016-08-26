@@ -11,6 +11,8 @@
 
 namespace Tests\Router;
 
+use Onion\Framework\Interfaces\Common\PrototypeObjectInterface;
+use Onion\Framework\Interfaces\Middleware\StackInterface;
 use Onion\Framework\Interfaces\Router\Exception\NotFoundException;
 use Onion\Framework\Interfaces\Router\Exception\NotAllowedException;
 use Onion\Framework\Interfaces\Router\ParserInterface;
@@ -29,7 +31,11 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->router = new Router();
+        $this->router = new Router(
+            $this->prophesize(StackInterface::class)
+                ->willImplement(PrototypeObjectInterface::class)
+                ->reveal()
+        );
         $route = $this->prophesize(RouteInterface::class);
         $route->setSupportedMethods(['get'])->will(function () use ($route) {
             return $route->reveal();

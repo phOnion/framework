@@ -7,6 +7,8 @@ namespace Tests\Router;
 
 use Interop\Container\ContainerInterface;
 use Onion\Framework\Configuration;
+use Onion\Framework\Interfaces\Common\PrototypeObjectInterface;
+use Onion\Framework\Interfaces\Middleware\StackInterface;
 use Onion\Framework\Interfaces\MiddlewareInterface;
 use Onion\Framework\Interfaces\Router\ParserInterface;
 use Onion\Framework\Interfaces\Router\RouteInterface;
@@ -30,6 +32,11 @@ class RouterFactoryTest extends \PHPUnit_Framework_TestCase
             ->willReturn($parser->reveal());
         $this->container->get(RouteInterface::class)
             ->willReturn($this->prophesize(RouteInterface::class)->reveal());
+        $this->container->get(StackInterface::class)->willReturn(
+            $this->prophesize(StackInterface::class)
+                ->willImplement(PrototypeObjectInterface::class)
+                ->reveal()
+        );
     }
 
     public function testCreationOfRouterFromTheFactory()

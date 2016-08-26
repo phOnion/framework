@@ -15,7 +15,7 @@ use Onion\Framework\Interfaces\Router\ParserInterface;
 use Onion\Framework\Interfaces\Router\RouteInterface;
 use Psr\Http\Message;
 
-class Router implements Interfaces\Router\RouterInterface
+class Router implements Interfaces\Router\RouterInterface, Interfaces\Middleware\ServerMiddlewareInterface
 {
     /**
      * @var ParserInterface
@@ -32,6 +32,21 @@ class Router implements Interfaces\Router\RouterInterface
     protected $routes = [];
 
     protected $namedRoutes = [];
+
+    protected $stack;
+
+    public function __construct(Interfaces\Middleware\StackInterface $stack)
+    {
+        if (!$stack instanceof Interfaces\Common\PrototypeObjectInterface) {
+            throw new \InvalidArgumentException(
+                'Stack implementation must also implement ' .
+                '"\Onion\Framework\Interfaces\Common\PrototypeObjectInterface" ' .
+                'to allow late initialization'
+            );
+        }
+
+        $this->stack = $stack;
+    }
 
     public function setRouteRootObject(RouteInterface $routeInterface)
     {
@@ -142,6 +157,7 @@ class Router implements Interfaces\Router\RouterInterface
     /**
      * {@inheritdoc}
      * @throws \InvalidArgumentException When adding a duplicate pattern
+     * @throws \RuntimeException  If no route root is provided
      */
     public function addRoute(
         array $methods,
@@ -234,5 +250,18 @@ class Router implements Interfaces\Router\RouterInterface
     public function count()
     {
         return count($this->routes);
+    }
+
+    public function process(Message\ServerRequestInterface $request, Interfaces\Middleware\FrameInterface $frame = null)
+    {
+        $route = $this->match($request->getMethod(), $request->getUri());
+
+        foreach ($route->getParams() as $name => $param) {
+            $request->withAttribute($name, $param);
+        }
+
+        $this->stack->initialize($route->getMiddleware());
+
+        return $this->stack->process($request, $frame);
     }
 }
