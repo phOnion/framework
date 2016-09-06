@@ -73,4 +73,24 @@ class RegexParserTest extends \PHPUnit_Framework_TestCase
             $this->parser->parse('/strict[/[optional:\p{L}+]]')
         );
     }
+
+    public function testMatchWhenPathHasFileExtension()
+    {
+//        $this->assertSame(
+//            '/resource/(?:P<identifier>\p{L})',
+//            $this->parser->parse('/resource/[identifier]')
+//        );
+        $this->assertEquals([
+            'identifier' => 'users',
+            'ext' => 'json',
+            0 => '/resource/users.json',
+            1 => 'users',
+            2 => 'json'
+        ],
+            $this->parser->match(
+                '~' . $this->parser->parse('/resource/[identifier][.[ext]]') . '~x',
+                '/resource/users.json'
+            )
+        );
+    }
 }
