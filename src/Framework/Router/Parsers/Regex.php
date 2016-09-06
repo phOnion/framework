@@ -22,23 +22,16 @@ class Regex implements Interfaces\Router\ParserInterface
             $path
         );
 
-        return $this->convertOptionalGroupsToNonCapturable(
-            $this->convertToCaptureBoundGroups(
-                $this->bootstrapParamsWithoutExplicitRegex($path)
-            )
-        );
-    }
-
-    public function bootstrapParamsWithoutExplicitRegex($str)
-    {
-        return /*preg_replace('#\[(\w+)\]#i', '[\w+]', $str);*/ $str;
+        return preg_replace('~\{\{(.*)\}\}~uU', '[$1]', $this->convertOptionalGroupsToNonCapturable(
+            $this->convertToCaptureBoundGroups($path)
+        ));
     }
 
     protected function convertToCaptureBoundGroups($string)
     {
         $string = preg_replace(
             ['~\[(\w+)\]+~iuU', '~\[(\w+)\:(.*)\]+~iuU'],
-            ['(?P<$1>[\p{L}\p{C}\p{N}\p{Pd}\p{Ps}\p{Pe}\p{Pi}\p{Pf}\p{Pc}\p{S}%*,;&\']+)', '(?P<$1>$2)'],
+            ['(?P<$1>{{\p{L}\p{C}\p{N}\p{Pd}\p{Ps}\p{Pe}\p{Pi}\p{Pf}\p{Pc}\p{S}%*,;&\'}}+)', '(?P<$1>$2)'],
             $string
         );
         return $string;
@@ -52,6 +45,7 @@ class Regex implements Interfaces\Router\ParserInterface
             $string
         );
     }
+
 
     public function match($pattern, $uri)
     {
