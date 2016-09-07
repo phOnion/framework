@@ -10,8 +10,6 @@
  */
 namespace Onion\Framework\Middleware;
 
-use Onion\Framework\Hal\Strategy\JsonResponseStrategy;
-use Onion\Framework\Hal\Strategy\XmlResponseStrategy;
 use Onion\Framework\Http\Response\RawResponse;
 use Onion\Framework\Interfaces\Hal\StrategyInterface;
 use Onion\Framework\Interfaces\Middleware\FrameInterface;
@@ -34,8 +32,6 @@ class HalResponseStrategy implements MiddlewareInterface
     public function __construct(array $strategies = [])
     {
         $this->strategies = $strategies;
-        $this->strategies[] = new JsonResponseStrategy();
-        $this->strategies[] = new XmlResponseStrategy();
     }
 
     /**
