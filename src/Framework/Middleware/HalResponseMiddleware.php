@@ -68,7 +68,7 @@ class HalResponseMiddleware implements MiddlewareInterface
          */
         $acceptParts = explode(',', $headerLine);
         array_walk($acceptParts, function (&$value) {
-            list($value,) = explode(';', $value);
+            list($value, ) = explode(';', $value);
         });
 
 
