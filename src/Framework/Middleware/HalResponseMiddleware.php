@@ -17,7 +17,7 @@ use Onion\Framework\Interfaces\Middleware\MiddlewareInterface;
 use Psr\Http\Message;
 use Zend\Diactoros\Response\EmptyResponse;
 
-class HalResponseStrategy implements MiddlewareInterface
+class HalResponseMiddleware implements MiddlewareInterface
 {
     /**
      * @var \Onion\Framework\Interfaces\Hal\StrategyInterface[]
@@ -61,7 +61,7 @@ class HalResponseStrategy implements MiddlewareInterface
         return $response;
     }
 
-    public function negotiateByAcceptHeader($headerLine, Message\ResponseInterface $response)
+    protected function negotiateByAcceptHeader($headerLine, Message\ResponseInterface $response)
     {
         /**
          * @var $response RawResponse
@@ -81,7 +81,7 @@ class HalResponseStrategy implements MiddlewareInterface
         return new EmptyResponse(406);
     }
 
-    public function negotiateByFileExtension($fileExtension, Message\ResponseInterface $response)
+    protected function negotiateByFileExtension($fileExtension, Message\ResponseInterface $response)
     {
         foreach ($this->strategies as $strategy) {
             if ($strategy->getSupportedExtension() === $fileExtension) {
