@@ -93,7 +93,7 @@ class XmlResponseStrategyTest extends \PHPUnit_Framework_TestCase
 
         $strategy = new XmlResponseStrategy();
 
-        $this->assertSame("<?xml version=\"1.0\"?>\n<resource xmlns:ns=\"/rels/\" href=\"/resource\"><link rel=\"self\" href=\"/resource\" type=\"application/hal+xml\"/><link rel=\"ns:extra\" href=\"/resource/{id}/extra\" type=\"application/hal+xml\" templated=\"1\" deprecated=\"1\"/></resource>\n", $strategy->process($resourceResponse->reveal())->getBody()->getContents());
+        $this->assertSame("<?xml version=\"1.0\"?>\n<resource href=\"/resource\" xmlns:ns=\"/rels/\"><link rel=\"self\" href=\"/resource\" type=\"application/hal+xml\"/><link rel=\"ns:extra\" href=\"/resource/{id}/extra\" type=\"application/hal+xml\" templated=\"1\" deprecated=\"1\"/></resource>\n", $strategy->process($resourceResponse->reveal())->getBody()->getContents());
     }
 
     public function testEmbeddedResourceResponse()

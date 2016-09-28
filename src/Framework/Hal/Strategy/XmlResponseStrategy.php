@@ -40,15 +40,11 @@ class XmlResponseStrategy implements StrategyInterface
             $xml->addAttribute('href', $resource->getLink('self')->getHref());
         }
 
-        // Need the DOMDocument, to preserve namespaces of curies :/
-        $document = new \DomDocument();
         $this->handleResource($xml, $resource);
-
-        $document->loadXML($xml->saveXML());
 
         $headers = $response->getHeaders();
         $headers['Content-type'] = 'application/hal+xml';
-        return new TextResponse($document->saveXML(), $response->getStatusCode(), $headers);
+        return new TextResponse($xml->saveXML(), $response->getStatusCode(), $headers);
     }
 
     /**
@@ -126,14 +122,16 @@ class XmlResponseStrategy implements StrategyInterface
      */
     protected function processDataArray(\SimpleXMLElement $parent, array $data)
     {
-        foreach ($data as $el => $value) {
-            if (is_array($value)) {
+        foreach ($data as $el => $item) {
+            if (is_array($item)) {
                 $e = $parent->addChild($el);
+                foreach ($item as $key => $value) {
+                    $e->addAttribute($key, is_bool($value) ? (int) $value : $value);
+                }
 
-                $this->processDataArray($e, $value);
                 continue;
             }
-            $parent->addChild($el, $value);
+            $parent->addChild($el, is_bool($item) ? (int) $item : $item);
         }
     }
 }
