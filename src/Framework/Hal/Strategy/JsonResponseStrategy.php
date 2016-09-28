@@ -62,6 +62,9 @@ class JsonResponseStrategy implements StrategyInterface
 
                 continue;
             }
+            /**
+             * @var $link Link
+             */
 
             $data['_links'][$link->getRel()] = $this->handleLink($link);
         }
