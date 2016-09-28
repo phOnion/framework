@@ -34,7 +34,7 @@ class JsonResponseStrategy implements StrategyInterface
             $this->handleResource(unserialize((string) $data->getBody())),
             $data->getStatusCode(),
             array_merge($data->getHeaders(), ['content-type' => ['application/hal+json']]),
-            JsonResponse::DEFAULT_JSON_FLAGS
+            JSON_HEX_TAG | JSON_UNESCAPED_SLASHES | JSON_NUMERIC_CHECK | JSON_HEX_APOS
         );
     }
 
