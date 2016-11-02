@@ -1,4 +1,7 @@
 language: php
+before_script:
+  - echo 'zend.assertions = 1' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
+  - echo 'assert.exceptions = 1' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
 php:
   - '7.0'
   - hhvm
