@@ -1,14 +1,6 @@
 <?php
-/**
- * PHP Version 5.6.0
- *
- * @category Errors
- * @package  Onion\Framework\Interfaces\Router\Exception
- * @author   Dimitar Dimitrov <daghostman.dd@gmail.com>
- * @license  https://opensource.org/licenses/MIT MIT License
- * @link     https://github.com/phOnion/framework
- */
-namespace Onion\Framework\Interfaces\Router\Exception;
+declare(strict_types = 1);
+namespace Onion\Framework\Router\Interfaces\Exception;
 
 /**
  * Class NotAllowedException
@@ -24,6 +16,7 @@ interface NotAllowedException
      * Sets the methods that ARE supported by the method
      *
      * @param array $methods
+     *
      * @return void
      */
     public function setAllowedMethods(array $methods);
@@ -33,5 +26,5 @@ interface NotAllowedException
      *
      * @return array
      */
-    public function getAllowedMethods();
+    public function getAllowedMethods(): array;
 }
