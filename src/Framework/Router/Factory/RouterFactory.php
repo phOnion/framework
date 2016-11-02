@@ -1,77 +1,51 @@
 <?php
-/**
- * PHP Version 5.6.0
- *
- * @category Object-Factory
- * @package  Onion\Framework\Router\Factory
- * @author   Dimitar Dimitrov <daghostman.dd@gmail.com>
- * @license  https://opensource.org/licenses/MIT MIT License
- * @link     https://github.com/phOnion/framework
- */
+declare(strict_types = 1);
 namespace Onion\Framework\Router\Factory;
 
 use Interop\Container\ContainerInterface;
-use Onion\Framework\Configuration;
-use Onion\Framework\Interfaces;
-use Onion\Framework\Interfaces\Middleware\StackInterface;
+use Onion\Framework\Dependency\Interfaces\FactoryInterface;
+use Onion\Framework\Http\Middleware\Delegate;
+use Onion\Framework\Router\Interfaces\MatcherInterface;
+use Onion\Framework\Router\Interfaces\ParserInterface;
+use Onion\Framework\Router\Matchers\Regex;
 use Onion\Framework\Router\Router;
 
-class RouterFactory implements Interfaces\ObjectFactoryInterface
+class RouterFactory implements FactoryInterface
 {
-    public function __invoke(ContainerInterface $container)
+    public function build(ContainerInterface $container)
     {
-        /**
-         * @var $configuration ContainerInterface
-         */
-        $configuration = $container->get(Configuration::class);
-        /**
-         * @var $routes array
-         */
-        $routes = $configuration->get('routes');
+        assert($container->has('routes'), 'No routes defined in container');
+        assert($container->has(ParserInterface::class), 'No global route parser defined in container');
+        assert($container->has(MatcherInterface::class), 'No global route matcher defined in container');
 
-        $router = new Router($container->get(StackInterface::class));
-        $router->setParser(
-            $container->get(Interfaces\Router\ParserInterface::class)
-        )->setRouteRootObject(
-            $container->get(Interfaces\Router\RouteInterface::class)
+        /**
+         * @var $routes array[]
+         */
+        $routes = $container->get('routes');
+
+        $router = new Router(
+            $container->get(ParserInterface::class),
+            $container->get(MatcherInterface::class)
         );
 
         foreach ($routes as $route) {
-            if (!array_key_exists('pattern', $route)
-                || !array_key_exists('middleware', $route)
-            ) {
-                throw new \InvalidArgumentException(
-                    'Every route definition must have "pattern" and "middleware" entry'
-                );
+            assert(array_key_exists('pattern', $route), 'A route definition must have a "pattern" key');
+            assert(array_key_exists('middleware', $route), 'A route definition must have a "middleware" key');
+
+            $name = $route['name'] ?? '';
+            $methods = $route['methods'] ?? ['GET', 'HEAD'];
+
+            $delegate = null;
+            foreach ($route['middleware'] as $middleware) {
+                $delegate = new Delegate($container->get($middleware), $delegate);
             }
 
-            $name = array_key_exists('name', $route) ?
-                $route['name'] : null;
-
-            $methods = array_key_exists('methods', $route) ?
-                $route['methods'] : ['GET', 'HEAD'];
-
-            array_walk(
-                $route['middleware'],
-                function (&$value) use ($container) {
-                    if ($container->has($value)) {
-                        $value = $container->get($value);
-                        return;
-                    }
-
-                    throw new \InvalidArgumentException(
-                        sprintf(
-                            'Middleware "%s" is not registered in the container',
-                            $value
-                        )
-                    );
-                }
-            );
+            $route['middleware'] = $delegate;
 
             $router->addRoute(
-                $methods,
                 $route['pattern'],
-                array_filter($route['middleware']),
+                $delegate,
+                $methods,
                 $name
             );
         }
