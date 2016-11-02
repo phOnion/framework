@@ -3,7 +3,7 @@
  * @author Dimitar Dimitrov <daghostman.dd@gmail.com>
  */
 
-namespace Test\Router;
+namespace Test\Router\Parsers;
 
 use Onion\Framework\Router\Parsers\Regex;
 
@@ -63,7 +63,7 @@ class RegexParserTest extends \PHPUnit_Framework_TestCase
 
     public function testMatchNoMatchException()
     {
-        $this->assertFalse($this->parser->match('/^\/$/i', 'localhost/'));
+        $this->assertSame([false], $this->parser->match('/^\/$/i', 'localhost/'));
     }
 
     public function testMatchOnOptionalGroups()

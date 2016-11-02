@@ -6,15 +6,12 @@
 namespace Tests\Router;
 
 use Interop\Container\ContainerInterface;
-use Onion\Framework\Configuration;
-use Onion\Framework\Interfaces\Common\PrototypeObjectInterface;
-use Onion\Framework\Interfaces\Middleware\StackInterface;
-use Onion\Framework\Interfaces\MiddlewareInterface;
-use Onion\Framework\Interfaces\Router\ParserInterface;
-use Onion\Framework\Interfaces\Router\RouteInterface;
-use Onion\Framework\Interfaces\Router\RouterInterface;
+use Interop\Http\Middleware\ServerMiddlewareInterface;
+use Onion\Framework\Http\Middleware\Exceptions\MiddlewareException;
+use Onion\Framework\Router\Interfaces\MatcherInterface;
+use Onion\Framework\Router\Interfaces\ParserInterface;
+use Onion\Framework\Router\Interfaces\RouterInterface;
 use Onion\Framework\Router\Factory\RouterFactory;
-use Onion\Framework\Router\Route;
 
 class RouterFactoryTest extends \PHPUnit_Framework_TestCase
 {
@@ -30,19 +27,20 @@ class RouterFactoryTest extends \PHPUnit_Framework_TestCase
         $parser = $this->prophesize(ParserInterface::class);
         $this->container->get(ParserInterface::class)
             ->willReturn($parser->reveal());
-        $this->container->get(RouteInterface::class)
-            ->willReturn($this->prophesize(RouteInterface::class)->reveal());
-        $this->container->get(StackInterface::class)->willReturn(
-            $this->prophesize(StackInterface::class)
-                ->willImplement(PrototypeObjectInterface::class)
-                ->reveal()
-        );
+        $parser = $this->prophesize(ParserInterface::class);
+        $parser->parse('/')->willReturn('/');
+        $matcher = $this->prophesize(MatcherInterface::class);
+        $matcher->match('/', '/')->willReturn(true);
+        $this->container->get(ParserInterface::class)->willReturn($parser->reveal());
+        $this->container->get(MatcherInterface::class)->willReturn($matcher->reveal());
+        $this->container->has('routes')->willReturn(true);
+        $this->container->has(ParserInterface::class)->willReturn(true);
+        $this->container->has(MatcherInterface::class)->willReturn(true);
     }
 
     public function testCreationOfRouterFromTheFactory()
     {
-        $config = $this->prophesize(Configuration::class);
-        $config->get('routes')->willReturn([
+        $this->container->get('routes')->willReturn([
             [
                 'name' => 'home',
                 'pattern' => '/',
@@ -51,39 +49,38 @@ class RouterFactoryTest extends \PHPUnit_Framework_TestCase
                 ]
             ]
         ]);
-        $this->container->get(Configuration::class)->willReturn($config->reveal());
 
-        $controller = $this->prophesize(MiddlewareInterface::class)->reveal();
+
+
+        $controller = $this->prophesize(ServerMiddlewareInterface::class)->reveal();
         $this->container->get(\stdClass::class)->willReturn($controller);
         $this->container->has(\stdClass::class)->willReturn(true);
 
 
+
         $factory = new RouterFactory();
-        $this->assertInstanceOf(RouterInterface::class, $factory($this->container->reveal()));
+        $this->assertInstanceOf(RouterInterface::class, $factory->build($this->container->reveal()));
     }
 
     public function testExceptionWhenRouteIsInvalid()
     {
-        $config = $this->prophesize(Configuration::class);
-        $config->get('routes')->willReturn([
+        $this->container->get('routes')->willReturn([
             [
                 'pattern' => '/'
             ]
         ]);
-        $this->container->get(Configuration::class)->willReturn($config->reveal());
 
         $factory = new RouterFactory();
 
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Every route definition must have "pattern" and "middleware" entry');
-        $factory($this->container->reveal());
+        $this->expectException(\AssertionError::class);
+        $this->expectExceptionMessage('A route definition must have a "middleware" key');
+        $factory->build($this->container->reveal());
     }
 
     public function testExceptionWhenMiddlewareEntryIsNotRegisteredWithContainer()
     {
         $this->container->has(\stdClass::class)->willReturn(false);
-        $config = $this->prophesize(Configuration::class);
-        $config->get('routes')->willReturn([
+        $this->container->get('routes')->willReturn([
             [
                 'pattern' => '/',
                 'middleware' => [
@@ -91,11 +88,11 @@ class RouterFactoryTest extends \PHPUnit_Framework_TestCase
                 ]
             ]
         ]);
-        $this->container->get(Configuration::class)->willReturn($config->reveal());
+        $this->container->get(\stdClass::class)->willReturn(new \stdClass());
 
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Middleware "stdClass" is not registered in the container');
+        $this->expectException(MiddlewareException::class);
+        $this->expectExceptionMessage('either MiddlewareInterface or ServerMiddlewareInterface');
         $factory = new RouterFactory();
-        $factory($this->container->reveal());
+        $factory->build($this->container->reveal());
     }
 }
