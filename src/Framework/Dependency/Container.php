@@ -1,60 +1,26 @@
 <?php
-/**
- * PHP Version 5.6.0
- *
- * @category Dependency-Injection
- * @package  Onion\Framework\Dependency
- * @author   Dimitar Dimitrov <daghostman.dd@gmail.com>
- * @license  https://opensource.org/licenses/MIT MIT License
- * @link     https://github.com/phOnion/framework
- */
+declare(strict_types = 1);
 namespace Onion\Framework\Dependency;
 
 use Interop\Container\ContainerInterface;
 use Interop\Container\Exception\ContainerException;
 use Interop\Container\Exception\NotFoundException;
-use Onion\Framework\Interfaces\ObjectFactoryInterface;
+use Onion\Framework\Dependency\Exception\ContainerErrorException;
+use Onion\Framework\Dependency\Exception\UnknownDependency;
+use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 
 class Container implements ContainerInterface
 {
-    protected $definitions = [];
+    private $dependencies = [];
 
-    /**
-     * Container constructor. Simply assigns the contents of the $definitions
-     * array that MUST have some of the keys `factories`, `invokables` and/or
-     * `shared`. There represent different types of dependencies.
-     *
-     * `factories` - Set of objects that are called and their result is
-     * returned as the dependency. (return new instance on every request)
-     * `invokables` - Classes that do not have any dependencies in their
-     * constructors
-     * `shared` - A more of a registry, looking the same as the `invokables`,
-     * but with the difference that every value entry is resolved from either
-     * (return new instance on every request)
-     * `factories` or `invokables` stored in the same identifier and removed
-     * from them. (return same instance on every call)
-     *
-     * @param array|\ArrayObject $definitions List of the dependencies
-     *
-     * @throws \InvalidArgumentException When $definitions is not an
-     * array nor instance of \ArrayObject
-     */
-    public function __construct($definitions)
+    public function __construct(array $dependencies)
     {
-        if (!is_array($definitions) && !$definitions instanceof \ArrayObject) {
-            throw new \InvalidArgumentException(
-                '$definitions should be either array or instance of \ArrayObject'
-            );
-        }
-
-        $this->definitions = array_merge(
-            [
-                'factories' => [],
-                'invokables' => [],
-                'shared' => []
-            ],
-            $definitions
-        );
+        $this->dependencies = [
+            'invokables' => [],
+            'factories' => [],
+            'shared' => []
+        ];
+        $this->dependencies = array_merge($this->dependencies, $dependencies);
     }
 
     /**
@@ -62,53 +28,40 @@ class Container implements ContainerInterface
      *
      * @param string $key Identifier of the entry to look for.
      *
-     * @throws NotFoundException|Exception\UnknownDependency  No entry was found for
-     * this identifier.
-     * @throws ContainerException|Exception\ContainerErrorException Error
-     * while retrieving the entry.
+     * @throws NotFoundException|UnknownDependency  No entry was found for this identifier.
+     * @throws ContainerException|ContainerErrorException Error while retrieving the entry.
+     * @throws \InvalidArgumentException If the provided identifier is not a string
      *
      * @return mixed Entry.
      */
     public function get($key)
     {
-        if (!is_string($key)) {
-            throw new Exception\ContainerErrorException(
-                sprintf(
-                    'Dependency identifier must be a string, %s given',
-                    gettype($key)
-                )
-            );
+        assert(is_string($key), new \InvalidArgumentException(sprintf(
+            'Dependency identifier must be a string, "%s" given',
+            gettype($key)
+        )));
+
+        if (array_key_exists($key, $this->dependencies)) {
+            return $this->dependencies[$key];
         }
 
-        if ($this->has($key)) {
-            $dependency = null;
-            if ($this->isShared($key)) {
-                $dependency = $this->retrieveShared($key);
+        try {
+            if (array_key_exists($key, $this->dependencies['invokables'])) {
+                return $this->retrieveInvokable($key);
             }
 
-            if ($dependency === null) {
-                $dependency = $this->retrieveFromFactory($key);
+            if (array_key_exists($key, $this->dependencies['factories'])) {
+                return $this->retrieveFromFactory($key);
             }
 
-            if ($dependency === null) {
-                $dependency = $this->retrieveInvokable($key);
+            if (class_exists($key)) {
+                return $this->retrieveFromReflection($key);
             }
-
-            if ((class_exists($key) || interface_exists($key)) && !$dependency instanceof $key) {
-                throw new Exception\ContainerErrorException(
-                    sprintf(
-                        'Resolved dependency is not instance of "%s"',
-                        $key
-                    )
-                );
-            }
-
-            return $dependency;
+        } catch (\RuntimeException $ex) {
+            throw new ContainerErrorException($ex->getMessage(), 0, $ex);
         }
 
-        throw new Exception\UnknownDependency(
-            sprintf('"%s" not registered with the container', $key)
-        );
+        throw new UnknownDependency(sprintf('Unable to resolve "%s"', $key));
     }
 
     /**
@@ -119,120 +72,127 @@ class Container implements ContainerInterface
      *
      * @return boolean
      */
-    public function has($key)
+    public function has($key): bool
     {
         return (
-            array_key_exists($key, $this->definitions['invokables']) ||
-            array_key_exists($key, $this->definitions['factories']) ||
-            array_key_exists($key, $this->definitions['shared'])
+            array_key_exists($key, $this->dependencies) ||
+            array_key_exists($key, $this->dependencies['invokables']) ||
+            array_key_exists($key, $this->dependencies['factories']) ||
+            class_exists($key)
         );
     }
 
-    /**
-     * ,m
-     *
-     * @param string $identifier Dependency identifier
-     *
-     * @throws NotFoundException|Exception\UnknownDependency  when dependency
-     * is not registered with the factories in the container.
-     * @throws ContainerException|Exception\ContainerErrorException Error
-     * while retrieving the entry.
-     *
-     * @return ObjectFactoryInterface
-     */
-    protected function retrieveFromFactory($identifier)
+    private function retrieveInvokable(string $className)
     {
-        if (!array_key_exists($identifier, $this->definitions['factories'])) {
-            return null;
+        $dependency = $this->dependencies['invokables'][$className];
+        if (is_object($dependency)) {
+            return $dependency;
         }
 
-        $factory = $this->definitions['factories'][$identifier];
-        if (is_string($factory)) {
-            $factory = $this->retrieveInvokable($factory);
-        }
-
-        if (!$factory instanceof ObjectFactoryInterface) {
-            throw new Exception\ContainerErrorException(
-                sprintf(
-                    'Factory for class "%s" must implement ' .
-                        '\Onion\Framework\Interfaces\ObjectFactoryInterface',
-                    $identifier
-                )
+        if (!is_string($dependency)) {
+            throw new \RuntimeException(
+                "Invalid invokable definition encountered while resolving '$className'. '" .
+                'Expected a string, but received ' . gettype($dependency)
             );
         }
 
-        return $factory($this);
+        if (!$this->has($dependency)) {
+            throw new UnknownDependency(
+                "Unable to resolve '$dependency'. Consider using a factory"
+            );
+        }
+
+        return $this->enforceReturnType($className, $this->retrieveFromReflection($dependency));
     }
 
     /**
-     * Retrieves the dependency stored under $identifier or a
-     * factory class named as $identifier by instantiating a new
-     * class when called.
+     * Helper to verify that the result is instance of
+     * the identifier (if it is a class/interface)
      *
-     * @param string $identifier Dependency identifier
-     *
-     * @throws Exception\UnknownDependency when dependency is not registered
-     * with the invokables in the container.
-     * @throws ContainerException|Exception\ContainerErrorException Error
-     * while retrieving the entry.
+     * @param string $identifier
+     * @param mixed  $result
      *
      * @return mixed
+     * @throws ContainerErrorException
      */
-    protected function retrieveInvokable($identifier)
+    private function enforceReturnType($identifier, $result)
     {
-        if (!array_key_exists($identifier, $this->definitions['invokables'])
-            && !in_array($identifier, $this->definitions['factories'], true)
-        ) {
-            return null;
-        }
-
-        $object = array_key_exists($identifier, $this->definitions['invokables']) ?
-            $this->definitions['invokables'][$identifier] : $identifier;
-
-        if (!is_object($object) && !class_exists($object)) {
-            throw new Exception\ContainerErrorException(
-                sprintf(
-                    'Class "%s" does not exist',
-                    $object
-                )
+        if (class_exists($identifier) || interface_exists($identifier)) {
+            assert(
+                $result instanceof $identifier,
+                new ContainerErrorException(sprintf(
+                    'Unable to verify that "%s" is instance of "%s"',
+                    get_class($result),
+                    $identifier
+                ))
             );
         }
 
-        return new $object;
+        return $result;
     }
 
-    /**
-     * @param  string $identifier Dependency identifier
-     *
-     * @return object
-     */
-    protected function retrieveShared($identifier)
+    public function retrieveFromReflection(string $className)
     {
-        if (!is_object($this->definitions['shared'][$identifier])) {
-            $referenceKey = $this->definitions['shared'][$identifier];
-
-            $this->definitions['shared'][$identifier]
-                = $this->retrieveInvokable($referenceKey);
-
-            if ($this->definitions['shared'][$identifier] === null) {
-                $this->definitions['shared'][$identifier]
-                    = $this->retrieveFromFactory($identifier);
+        $classReflection = new \ReflectionClass($className);
+        if ($classReflection->getConstructor() === null || $classReflection->getConstructor()->getParameters() === []) {
+            return $classReflection->newInstanceWithoutConstructor();
+        }
+        $constructorRef = $classReflection->getConstructor();
+        $parameters = [];
+        foreach ($constructorRef->getParameters() as $parameter) {
+            if (!$parameter->hasType() && !$parameter->isOptional()) {
+                throw new ContainerErrorException(sprintf(
+                    'Unable to resolve a class parameter "%s" of "%s::%s" without type ',
+                    $parameter->getName(),
+                    $classReflection->getName(),
+                    $constructorRef->getName()
+                ));
             }
+
+
+            if ($this->has((string)$parameter->getType())) {
+                $parameters[$parameter->getPosition()] = $this->get((string)$parameter->getType());
+                continue;
+            }
+
+            if ($parameter->isOptional()) {
+                $parameters[$parameter->getPosition()] = $parameter->getDefaultValue();
+                continue;
+            }
+
+            throw new ContainerErrorException(sprintf(
+                'Unable to find match for type: "%s". Consider using a factory',
+                $parameter->getType()
+            ));
         }
 
-        return $this->definitions['shared'][$identifier];
+        return $this->enforceReturnType($className, $classReflection->newInstance(...$parameters));
     }
 
-    /**
-     * Should the object identifier by $identifier be
-     * shared
-     *
-     * @param string $identifier Dependency identifier
-     *
-     * @return bool
-     */
-    public function isShared($identifier)
+    private function retrieveFromFactory(string $className)
     {
-        return array_key_exists($identifier, $this->definitions['shared']);
+        $factory = $this->dependencies['factories'][$className];
+        if (!is_object($factory)) {
+            $factory = new $factory();
+        }
+
+        assert(
+            $factory instanceof FactoryInterface,
+            new ContainerErrorException(
+                "Factory for '$className' does not implement Dependency\\Interfaces\\FactoryInterface"
+            )
+        );
+
+        /**
+         * @var $factory FactoryInterface
+         */
+        $result = $factory->build($this);
+        if (in_array($className, $this->dependencies['shared'], true)) {
+            $this->dependencies['invokables'][$className] = $result;
+            unset($this->dependencies['factories'][$className]);
+        }
+
+        return $this->enforceReturnType($className, $result);
     }
+
 }
