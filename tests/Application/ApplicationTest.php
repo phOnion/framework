@@ -13,7 +13,6 @@ namespace Tests;
 
 use Interop\Http\Middleware\DelegateInterface;
 use Onion\Framework\Application\Application;
-use Prophecy\Argument;
 use Prophecy\Argument\Token\AnyValueToken;
 use Prophecy\Argument\Token\TypeToken;
 use Psr\Http\Message\RequestInterface;

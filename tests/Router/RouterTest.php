@@ -17,7 +17,6 @@ use Onion\Framework\Router\Interfaces\Exception\NotAllowedException;
 use Onion\Framework\Router\Interfaces\ParserInterface;
 use Onion\Framework\Router\Interfaces\MatcherInterface;
 use Onion\Framework\Router\Router;
-use Prophecy\Argument;
 use Prophecy\Argument\Token\AnyValueToken;
 use Psr\Http\Message\UriInterface;
 
