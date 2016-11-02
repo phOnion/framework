@@ -1,14 +1,10 @@
 language: php
 before_script:
-  - echo 'zend.assertions = 1' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
-  - echo 'assert.exceptions = 1' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
+  - echo 'zend.assertions=1' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
+  - echo 'assert.exception=1' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
 php:
   - '7.0'
-  - hhvm
   - nightly
-matrix:
-  allow_failures:
-    - hhvm
 install: composer install -o --no-interaction
 script: vendor/bin/phpunit --bootstrap vendor/autoload.php --coverage-clover=coverage.xml
 after_success:
