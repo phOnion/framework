@@ -11,27 +11,31 @@
 
 namespace Tests\Http;
 
-use Onion\Framework\Http\Middleware\Frame;
+use Interop\Http\Middleware\DelegateInterface;
+use Interop\Http\Middleware\ServerMiddlewareInterface;
+use Onion\Framework\Http\Middleware\Delegate;
+use Onion\Framework\Http\Middleware\Exceptions\MiddlewareException;
 use Onion\Framework\Interfaces\Middleware\MiddlewareInterface;
 use Prophecy\Argument;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 
-class FrameTest extends \PHPUnit_Framework_TestCase
+class DelegatorTest extends \PHPUnit_Framework_TestCase
 {
     public function testExceptionWhenMiddlewareDoesNotImplementRequiredInterfaces()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Middleware provided must implement MiddlewareInterface');
+        $this->expectException(MiddlewareException::class);
+        $this->expectExceptionMessage('either MiddlewareInterface or ServerMiddlewareInterface');
 
-        new Frame('foobar');
+        new Delegate('foobar');
     }
 
     public function testInvocationOfProperFrameWithoutNext()
     {
-        $request = $this->prophesize(RequestInterface::class);
-        $middleware = $this->prophesize(MiddlewareInterface::class);
+        $request = $this->prophesize(ServerRequestInterface::class);
+        $middleware = $this->prophesize(ServerMiddlewareInterface::class);
         $response = $this->prophesize(ResponseInterface::class);
         $stream = $this->prophesize(StreamInterface::class);
         $stream->isSeekable()->willReturn(true);
@@ -44,27 +48,26 @@ class FrameTest extends \PHPUnit_Framework_TestCase
             Argument::any()
         )->willReturn($response->reveal());
 
-        $frame = new Frame($middleware->reveal());
+        $frame = new Delegate($middleware->reveal(), $this->prophesize(DelegateInterface::class)->reveal());
 
         $this->assertSame(
             $response->reveal(),
-            $frame->next($request->reveal())
+            $frame->process($request->reveal())
         );
     }
 
     public function testInvocationExceptionWhenNoResponseInterfaceIsReturned()
     {
-        $request = $this->prophesize(RequestInterface::class);
-        $middleware = $this->prophesize(MiddlewareInterface::class);
+        $request = $this->prophesize(ServerRequestInterface::class);
+        $middleware = $this->prophesize(ServerMiddlewareInterface::class);
         $middleware->process(
             Argument::any(), // Fails for some reason when using `Argument::type`
             Argument::any()
         )->willReturn(null);
 
-        $frame = new Frame($middleware->reveal());
+        $frame = new Delegate($middleware->reveal(), $this->prophesize(DelegateInterface::class)->reveal());
 
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Response type is: NULL');
-        $frame->next($request->reveal());
+        $this->expectException(\TypeError::class);
+        $frame->process($request->reveal());
     }
 }
