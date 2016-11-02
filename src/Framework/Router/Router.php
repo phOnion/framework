@@ -1,103 +1,121 @@
 <?php
-/**
- * PHP Version 5.6.0
- *
- * @category Routing
- * @package  Onion\Framework\Router
- * @author   Dimitar Dimitrov <daghostman.dd@gmail.com>
- * @license  https://opensource.org/licenses/MIT MIT License
- * @link     https://github.com/phOnion/framework
- */
+declare(strict_types = 1);
 namespace Onion\Framework\Router;
 
-use Onion\Framework\Interfaces;
-use Onion\Framework\Interfaces\Router\ParserInterface;
-use Onion\Framework\Interfaces\Router\RouteInterface;
+use Interop\Http\Middleware\DelegateInterface;
+use Interop\Http\Middleware\ServerMiddlewareInterface;
+use Onion\Framework\Router\Interfaces\MatcherInterface;
 use Psr\Http\Message;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
-class Router implements Interfaces\Router\RouterInterface, Interfaces\Middleware\ServerMiddlewareInterface
+class Router implements Interfaces\RouterInterface, ServerMiddlewareInterface
 {
     /**
      * @var ParserInterface
      */
     protected $parser;
-
     /**
-     * @var RouteInterface
-     */
-    protected $routeRoot;
-    /**
-     * @var array
+     * @var array[]
      */
     protected $routes = [];
-
-    protected $namedRoutes = [];
-
-    protected $stack;
-
-    public function __construct(Interfaces\Middleware\StackInterface $stack)
-    {
-        if (!$stack instanceof Interfaces\Common\PrototypeObjectInterface) {
-            throw new \InvalidArgumentException(
-                'Stack implementation must also implement ' .
-                '"\Onion\Framework\Interfaces\Common\PrototypeObjectInterface" ' .
-                'to allow late initialization'
-            );
-        }
-
-        $this->stack = $stack;
-    }
-
-    public function setRouteRootObject(RouteInterface $routeInterface)
-    {
-        $this->routeRoot = $routeInterface;
-
-        return $this;
-    }
-
     /**
-     * @internal
-     *
-     * @throws \RuntimeException When no route root object is defined
-     *
-     * @return RouteInterface
+     * @var MatcherInterface
      */
-    public function getRouteRoot()
-    {
-        if (!$this->routeRoot instanceof RouteInterface) {
-            throw new \RuntimeException(
-                'Invalid root route object provided, must implement ' .
-                    '"Onion\Framework\Interfaces\Routing\RouteInterface"'
-            );
-        }
+    private $matcher;
 
-        return clone $this->routeRoot;
-    }
-
-    public function setParser(ParserInterface $parser)
+    public function __construct(Interfaces\ParserInterface $parser, Interfaces\MatcherInterface $matcher)
     {
         $this->parser = $parser;
-
-        return $this;
+        $this->matcher = $matcher;
     }
 
     /**
-     * Retrieve the parser that is used by the route
-     * @internal
-     *
-     * @throws \RuntimeException When there is no parser defined
-     *
-     * @return ParserInterface
+     * {@inheritdoc}
+     * @throws \InvalidArgumentException When adding a duplicate pattern
      */
-    public function getParser()
+    public function addRoute(
+        string $pattern,
+        DelegateInterface $handler,
+        array $methods,
+        string $name = null
+    ) {
+        array_walk($methods, function (&$value) {
+            $value = strtoupper($value);
+        });
+
+        $route = [
+            $this->getParser()->parse($pattern),
+            $handler,
+            $methods,
+            [],
+        ];
+        $name = $name ?? $pattern;
+
+        assert(
+            !array_key_exists($name, $this->routes),
+            new \InvalidArgumentException(sprintf(
+                'Route "%s" overlaps with another route using the same name and/or pattern',
+                $name
+            ))
+        );
+
+
+        $this->routes[$name] = $route;
+        uasort($this->routes, function ($left, $right) {
+            return strlen($left[0])<=>strlen($right[0]);
+        });
+    }
+
+    private function getParser(): Interfaces\ParserInterface
     {
-        if ($this->parser === null) {
-            throw new \RuntimeException(
-                'No route parser provided to router'
+        return $this->parser;
+    }
+
+    public function getRouteByName(string $name, array $params = []): string
+    {
+        assert(
+            array_key_exists($name, $this->routes),
+            new \InvalidArgumentException(sprintf('No route identified by "%s"', $name))
+        );
+
+        $route = $this->routes[$name];
+        $pattern = $route[0];
+        foreach ($params as $param => $value) {
+            $pattern = preg_replace(
+                sprintf('~(\(\?P\<%s\>.*)~i', $param),
+                $value,
+                $pattern
             );
         }
 
-        return $this->parser;
+        assert(
+            preg_match('~^(?:' . $route[0] . ')$~x', $pattern) !== 0,
+            new \InvalidArgumentException(
+                'Unable to create route from provided parameters'
+            )
+        );
+
+        return $pattern;
+    }
+
+    public function count(): int
+    {
+        return count($this->routes);
+    }
+
+    public function process(ServerRequestInterface $request, DelegateInterface $delegate = null): ResponseInterface
+    {
+        /**
+         * @var array[] $route
+         */
+        $route = $this->match($request->getMethod(), $request->getUri());
+
+        foreach ($route[3] as $name => $param) {
+            $request = $request->withAttribute($name, $param);
+        }
+
+        return $route[1]->process($request);
     }
 
     /**
@@ -108,42 +126,40 @@ class Router implements Interfaces\Router\RouterInterface, Interfaces\Middleware
      * @param string               $method Current request method
      * @param Message\UriInterface $uri    Current request URI
      *
-     * @throws Exceptions\MethodNotAllowedException|Interfaces\Router\Exception\NotAllowedException If
+     * @throws Exceptions\MethodNotAllowedException|Interfaces\Exception\NotAllowedException If
      * the matched route does not support the current request method
-     * @throws Exceptions\NotFoundException|Interfaces\Router\Exception\NotFoundException If there
+     * @throws Exceptions\NotFoundException|Interfaces\Exception\NotFoundException If there
      * is no route found to handle the current request
      * @throws \RuntimeException if there is no parser defined for the router
-     *
-     * @return RouteInterface
      * @throws \InvalidArgumentException
+     *
+     * @covers Router::process
+     *
+     * @return array[]
      */
-    public function match($method, Message\UriInterface $uri)
+    public function match(string $method, Message\UriInterface $uri): array
     {
         $method = strtoupper($method);
         foreach ($this->routes as $pattern => $route) {
-            $matches = $this->getParser()->match(
-                '~^(?:' . $pattern . ')$~x',
-                $uri->getPath()
-            );
+            assert(count($route) === 4, 'Route array must hold only 4 elements');
 
-            if ($matches !== false) {
-                /**
-                 * @var $route RouteInterface
-                 */
-                array_walk($matches, function (&$value, $index) {
-                    $value = urldecode($value);
-                    if (is_numeric($index)) {
-                        $value = null;
-                    }
-                });
+            assert(array_key_exists(0, $route), 'Array must contain index 0');
+            assert(is_string($route[0]), 'Array index 0 must be a string');
+            assert(array_key_exists(1, $route), 'Array must contain index 1');
+            assert($route[1] instanceof DelegateInterface, 'Array index 1 must implement DelegateInterface');
+            assert(array_key_exists(2, $route), 'Array must contain index 2');
+            assert(is_array($route[2]), 'Array index 2 must be an array');
+            assert($route[2] !== [], 'Array index 2 must be a non-empty array');
+            assert(array_key_exists(3, $route), 'Array must contain index 3');
+            assert(is_array($route[3]), 'Array index 3 must be an array');
 
-                if (!in_array($method, $route->getSupportedMethods(), true)) {
-                    throw new Exceptions\MethodNotAllowedException(
-                        $route->getSupportedMethods()
-                    );
+
+            if (($matches = $this->getMatcher()->match($route[0], $uri->getPath())) !== [false]) {
+                if (!in_array($method, $route[2], true)) {
+                    throw new Exceptions\MethodNotAllowedException($route[2]);
                 }
 
-                $route->setParams(array_filter((array)$matches));
+                $route[3] = array_filter((array)$matches);
                 return $route;
             }
         }
@@ -154,114 +170,8 @@ class Router implements Interfaces\Router\RouterInterface, Interfaces\Middleware
         ));
     }
 
-    /**
-     * {@inheritdoc}
-     * @throws \InvalidArgumentException When adding a duplicate pattern
-     * @throws \RuntimeException  If no route root is provided
-     */
-    public function addRoute(
-        array $methods,
-        $pattern,
-        $handler,
-        $name = null
-    ) {
-    
-        /**
-         * @var $route RouteInterface
-         */
-        $route = $this->buildRoute($pattern, $handler);
-        $route->setSupportedMethods($methods);
-
-        if ($name !== null) {
-            $this->namedRoutes[$name] = $route;
-        }
-
-        if (array_key_exists($name, $this->routes) ||
-            array_key_exists($route->getPattern(), $this->routes)
-        ) {
-            throw new \InvalidArgumentException(sprintf(
-                'Route "%s" overlaps with another route using the same name ' .
-                    'and/or pattern that is already defined',
-                $pattern
-            ));
-        }
-
-        $this->routes[$route->getPattern()] = $route;
-        uksort($this->routes, function ($left, $right) {
-            return strlen($left)-strlen($right);
-        });
-
-        return $this;
-    }
-
-    /**
-     *
-     * @internal
-     *
-     * @param string $pattern the pattern of the route
-     * @param array  $handler Handlers of the route
-     *
-     * @throws \RuntimeException if no parser is defined for the
-     * router or no root object is defined
-     *
-     * @return Interfaces\Router\RouteInterface
-     */
-    protected function buildRoute($pattern, $handler)
+    private function getMatcher(): Interfaces\MatcherInterface
     {
-        $route = $this->getRouteRoot();
-        $pattern = parse_url($pattern, PHP_URL_PATH);
-
-        $parsedPattern = $this->getParser()
-            ->parse($pattern);
-
-        $route->setPattern($parsedPattern);
-        $route->setMiddleware($handler);
-
-        return $route;
-    }
-
-    public function getRouteByName($name, array $params = [])
-    {
-        if (!array_key_exists($name, $this->namedRoutes)) {
-            throw new \InvalidArgumentException(sprintf('No route named "%s"', $name));
-        }
-
-        /**
-         * @var $route Interfaces\Router\RouteInterface
-         */
-        $route = $this->namedRoutes[$name];
-        $pattern = $route->getPattern();
-        foreach ($params as $param => $value) {
-            $pattern = preg_replace(
-                sprintf('~(\(\?P\<%s\>.*)~i', $param),
-                $value,
-                $pattern
-            );
-        }
-
-        if (preg_match('~^(?:' .$route->getPattern(). ')$~x', $pattern) === 0) {
-            throw new \InvalidArgumentException(
-                'Unable to create route from provided parameters'
-            );
-        }
-        return $pattern;
-    }
-
-    public function count()
-    {
-        return count($this->routes);
-    }
-
-    public function process(Message\ServerRequestInterface $request, Interfaces\Middleware\FrameInterface $frame = null)
-    {
-        $route = $this->match($request->getMethod(), $request->getUri());
-
-        foreach ($route->getParams() as $name => $param) {
-            $request = $request->withAttribute($name, $param);
-        }
-
-        $this->stack->initialize($route->getMiddleware());
-
-        return $this->stack->process($request, $frame);
+        return $this->matcher;
     }
 }
