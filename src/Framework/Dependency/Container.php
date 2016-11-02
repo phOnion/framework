@@ -149,7 +149,6 @@ class Container implements ContainerInterface
                 ));
             }
 
-
             if ($this->has((string)$parameter->getType())) {
                 $parameters[$parameter->getPosition()] = $this->get((string)$parameter->getType());
                 continue;
@@ -194,5 +193,4 @@ class Container implements ContainerInterface
 
         return $this->enforceReturnType($className, $result);
     }
-
 }
