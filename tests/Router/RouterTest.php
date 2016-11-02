@@ -18,6 +18,7 @@ use Onion\Framework\Router\Interfaces\ParserInterface;
 use Onion\Framework\Router\Interfaces\MatcherInterface;
 use Onion\Framework\Router\Router;
 use Prophecy\Argument;
+use Prophecy\Argument\Token\AnyValueToken;
 use Psr\Http\Message\UriInterface;
 
 class RouterTest extends \PHPUnit_Framework_TestCase
@@ -35,7 +36,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $parser = $this->prophesize(ParserInterface::class);
         $parser->parse('/')->willReturn('/');
         $matcher = $this->prophesize(MatcherInterface::class);
-        $matcher->match(Argument::any(), Argument::any())->will(function ($args) {
+        $matcher->match(new AnyValueToken(), new AnyValueToken())->will(function ($args) {
             preg_match('~^' . $args[0] . '$~x', $args[1], $matches);
 
             return $matches;

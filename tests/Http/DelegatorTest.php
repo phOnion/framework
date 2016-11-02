@@ -17,6 +17,7 @@ use Onion\Framework\Http\Middleware\Delegate;
 use Onion\Framework\Http\Middleware\Exceptions\MiddlewareException;
 use Onion\Framework\Interfaces\Middleware\MiddlewareInterface;
 use Prophecy\Argument;
+use Prophecy\Argument\Token\AnyValueToken;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -44,8 +45,8 @@ class DelegatorTest extends \PHPUnit_Framework_TestCase
         $stream->seek(15)->willReturn(null);
         $response->getBody()->willReturn($stream->reveal());
         $middleware->process(
-            Argument::any(), // Fails for some reason when using `Argument::type`
-            Argument::any()
+            new AnyValueToken(), // Fails for some reason when using `Argument::type`
+            new AnyValueToken()
         )->willReturn($response->reveal());
 
         $frame = new Delegate($middleware->reveal(), $this->prophesize(DelegateInterface::class)->reveal());
@@ -61,8 +62,8 @@ class DelegatorTest extends \PHPUnit_Framework_TestCase
         $request = $this->prophesize(ServerRequestInterface::class);
         $middleware = $this->prophesize(ServerMiddlewareInterface::class);
         $middleware->process(
-            Argument::any(), // Fails for some reason when using `Argument::type`
-            Argument::any()
+            new AnyValueToken(), // Fails for some reason when using `Argument::type`
+            new AnyValueToken()
         )->willReturn(null);
 
         $frame = new Delegate($middleware->reveal(), $this->prophesize(DelegateInterface::class)->reveal());

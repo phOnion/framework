@@ -14,6 +14,8 @@ namespace Tests;
 use Interop\Http\Middleware\DelegateInterface;
 use Onion\Framework\Application\Application;
 use Prophecy\Argument;
+use Prophecy\Argument\Token\AnyValueToken;
+use Prophecy\Argument\Token\TypeToken;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -34,9 +36,9 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('OK');
 
-        $this->emitter->emit(Argument::any())->willThrow(new \RuntimeException('OK'));
+        $this->emitter->emit(new AnyValueToken())->willThrow(new \RuntimeException('OK'));
         $this->stack->process(
-            Argument::type(ServerRequestInterface::class)
+            new TypeToken(ServerRequestInterface::class)
         )->willReturn(
             $this->prophesize(ResponseInterface::class)->reveal()
         );
@@ -52,7 +54,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
     public function testApplicationRunWithoutNextFrame()
     {
         $this->stack->process(
-            Argument::type(RequestInterface::class),
+            new TypeToken(RequestInterface::class),
             null
         )->willReturn(
             $this->prophesize(ResponseInterface::class)->reveal()
@@ -71,7 +73,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
 
     public function testExceptionRethrowWhenNoNextDelegateIsAvailable()
     {
-        $this->stack->process(Argument::type(RequestInterface::class), null)
+        $this->stack->process(new TypeToken(RequestInterface::class), null)
             ->willThrow(\Exception::class);
 
         $app = new Application(
@@ -89,11 +91,11 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         $request->withAttribute()->willReturn(function () use ($request) {
             return $request->reveal();
         });
-        $this->stack->process(Argument::type(RequestInterface::class), null)
+        $this->stack->process(new TypeToken(RequestInterface::class), null)
             ->willThrow(\Exception::class);
 
         $delegate = $this->prophesize(DelegateInterface::class);
-        $delegate->process(Argument::any())->willThrow(new \Exception('Delegate Error'));
+        $delegate->process(new AnyValueToken())->willThrow(new \Exception('Delegate Error'));
 
 
         $app = new Application(
@@ -111,7 +113,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->willImplement(ServerRequestInterface::class);
         $this->stack->process(
-            Argument::type(ServerRequestInterface::class),
+            new TypeToken(ServerRequestInterface::class),
             null
         )->willReturn(
             $this->prophesize(ResponseInterface::class)->reveal()
@@ -123,7 +125,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         );
 
         $middleware = $this->prophesize(DelegateInterface::class);
-        $middleware->process(Argument::type(ServerRequestInterface::class))->willReturn(null);
+        $middleware->process(new TypeToken(ServerRequestInterface::class))->willReturn(null);
 
         $this->assertInstanceOf(ResponseInterface::class, $app->process($request->reveal(), $middleware->reveal()));
     }
