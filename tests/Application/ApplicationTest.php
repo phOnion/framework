@@ -96,7 +96,6 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         $delegate = $this->prophesize(DelegateInterface::class);
         $delegate->process(new AnyValueToken())->willThrow(new \Exception('Delegate Error'));
 
-
         $app = new Application(
             $this->stack->reveal(),
             $this->emitter->reveal()
