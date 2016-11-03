@@ -22,8 +22,6 @@ class Delegate implements DelegateInterface
      * @param MiddlewareInterface|ServerMiddlewareInterface $middleware Middleware of the frame
      * @param Delegate                                      $delegate   The next frame
      *
-     * @throws Exceptions\MiddlewareException                           if middleware does not implement a
-     *                                                                  middleware interface
      */
     public function __construct($middleware, DelegateInterface $delegate = null)
     {
