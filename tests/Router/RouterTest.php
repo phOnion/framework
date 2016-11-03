@@ -11,13 +11,13 @@
 
 namespace Tests\Router;
 
-use Interop\Http\Middleware\DelegateInterface;
-use Onion\Framework\Router\Interfaces\Exception\NotFoundException;
-use Onion\Framework\Router\Interfaces\Exception\NotAllowedException;
-use Onion\Framework\Router\Interfaces\ParserInterface;
-use Onion\Framework\Router\Interfaces\MatcherInterface;
+use Onion\Framework\Interfaces\Common\PrototypeObjectInterface;
+use Onion\Framework\Interfaces\Middleware\StackInterface;
+use Onion\Framework\Interfaces\Router\Exception\NotFoundException;
+use Onion\Framework\Interfaces\Router\Exception\NotAllowedException;
+use Onion\Framework\Interfaces\Router\ParserInterface;
+use Onion\Framework\Interfaces\Router\RouteInterface;
 use Onion\Framework\Router\Router;
-use Prophecy\Argument\Token\AnyValueToken;
 use Psr\Http\Message\UriInterface;
 
 class RouterTest extends \PHPUnit_Framework_TestCase
@@ -26,53 +26,66 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      * @var Router
      */
     protected $router;
+    protected $route;
     protected $parser;
-    protected $matcher;
-    protected $delegate;
 
     protected function setUp()
     {
+        $this->router = new Router(
+            $this->prophesize(StackInterface::class)
+                ->willImplement(PrototypeObjectInterface::class)
+                ->reveal()
+        );
+        $route = $this->prophesize(RouteInterface::class);
+        $route->setSupportedMethods(['get'])->will(function () use ($route) {
+            return $route->reveal();
+        });
+        $route->setName('home')->will(function () use ($route) {
+            return $route->reveal();
+        });
+        $route->setMiddleware([])->will(function () use ($route) {
+            return $route->reveal();
+        });
+        $route->setPattern('/')->will(function () use ($route) {
+            return $route->reveal();
+        });
+        $route->setParams([])->will(function () use ($route) {
+            return $route->reveal();
+        });
+        $route->getSupportedMethods()->willReturn(['GET']);
+        $route->getPattern()->willReturn('/');
+        $route->getMiddleware()->willReturn([]);
+        $route->getName()->willReturn('home');
+//        $route->serialize()->willReturn('cool');
+        $this->route = $route->reveal();
+
         $parser = $this->prophesize(ParserInterface::class);
         $parser->parse('/')->willReturn('/');
-        $matcher = $this->prophesize(MatcherInterface::class);
-        $matcher->match(new AnyValueToken(), new AnyValueToken())->will(function ($args) {
-            preg_match('~^' . $args[0] . '$~x', $args[1], $matches);
-
-            return $matches;
-        });
-
-        $this->router = new Router(
-            $parser->reveal(),
-            $matcher->reveal()
-        );
-
-
-
-        $this->delegate = $this->prophesize(DelegateInterface::class)->reveal();
+        $parser->match('~^(?:/)$~x', '/')->willReturn([]);
 
         $this->parser = $parser->reveal();
-        $this->matcher = $matcher->reveal();
     }
 
     public function testExceptionWhenNoRouteRootObjectDefined()
     {
-        $this->expectException(\TypeError::class);
-        $this->router->addRoute('/', null, ['get'], 'home');
+        $this->expectException(\RuntimeException::class);
+        $this->router->addRoute(['get'], '/', [], 'home');
+    }
+
+    public function testExceptionWhenNoParserDefined()
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->router->setRouteRootObject($this->route);
+        $this->router->addRoute(['get'], '/', [], 'home');
     }
 
     public function testExceptionOnDuplicateRouteName()
     {
-        if (ini_get('zend.assertions') === '-1') {
-            $this->markTestSkipped('In production mode assertions probably are disabled and this test will fail');
-        }
-
-        if (ini_get('assert.exception') === '0') {
-            $this->markTestSkipped('The "assert.exception" should be set to "1" to throw the exception');
-        }
-
         $this->expectException(\InvalidArgumentException::class);
-        $this->router->addRoute('/', $this->delegate, ['get'], 'home');
-        $this->router->addRoute('/', $this->delegate, ['get'], 'home');
+        $this->router->setRouteRootObject($this->route);
+        $this->router->setParser($this->parser);
+        $this->router->addRoute(['get'], '/', [], 'home');
+        $this->router->addRoute(['get'], '/', [], 'home');
     }
 
     public function testExceptionWhenNamedRouteDoesNotExist()
@@ -84,18 +97,21 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     public function testExceptionWhenRouteNotFound()
     {
         $this->expectException(NotFoundException::class);
-        $router = new Router($this->parser, $this->matcher);
+        $this->router->setParser($this->parser);
+        $this->router->setRouteRootObject($this->route);
         $uri = $this->prophesize(UriInterface::class);
         $uri->getPath()->willReturn('/foo/bar');
 
-        $this->assertNull($router->match('get', $uri->reveal()));
+        $this->assertNull($this->router->match('get', $uri->reveal()));
     }
 
     public function testExceptionForUnsupportedMethod()
     {
         $uri = $this->prophesize(UriInterface::class);
         $uri->getPath()->willReturn('/');
-        $this->router->addRoute('/', $this->delegate, ['get']);
+        $this->router->setRouteRootObject($this->route);
+        $this->router->setParser($this->parser);
+        $this->router->addRoute(['get'], '/', []);
 
         $this->expectException(NotAllowedException::class);
         $this->router->match('POST', $uri->reveal());
@@ -105,7 +121,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     {
         $uri = $this->prophesize(UriInterface::class);
         $uri->getPath()->willReturn('/');
-        $this->router->addRoute('/', $this->delegate, ['get'], 'home');
+        $this->router->setRouteRootObject($this->route);
+        $this->router->setParser($this->parser);
+        $this->router->addRoute(['get'], '/', [], 'home');
         $this->assertEquals('/', $this->router->getRouteByName('home'));
         $this->assertCount(1, $this->router);
     }
@@ -115,18 +133,31 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $uri = $this->prophesize(UriInterface::class);
         $uri->getPath()->willReturn('/bar');
 
+        $route = $this->prophesize(RouteInterface::class);
+        $route->getName()->willReturn(null);
+        $route->getPattern()->willReturn('/(?P<foo>.*)');
+        $route->getMiddleware()->willReturn([]);
+        $route->setPattern('/(?P<foo>.*)')->willReturn(null);
+        $route->setMiddleware([])->willReturn(null);
+        $route->setParams(['foo' => 'bar'])->willReturn(null);
+        $route->getParams()->willReturn(['foo' => 'bar']);
+        $route->setSupportedMethods(['get'])->willReturn(null);
+        $route->getSupportedMethods()->willReturn(['GET']);
+
+        $this->router->setRouteRootObject($route->reveal());
+
         $parser = $this->prophesize(ParserInterface::class);
+        $parser->match('~^(?:/(?P<foo>.*))$~x', '/bar')->will(function ($args) {
+            preg_match($args[0], $args[1], $matches);
+
+            return $matches;
+        });
         $parser->parse('/[foo:*]')->willReturn('/(?P<foo>.*)');
 
-        $router = new Router($parser->reveal(), $this->matcher);
-        $router->addRoute('/[foo:*]', $this->delegate, ['GET']);
+        $this->router->setParser($parser->reveal());
+        $this->router->addRoute(['get'], '/[foo:*]', []);
 
-        $this->assertSame([
-            '/(?P<foo>.*)',
-            $this->delegate,
-            ['GET'],
-            [0 => '/bar', 'foo' => 'bar', 1 => 'bar']
-        ], $router->match('GET', $uri->reveal()));
+        $this->assertInstanceOf(RouteInterface::class, $this->router->match('GET', $uri->reveal()));
     }
 
     public function testRouteRetrievalByName()
@@ -134,16 +165,31 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $uri = $this->prophesize(UriInterface::class);
         $uri->getPath()->willReturn('/bar');
 
+        $route = $this->prophesize(RouteInterface::class);
+        $route->getName()->willReturn(null);
+        $route->getPattern()->willReturn('/(?P<foo>[\w]+)');
+        $route->getMiddleware()->willReturn([]);
+        $route->setPattern('/(?P<foo>[\w]+)')->willReturn(null);
+        $route->setMiddleware([])->willReturn(null);
+        $route->setParams(['foo' => 'bar'])->willReturn(null);
+        $route->getParams()->willReturn(['foo' => 'bar']);
+        $route->setSupportedMethods(['get'])->willReturn(null);
+        $route->getSupportedMethods()->willReturn(['GET']);
+        $route->serialize()->will(function () use ($route) {
+            return $route->reveal();
+        });
+
+        $this->router->setRouteRootObject($route->reveal());
+
         $parser = $this->prophesize(ParserInterface::class);
-        $matcher = $this->prophesize(MatcherInterface::class);
-        $matcher->match('~^(?:/(?P<foo>.*))$~x', '/bar')->willReturn(['foo' => 'bar']);
+        $parser->match('~^(?:/(?P<foo>.*))$~x', '/bar')->willReturn(['foo' => 'bar']);
         $parser->parse('/[foo:*]')->willReturn('/(?P<foo>[\w]+)');
 
-        $router = new Router($parser->reveal(), $matcher->reveal());
-        $router->addRoute('/[foo:*]', $this->delegate, ['get'], 'test');
+        $this->router->setParser($parser->reveal());
+        $this->router->addRoute(['get'], '/[foo:*]', [], 'test');
 
-        $this->assertSame('/test', $router->getRouteByName('test', ['foo' => 'test']));
+        $this->assertSame('/test', $this->router->getRouteByName('test', ['foo' => 'test']));
         $this->expectException(\InvalidArgumentException::class);
-        $router->getRouteByName('test', ['bar' => 'foo']);
+        $this->router->getRouteByName('test', ['bar' => 'foo']);
     }
 }

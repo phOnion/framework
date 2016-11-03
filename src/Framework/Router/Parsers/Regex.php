@@ -1,12 +1,20 @@
 <?php
-declare(strict_types=1);
+/**
+ * PHP Version 5.6.0
+ *
+ * @category Routing
+ * @package  Onion\Framework\Router\Parsers
+ * @author   Dimitar Dimitrov <daghostman.dd@gmail.com>
+ * @license  https://opensource.org/licenses/MIT MIT License
+ * @link     https://github.com/phOnion/framework
+ */
 namespace Onion\Framework\Router\Parsers;
 
-use Onion\Framework\Router\Interfaces\ParserInterface;
+use Onion\Framework\Interfaces;
 
-class Regex implements ParserInterface
+class Regex implements Interfaces\Router\ParserInterface
 {
-    public function parse(string $path): string
+    public function parse($path)
     {
         $path = str_replace(
             [':*', ':?', '*'],
@@ -19,7 +27,17 @@ class Regex implements ParserInterface
         ));
     }
 
-    protected function convertOptionalGroupsToNonCapturable(string $string): string
+    protected function convertToCaptureBoundGroups($string)
+    {
+        $string = preg_replace(
+            ['~\[(\w+)\]+~iuU', '~\[(\w+)\:(.*)\]+~iuU'],
+            ['(?P<$1>{{\p{L}\p{C}\p{N}\p{Pd}\p{Ps}\p{Pe}\p{Pi}\p{Pf}\p{Pc}\p{S}%*,;&\'}}+)', '(?P<$1>$2)'],
+            $string
+        );
+        return $string;
+    }
+
+    protected function convertOptionalGroupsToNonCapturable($string)
     {
         return preg_replace(
             '~\[(?:/)?([^\[\]]+|(?R))\]~uU',
@@ -28,16 +46,8 @@ class Regex implements ParserInterface
         );
     }
 
-    protected function convertToCaptureBoundGroups(string $string): string
-    {
-        return preg_replace(
-            ['~\[(\w+)\]+~iuU', '~\[(\w+)\:(.*)\]+~iuU'],
-            ['(?P<$1>{{\p{L}\p{C}\p{N}\p{Pd}\p{Ps}\p{Pe}\p{Pi}\p{Pf}\p{Pc}\p{S}%*,;&\'}}+)', '(?P<$1>$2)'],
-            $string
-        );
-    }
 
-    public function match(string $pattern, string $uri): array
+    public function match($pattern, $uri)
     {
         $matches = [];
         $path = $uri;
@@ -49,6 +59,6 @@ class Regex implements ParserInterface
         }
 
 
-        return [false];
+        return false;
     }
 }

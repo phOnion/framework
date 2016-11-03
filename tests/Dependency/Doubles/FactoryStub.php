@@ -5,9 +5,9 @@
 namespace Tests\Dependency\Doubles;
 
 use Interop\Container\ContainerInterface;
-use Onion\Framework\Dependency\Interfaces\FactoryInterface;
+use Onion\Framework\Interfaces\ObjectFactoryInterface;
 
-class FactoryStub implements FactoryInterface
+class FactoryStub implements ObjectFactoryInterface
 {
     /**
      * @var object
@@ -22,7 +22,7 @@ class FactoryStub implements FactoryInterface
      * @param ContainerInterface $container
      * @return object
      */
-    public function build(ContainerInterface $container)
+    public function __invoke(ContainerInterface $container)
     {
         return is_string($this->returnVal) ?
             new $this->returnVal : $this->returnVal;
