@@ -4,6 +4,7 @@ namespace Onion\Framework\Application\Factory;
 
 use Interop\Container\ContainerInterface;
 use Interop\Http\Middleware\DelegateInterface;
+use Onion\Framework\Application\Interfaces\ModuleInterface;
 use Onion\Framework\Http\Middleware\Delegate;
 use Onion\Framework\Router\Matchers\Prefix;
 use Onion\Framework\Router\Parsers\Flat;
@@ -59,9 +60,18 @@ class ModuleDelegateFactory extends GlobalDelegateFactory
         assert($container->has('modules'), 'No modules available in container, check configuration');
 
         foreach ($container->get('modules') as $prefix => $moduleClass) {
+            /**
+             * @var ModuleInterface
+             */
+            $module = $container->get($moduleClass);
+            assert(
+                $module instanceof ModuleInterface,
+                "Class $moduleClass needs to implement Application\\ModuleInterface"
+            );
+
             $router->addRoute(
                 $prefix,
-                new Delegate($container->get($moduleClass), $delegate),
+                new Delegate($module->build($container), $delegate),
                 $this->methods
             );
         }
