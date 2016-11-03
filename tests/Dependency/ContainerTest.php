@@ -8,27 +8,43 @@ namespace Tests\Dependency;
 use Interop\Container\Exception\ContainerException;
 use Interop\Container\Exception\NotFoundException;
 use Onion\Framework\Dependency\Container;
+use Onion\Framework\Dependency\Exception\ContainerErrorException;
+use Onion\Framework\Dependency\Exception\UnknownDependency;
 use Tests\Dependency\Doubles\FactoryStub;
 
 class ContainerTest extends \PHPUnit_Framework_TestCase
 {
     public function testHasParameterCheck()
     {
-        $container = new Container([]);
+        $container = new Container(['bar' => 'baz']);
         $this->assertFalse($container->has('foo'));
+        $this->assertTrue($container->has('bar'));
+        $this->assertSame('baz', $container->get('bar'));
     }
 
-    public function testRetrievalOfInvocables()
+    public function testRetrievalOfInvokables()
     {
         $container = new Container([
             'invokables' => [
-                \stdClass::class => new \stdClass // this part is handled by `\Onion\Dependency\Builder`
+                \stdClass::class => \stdClass::class
             ]
         ]);
 
         $this->assertTrue($container->has(\stdClass::class));
         $this->assertInstanceOf(\stdClass::class, $container->get(\stdClass::class));
         $this->assertNotSame($container->get(\stdClass::class), $container->get(\stdClass::class));
+    }
+
+    public function testRetrievalOfInvokablesWithBadMapping()
+    {
+        $container = new Container([
+            'invokables' => [
+                \stdClass::class => 1
+            ]
+        ]);
+
+        $this->expectException(ContainerException::class);
+        $container->get(\stdClass::class);
     }
 
     public function testRetrievalWhenUsingAFactory()
@@ -53,7 +69,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
                     \stdClass::class => new FactoryStub(new \stdClass())
                 ],
                 'shared' => [
-                    \stdClass::class => \stdClass::class
+                    \stdClass::class
                 ]
             ]
         );
@@ -111,26 +127,41 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     public function testExceptionWhenIdNotAString()
     {
         $container = new Container([]);
-        $this->expectException(ContainerException::class);
+        $this->expectException(\InvalidArgumentException::class);
 
         $container->get(new \stdClass());
     }
 
-    public function testExceptionWhenFactoryDoesNotImplementObjectFactoryInterface()
+    public function testExceptionWhenFactoryDoesNotImplementFactoryInterface()
     {
+        if (ini_get('zend.assertions') === '-1') {
+            $this->markTestSkipped('In production mode assertions probably are disabled and this test will fail');
+        }
+
+        if (ini_get('assert.exception') === '0') {
+            $this->markTestSkipped('The "assert.exception" should be set to "1" to throw the exception');
+        }
+
+        $this->expectException(ContainerException::class);
         $container = new Container([
             'factories' => [
                 \stdClass::class => function () {
                 }
             ]
         ]);
-
-        $this->expectException(ContainerException::class);
         $container->get(\stdClass::class);
     }
 
     public function testExceptionWhenAFactoryIsStringButNotAClass()
     {
+        if (ini_get('zend.assertions') === '-1') {
+            $this->markTestSkipped('In production mode assertions probably are disabled and this test will fail');
+        }
+
+        if (ini_get('assert.exception') === '0') {
+            $this->markTestSkipped('The "assert.exception" should be set to "1" to throw the exception');
+        }
+
         $this->expectException(ContainerException::class);
         $container = new Container(
             [
@@ -144,7 +175,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testExceptionWhenInvokableIsStringButNotAClass()
     {
-        $this->expectException(ContainerException::class);
+        $this->expectException(UnknownDependency::class);
         $container = new Container(
             [
                 'invokables' => [
@@ -169,9 +200,9 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $container->get(\SplFixedArray::class);
     }
 
-    public function testExceptionWHenConstructingWIthBadArgument()
+    public function testExceptionWhenConstructingWithBadArgument()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(\TypeError::class);
 
         new Container(null);
     }
