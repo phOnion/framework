@@ -23,29 +23,6 @@ use Onion\Framework\Router\Router;
 class ModuleDelegateFactory extends GlobalDelegateFactory
 {
     /**
-     * @var array
-     */
-    private $methods = [];
-
-    /**
-     * Initializes an array with all HTTP methods to
-     * pass for each route when creating a module
-     */
-    public function __construct()
-    {
-        $this->methods = [
-            'GET',
-            'HEAD',
-            'POST',
-            'PUT',
-            'PATCH',
-            'OPTIONS',
-            'DELETE',
-            'TRACE'
-        ];
-    }
-
-    /**
      * @param ContainerInterface $container
      *
      * @throws \InvalidArgumentException
@@ -57,7 +34,10 @@ class ModuleDelegateFactory extends GlobalDelegateFactory
         $delegate = parent::build($container);
         $router = new Router(new Flat(), new Prefix());
 
-        assert($container->has('modules'), 'No modules available in container, check configuration');
+        assert(
+            $container->has('modules'),
+            'No modules available in container, check configuration'
+        );
 
         foreach ($container->get('modules') as $prefix => $moduleClass) {
             /**
@@ -72,7 +52,7 @@ class ModuleDelegateFactory extends GlobalDelegateFactory
             $router->addRoute(
                 $prefix,
                 new Delegate($module->build($container), $delegate),
-                $this->methods
+                ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'OPTIONS', 'DELETE', 'TRACE']
             );
         }
 
