@@ -1,47 +1,58 @@
-# Getting Started
+## About
 
-Hey, glad to see you there!
+This is a minimalistic PSR-2, PSR-4, PSR-7, PSR-11, PSR-15 compliant 
+framework intended to provide the absolute minimum for writing a
+web application that utilizes the middleware concept as well as other 
+accepted standards from the community. There are no plans at least for 
+now to provide functionality that will allow usages other than web 
+oriented.
 
-This is a minimalistic framework that was largely inspired by 
-`zend-expressive` (you should check it out), the purpose of 
-this project is to pretty much get on the train and start using 
-newer packages, newer language features and to, well, start the 
-transition from 5.3 compatibility and move it all the way up to 
-5.6, which is a LTS version. 
-[PHP Supported versions](http://php.net/supported-versions.php)
+It implements the PSR-15 spec (`http-interop/http-middleware: 0.2`) as
+it is the latest present.
 
------
+## Foreword
 
-***If you are the tinker kind, stop reading and clone the `quickstart` 
-repo `git clone https://github.com/phOnion/quickstart` it is documented 
-on the specifics of building an application, other than that you're on 
-your own. If you want to get understanding and some slight reasoning 
-with the decisions made feel free to continue reading and go through 
-the tutorial section that will explain everything you need to know.***
+The drive behind the project was to write cleaner code utilizing php7
+features + standards + learning new stuff and I think that it is worth
+sharing, if not for people building the world's next best application at
+least to help those, like me, who are looking in to get new idea, 
+understand some things or in general see how some things can be done or
+at the worst case scenario, how NOT to do certain stuff :D.
 
------
+## Development tips
 
-In the context of the framework we will use the terms *module* and 
-*component*, each of which have a very special meaning.
+In the development environment and when testing the php.ini directives
+`zend.assertions` and `assert.exceptions` should both be set to 1, since
+the internals of the framework actually utilise the exceptions to warn 
+about development mistakes, but are intended to be turned off on 
+production in order to squeeze maximum performance out of the framework
+by disabling some checks. An example of such is the container that will 
+throw when a dependency does not match it's key type (if class/interface
+name is used) and when a factory does not implement `FactoryInterface`,
+when assertions are on, but will fail, if they are disabled, since those
+are not things that should be affected by user input or any other input 
+for that matter (they are developer made mistakes).
 
-## Module
+## Dependency Injection
 
-A module is like an alias to a library (composer package), the only 
-difference is that it is intended to work specifically with the 
-framework, hence it is moved to another directory outside of the 
-`vendor` dir. They are not intended to be used widely (although it is
-encouraged to design/develop packages in a way that allows others to 
-benefit from your work - don't vendor-lock people). Also a module 
-must not provide any configuration files (hence the available 
-flexibility)
+The framework comes with a capable DI container that can resolve 
+dependencies using a combination of a interface-class map, class-factory 
+map and also reflection-based type resolution. These should be enough
+for any developer to achieve everything necessary without relying on 
+external sources, such as JSON, XML or annotations (although any usage 
+in combination with annotations/AOP is encouraged, but not without a 
+very good reason to be used, since it can make the code very cryptic,
+error prone and hard to understand/maintain/pickup for others.
 
+## Routing
 
-## Component
+Also a routing component is presented as well, which can be altered 
+without changing the actual implementation through the use of 
+parsers and matchers:
 
-A component is aimed more at the application level, rather than the
-framework level, but it can be used as well to distribute packages that
-extend the framework. The only difference is that the component's 
-config files get symbolic links that are loaded by the config loader
-and end up loaded inside the main app (note that you, as a developer,
-are responsible for the content's of the modules you use, develop and/or
-maintain.
+  - **Parsers** - They are responsible to prepare the route to be 
+  processed later when matching against the current request URI.
+  
+  - **Matchers** - are responsible for making the heavy lifting in terms 
+  of extracting parameters if applicable and determining if the current 
+  request URI matches the offered pattern
