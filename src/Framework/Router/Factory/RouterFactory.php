@@ -32,7 +32,7 @@ class RouterFactory implements FactoryInterface
             assert(array_key_exists('pattern', $route), 'A route definition must have a "pattern" key');
             assert(array_key_exists('middleware', $route), 'A route definition must have a "middleware" key');
 
-            $name = $route['name'] ?? '';
+            $name = $route['name'] ?? null;
             $methods = $route['methods'] ?? ['GET', 'HEAD'];
 
             $delegate = null;
