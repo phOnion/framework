@@ -28,7 +28,7 @@ class Application implements ServerMiddlewareInterface
 
     public function run(ServerRequestInterface $request)
     {
-        $this->emitter->emit($this->process($request, null));
+        return $this->emitter->emit($this->process($request, null));
     }
 
     /**
