@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  
+  <title>Tutorial - Onion - Framework</title>
+  
+
+  <link rel="shortcut icon" href="../img/favicon.ico">
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="../css/highlight.css">
+
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Tutorial";
+    var mkdocs_page_input_path = "setup.md";
+    var mkdocs_page_url = "/setup/";
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js"></script>
+  <script src="../js/modernizr-2.8.3.min.js"></script>
+  <script type="text/javascript" src="../js/highlight.pack.js"></script>
+  <script src="../js/theme.js"></script> 
+
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> Onion - Framework</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <ul class="current">
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="..">Intro</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 current">
+        <a class="current" href="./">Tutorial</a>
+        
+            <ul>
+            
+                <li class="toctree-l3"><a href="#getting-started">Getting started</a></li>
+                
+            
+                <li class="toctree-l3"><a href="#installation">Installation</a></li>
+                
+            
+                <li class="toctree-l3"><a href="#dependencies">Dependencies</a></li>
+                
+            
+                <li class="toctree-l3"><a href="#middleware">Middleware</a></li>
+                
+            
+                <li class="toctree-l3"><a href="#routing">Routing</a></li>
+                
+            
+            </ul>
+        
+    </li>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Advanced</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../routing/">Routing</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../modules/">Modules</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">Onion - Framework</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Tutorial</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h2 id="getting-started">Getting started</h2>
+<p>In this section we'll get through a simple hello world app to help you
+get a grip around the concepts of the framework as well as how to 
+set it up and work on it.</p>
+<p>1st thing is the index file, it is the entry point for the application.
+The application consists of middleware, which if you are not familiar 
+with you should think of as onion's layers (now you get where the name 
+comes from). See:</p>
+<ul>
+<li>
+<p><a href="https://github.com/php-fig/fig-standards/tree/master/proposed/http-middleware">PSR-15 Specification</a></p>
+</li>
+<li>
+<p><a href="https://philsturgeon.uk/php/2016/05/31/why-care-about-php-middleware/">Why Care About PHP Middleware?</a> by <em>Phil Phil Sturgeon</em></p>
+</li>
+</ul>
+<p>Chosing single pass ensures no funny business will be going inside the 
+middleware you use, and you can be sure that the response you return 
+will be consistently handled, and you will not have to keep track of
+the double-pass response object, that may or may not have some specific 
+headers set by any of the middleware called before your "controller".</p>
+<h2 id="installation">Installation</h2>
+<p>So with that being said, lets jump right in with the installation 
+and setup of the "hello world" project:</p>
+<ol>
+<li><code>composer require onion/framework:1.0.0-beta</code></li>
+<li>Create the public directory one that will be exposed by the web 
+server, referred to as <code>public</code> in this example</li>
+<li>
+<p>In it, create a file named <code>index.php</code> and inside of it paste the 
+following:</p>
+<p>```
+&lt;?php
+declare(strict_types=1);
+require_once <strong>DIR</strong> . '/../vendor/autoload.php';
+use Onion\Framework;</p>
+<p>$container = new Framework\Dependency\Container([]);</p>
+<p>$app = $container-&gt;get(Framework\Application\Application::class);
+$app-&gt;run(
+    $container-&gt;get(\Psr\Http\Message\ServerRequestInterface::class)
+);
+```</p>
+<p>This is the minimal required code in order to set up the application 
+entry point.</p>
+</li>
+<li>
+<p>To test it run the following: <code>php -S localhost:12345 -t public/</code> 
+inside the projects directory, that will start the PHP built-in server
+and will make the application code accessible on: 
+<a href="http://localhost:12345">localhost:12345</a></p>
+</li>
+</ol>
+<hr />
+<h2 id="dependencies">Dependencies</h2>
+<p>Now if you open the link with your browser, you will see there is an 
+exception being thrown, similar to (if no the same as):</p>
+<blockquote>
+<p>Uncaught Onion\Framework\Dependency\Exception\ContainerErrorException: Unable to find match for type: "Interop\Http\Middleware\DelegateInterface". Consider using a factory
+...</p>
+</blockquote>
+<p>What this means is that the container is unable to resolve the 
+dependency of <code>DelegateInterface</code>, this sucks big time, now before you 
+start digging in the code, hold on for a sec and lets see what happens
+in our <code>index.php</code> file.</p>
+<ol>
+<li>
+<p><code>L2-L4</code> - We declare that we will use strict types, require the 
+composer autoloader and localize the namespace (a bit shorter to write)</p>
+</li>
+<li>
+<p><code>L6</code> - We initialize the DI container without any registered 
+dependencies (pay attention to the empty array passed as argument), 
+which will force the container to use reflection in order to look-up 
+dependencies recursively as deep as it can go.</p>
+</li>
+<li>
+<p><code>L8</code> - We attempt to retrieve the <code>Application</code> class from the 
+container (This is where the exception gets thrown)</p>
+</li>
+<li>
+<p><code>L9-L11</code> - We attempt to run the application by passing it the 
+current request object, again retrieved from the container</p>
+</li>
+</ol>
+<p>In order to learn more about the <code>DelegateInterface</code> make sure you read 
+the PSR-15 spec. Now in the implementation the Application object 
+receives 2 arguments in it's constructor:</p>
+<ol>
+<li><code>DelegateInterface</code> - Is a delegate which has all of the global 
+  middleware chained inside it.</li>
+<li><code>EmitterInterface</code> - Is responsible for emitting our response 
+  "on the way out"™, which is either one of the implementations 
+  available inside <code>zendframework/zend-diactoros</code> or your own 
+  implementation.</li>
+</ol>
+<p>The reason that the class is bound to interfaces instead of concrete 
+classes is by design and I highly encourage you to work your code around
+that mindset, since this enforces the 
+<a href="https://en.wikipedia.org/wiki/Liskov_substitution_principle">L</a> from 
+<a href="https://en.wikipedia.org/wiki/SOLID_(object-oriented_design)">SOLID</a></p>
+<p>Now let's update our index to include the <code>DelegateInterface</code> and 
+<code>EmitterInterface</code> in a dependency mapping so that our container knows
+what to return when we need any of those dependencies.</p>
+<pre><code>// Replace the empty array argument for container with the following
+
+[
+    'invokables' =&gt; [
+        Zend\Diactoros\Response\EmitterInterface::class =&gt; 
+            Zend\Diactoros\Response\SapiEmitter::class
+    ],
+    'factories' =&gt; [
+        Interop\Http\Middleware\DelegateInterface::class =&gt; 
+            Framework\Application\Factory\GlobalDelegateFactory::class
+    ]
+]
+</code></pre>
+
+<hr />
+<h2 id="middleware">Middleware</h2>
+<p>Now if you run the application you will notice that there is an entierly
+different error, about missing <code>middleware</code> key.</p>
+<blockquote>
+<p>Uncaught Onion\Framework\Dependency\Exception\UnknownDependency: Unable to resolve "middleware"</p>
+</blockquote>
+<p>This is because the <code>GlobalDelegateFactory</code> expects to see <code>middleware</code>
+key inside our container and use it in order to build the necessary call
+stack. Lets add it, but leave it empty. Add <code>'middleware' =&gt; []</code> after
+the factory definition in the top level array.</p>
+<blockquote>
+<p>Return value of Onion\Framework\Application\Factory\GlobalDelegateFactory::build() must be an instance of Interop\Http\Middleware\DelegateInterface, null returned</p>
+</blockquote>
+<p>Is pretty self explanatory, but why you ask? Well, the factory needs at 
+least one entry inside the <code>middleware</code> in order to build a 
+<code>DelegateInterface</code> with it, just keep in mind it MUST be an instance of 
+either <code>Interop\Http\Middleware\MiddlewareInterface</code> or
+<code>Interop\Http\Middleware\ServerMiddlewareInterface</code> and since we are 
+building a server application (not a HTTP client) we will pass in an 
+argument that is vital to any HTTP application - a router.
+But to avoid the error steps above, I will directly tell you that you 
+have to define those in order to get it going. Update the array to look 
+like the following:</p>
+<pre><code>[
+    'invokables' =&gt; [
+        Zend\Diactoros\Response\EmitterInterface::class =&gt;
+            Zend\Diactoros\Response\SapiEmitter::class,
+        Framework\Router\Interfaces\ParserInterface::class =&gt;
+            Framework\Router\Parsers\Flat::class,
+        Framework\Router\Interfaces\MatcherInterface::class =&gt;
+            Framework\Router\Matchers\Strict::class
+    ],
+    'factories' =&gt; [
+        Interop\Http\Middleware\DelegateInterface::class =&gt;
+            Framework\Application\Factory\GlobalDelegateFactory::class,
+        Framework\Router\Interfaces\RouterInterface::class =&gt;
+            Framework\Router\Factory\RouterFactory::class,
+        Psr\Http\Message\ServerRequestInterface::class =&gt;
+            Framework\Http\Factory\ServerRequestFactory::class
+    ],
+    'middleware' =&gt; [
+        Framework\Router\Interfaces\RouterInterface::class
+    ],
+    'routes' =&gt; []
+]
+</code></pre>
+
+<hr />
+<h2 id="routing">Routing</h2>
+<p>Since our router implements the <code>ServerMiddlewareInterface</code> we can pass
+it without any other boilerplate to the middleware section and the
+other 2 dependencies inside the invokables section are for making it 
+work.</p>
+<ul>
+<li>
+<p><code>Framework\Router\Interfaces\ParserInterface</code> is responsible for 
+ translating the route definitions to mathcer understandable string</p>
+</li>
+<li>
+<p><code>Framework\Router\Interfaces\MatcherInterface</code> is the one performing
+ the matching in order to see if the current request URI matches a route</p>
+</li>
+</ul>
+<p>In this case we are using the flat matcher, which returns the pattern as
+is and the strict matcher that performs <code>a === b</code> kind of checks.</p>
+<hr />
+<p>Now if we refresh the page we will se that there will be an exception:</p>
+<blockquote>
+<p>Uncaught Onion\Framework\Router\Exceptions\NotFoundException: No route available to handle "/"</p>
+</blockquote>
+<p>Now lets create our first controller, add autoloading for the 
+<code>Application</code> namespace to composer and inside 
+<code>src/Controllers/DummyController.php</code> paste the following:</p>
+<pre><code>&lt;?php
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+use Interop\Http\Middleware\DelegateInterface;
+use Interop\Http\Middleware\ServerMiddlewareInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Zend\Diactoros\Response\TextResponse;
+
+class DummyController implements ServerMiddlewareInterface
+{
+    public function process(ServerRequestInterface $request, DelegateInterface $delegate = null)
+    {
+        return new TextResponse('Hello, World!');
+    }
+}
+</code></pre>
+
+<p>Now that you are done, lets add the controller to the <code>routes</code>:</p>
+<pre><code>// .. other definitions
+'routes' =&gt; [
+  [
+    'pattern' =&gt; '/',
+    'middleware' =&gt; [
+        App\Controllers\DummyMiddleware::class
+    ]
+  ]
+]
+</code></pre>
+
+<ul>
+<li><strong>FQCN</strong> - <em>Fully Qualified Class Name</em></li>
+</ul>
+<p>Now if all went well you should not see any further errors when you 
+refresh the page, but rather the text 'Hello, World!' should be 
+displayed and the response should be sent with 
+<code>Content-Type: text/plain</code> header.</p>
+<p>This is the minimal required setup needed in order to setup an 
+application using onion framework and from here you can conquer the 
+world! Check other sections from the documentation to get more in-depth 
+understanding/knowledge of the routing capabilities, the concept of 
+modules and everything else.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../routing/" class="btn btn-neutral float-right" title="Routing">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href=".." class="btn btn-neutral" title="Intro"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+	  
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+<div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href=".." style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../routing/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+
+</body>
+</html>
