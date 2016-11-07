@@ -46,11 +46,11 @@ class Container implements ContainerInterface
         }
 
         try {
-            if (array_key_exists($key, $this->dependencies['invokables'])) {
+            if (isset($this->dependencies['invokables'][$key])) {
                 return $this->retrieveInvokable($key);
             }
 
-            if (array_key_exists($key, $this->dependencies['factories'])) {
+            if (isset($this->dependencies['factories'][$key])) {
                 return $this->retrieveFromFactory($key);
             }
 
@@ -76,8 +76,8 @@ class Container implements ContainerInterface
     {
         return (
             array_key_exists($key, $this->dependencies) ||
-            array_key_exists($key, $this->dependencies['invokables']) ||
-            array_key_exists($key, $this->dependencies['factories']) ||
+            isset($this->dependencies['invokables'][$key]) ||
+            isset($this->dependencies['factories'][$key]) ||
             class_exists($key)
         );
     }
