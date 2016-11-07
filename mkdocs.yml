@@ -1,10 +1,8 @@
 site_name: Onion - Framework
 pages:
- - Intro: index.md
- - Dependency Injection: dependency-injection.md
- - Tutorial:
-   - "0. Setup": tutorial/00-setup.md
-   - "1. Configuration": tutorial/10-configuration.md
-   - "2. Module": tutorial/20-module.md
- - Cheatsheet: handbook.md
+  - Intro: index.md
+  - Tutorial: setup.md
+  - "Advanced":
+    - "Routing": routing.md
+    - "Modules": modules.md
 theme: readthedocs
