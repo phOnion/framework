@@ -10,6 +10,12 @@ use Interop\Container\Exception\NotFoundException;
 use Onion\Framework\Dependency\Container;
 use Onion\Framework\Dependency\Exception\ContainerErrorException;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
+use Tests\Dependency\Doubles\DependencyA;
+use Tests\Dependency\Doubles\DependencyB;
+use Tests\Dependency\Doubles\DependencyC;
+use Tests\Dependency\Doubles\DependencyD;
+use Tests\Dependency\Doubles\DependencyE;
+use Tests\Dependency\Doubles\DependencyF;
 use Tests\Dependency\Doubles\FactoryStub;
 
 class ContainerTest extends \PHPUnit_Framework_TestCase
@@ -205,5 +211,37 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $this->expectException(\TypeError::class);
 
         new Container(null);
+    }
+
+    public function testDependencyResolutionFromReflection()
+    {
+        $container = new Container([]);
+        $this->assertInstanceOf(DependencyD::class, $container->get(DependencyD::class));
+    }
+
+    public function testDependencyLookupWhenBoundToInterface()
+    {
+        $container = new Container([
+            'invokables' => [
+                DependencyC::class => DependencyD::class
+            ]
+        ]);
+
+        $this->assertInstanceOf(DependencyB::class, $container->get(DependencyB::class));
+    }
+
+    public function testDependencyWithParameterOfUnknownType()
+    {
+        $container = new Container([]);
+
+        $this->expectException(ContainerException::class);
+        $container->get(DependencyE::class);
+    }
+
+    public function testUnknownInterfaceResolution()
+    {
+        $container = new Container([]);
+        $this->expectException(ContainerException::class);
+        $container->get(DependencyF::class);
     }
 }
