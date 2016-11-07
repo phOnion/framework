@@ -104,6 +104,14 @@ class Router implements Interfaces\RouterInterface, ServerMiddlewareInterface
         return count($this->routes);
     }
 
+    /**
+     * @codeCoverageIgnore
+     *
+     * @param ServerRequestInterface $request
+     * @param DelegateInterface|null $delegate
+     *
+     * @return ResponseInterface
+     */
     public function process(ServerRequestInterface $request, DelegateInterface $delegate = null): ResponseInterface
     {
         /**
