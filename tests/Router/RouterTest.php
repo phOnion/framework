@@ -12,6 +12,7 @@
 namespace Tests\Router;
 
 use Interop\Http\Middleware\DelegateInterface;
+use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
 use Onion\Framework\Router\Interfaces\Exception\NotFoundException;
 use Onion\Framework\Router\Interfaces\Exception\NotAllowedException;
 use Onion\Framework\Router\Interfaces\ParserInterface;
@@ -98,7 +99,12 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->router->addRoute('/', $this->delegate, ['get']);
 
         $this->expectException(NotAllowedException::class);
-        $this->router->match('POST', $uri->reveal());
+        try {
+            $this->router->match('POST', $uri->reveal());
+        } catch (MethodNotAllowedException $ex) {
+            $this->assertSame(['GET'], $ex->getAllowedMethods());
+            throw $ex;
+        }
     }
 
     public function testBasicRouteCreation()
