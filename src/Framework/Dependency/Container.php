@@ -131,7 +131,7 @@ class Container implements ContainerInterface
         return $result;
     }
 
-    public function retrieveFromReflection(string $className)
+    private function retrieveFromReflection(string $className)
     {
         $classReflection = new \ReflectionClass($className);
         if ($classReflection->getConstructor() === null || $classReflection->getConstructor()->getParameters() === []) {
