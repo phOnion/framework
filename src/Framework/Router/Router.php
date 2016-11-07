@@ -60,7 +60,6 @@ class Router implements Interfaces\RouterInterface, ServerMiddlewareInterface
             ))
         );
 
-
         $this->routes[$name] = $route;
         uasort($this->routes, function ($left, $right) {
             return strlen($left[0])<=>strlen($right[0]);

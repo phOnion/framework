@@ -48,7 +48,6 @@ class Regex implements ParserInterface
             return $matches;
         }
 
-
         return [false];
     }
 }
