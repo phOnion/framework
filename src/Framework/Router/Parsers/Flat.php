@@ -1,36 +1,13 @@
 <?php
-/**
- * PHP Version 5.6.0
- *
- * @category Routing
- * @package  Onion\Framework\Router\Parsers
- * @author   Dimitar Dimitrov <daghostman.dd@gmail.com>
- * @license  https://opensource.org/licenses/MIT MIT License
- * @link     https://github.com/phOnion/framework
- */
+declare(strict_types=1);
 namespace Onion\Framework\Router\Parsers;
 
-use Onion\Framework\Interfaces;
+use Onion\Framework\Router\Interfaces\ParserInterface;
 
-class Flat implements Interfaces\Router\ParserInterface
+class Flat implements ParserInterface
 {
-    public function parse($path)
+    public function parse(string $path): string
     {
-        $components = parse_url((string) $path);
-
-        if (!$components || !array_key_exists('path', $components)) {
-            throw new \InvalidArgumentException(sprintf(
-                'It appears that path is malformed and `parse_url` cannot retrieve a valid path. Received "%s"',
-                $path
-            ));
-        }
-
-        return (array_key_exists('host', $components) ? $components['host'] : '') .
-                $components['path'];
-    }
-
-    public function match($pattern, $path)
-    {
-        return $pattern === $path;
+        return parse_url($path, PHP_URL_PATH);
     }
 }

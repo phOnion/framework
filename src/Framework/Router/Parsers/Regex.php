@@ -1,20 +1,12 @@
 <?php
-/**
- * PHP Version 5.6.0
- *
- * @category Routing
- * @package  Onion\Framework\Router\Parsers
- * @author   Dimitar Dimitrov <daghostman.dd@gmail.com>
- * @license  https://opensource.org/licenses/MIT MIT License
- * @link     https://github.com/phOnion/framework
- */
+declare(strict_types=1);
 namespace Onion\Framework\Router\Parsers;
 
-use Onion\Framework\Interfaces;
+use Onion\Framework\Router\Interfaces\ParserInterface;
 
-class Regex implements Interfaces\Router\ParserInterface
+class Regex implements ParserInterface
 {
-    public function parse($path)
+    public function parse(string $path): string
     {
         $path = str_replace(
             [':*', ':?', '*'],
@@ -27,17 +19,7 @@ class Regex implements Interfaces\Router\ParserInterface
         ));
     }
 
-    protected function convertToCaptureBoundGroups($string)
-    {
-        $string = preg_replace(
-            ['~\[(\w+)\]+~iuU', '~\[(\w+)\:(.*)\]+~iuU'],
-            ['(?P<$1>{{\p{L}\p{C}\p{N}\p{Pd}\p{Ps}\p{Pe}\p{Pi}\p{Pf}\p{Pc}\p{S}%*,;&\'}}+)', '(?P<$1>$2)'],
-            $string
-        );
-        return $string;
-    }
-
-    protected function convertOptionalGroupsToNonCapturable($string)
+    protected function convertOptionalGroupsToNonCapturable(string $string): string
     {
         return preg_replace(
             '~\[(?:/)?([^\[\]]+|(?R))\]~uU',
@@ -46,8 +28,16 @@ class Regex implements Interfaces\Router\ParserInterface
         );
     }
 
+    protected function convertToCaptureBoundGroups(string $string): string
+    {
+        return preg_replace(
+            ['~\[(\w+)\]+~iuU', '~\[(\w+)\:(.*)\]+~iuU'],
+            ['(?P<$1>{{\p{L}\p{C}\p{N}\p{Pd}\p{Ps}\p{Pe}\p{Pi}\p{Pf}\p{Pc}\p{S}%*,;&\'}}+)', '(?P<$1>$2)'],
+            $string
+        );
+    }
 
-    public function match($pattern, $uri)
+    public function match(string $pattern, string $uri): array
     {
         $matches = [];
         $path = $uri;
@@ -58,7 +48,6 @@ class Regex implements Interfaces\Router\ParserInterface
             return $matches;
         }
 
-
-        return false;
+        return [false];
     }
 }
