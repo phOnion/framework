@@ -5,10 +5,8 @@ namespace Onion\Framework\Application\Factory;
 use Interop\Container\ContainerInterface;
 use Interop\Http\Middleware\DelegateInterface;
 use Onion\Framework\Application\Interfaces\ModuleInterface;
+use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Onion\Framework\Http\Middleware\Delegate;
-use Onion\Framework\Router\Matchers\Prefix;
-use Onion\Framework\Router\Parsers\Flat;
-use Onion\Framework\Router\Router;
 
 /**
  * A factory, very similar to GlobalDelegateFactory except that
@@ -20,7 +18,7 @@ use Onion\Framework\Router\Router;
  *
  * @package Onion\Framework\Application\Factory
  */
-class ModuleDelegateFactory extends GlobalDelegateFactory
+class ModuleDelegateFactory implements FactoryInterface
 {
     /**
      * @param ContainerInterface $container
@@ -31,15 +29,32 @@ class ModuleDelegateFactory extends GlobalDelegateFactory
      */
     public function build(ContainerInterface $container): DelegateInterface
     {
-        $delegate = parent::build($container);
-        $router = new Router(new Flat(), new Prefix());
+        $delegate = null;
 
         assert(
             $container->has('modules'),
             'No modules available in container, check configuration'
         );
 
-        foreach ($container->get('modules') as $prefix => $moduleClass) {
+        /**
+         * @var array[][] $middleware
+         */
+        $middleware = $container->get('middleware');
+
+        foreach ($middleware as $handler) {
+            if ($handler === 'modules') {
+                $delegate = $this->getModulesDelegate($container, $delegate);
+                continue;
+            }
+            $delegate = new Delegate($container->get($handler), $delegate);
+        }
+
+        return $delegate;
+    }
+
+    private function getModulesDelegate(ContainerInterface $container, DelegateInterface $delegate = null): DelegateInterface
+    {
+        foreach ($container->get('modules') as $moduleClass) {
             /**
              * @var ModuleInterface
              */
@@ -49,13 +64,9 @@ class ModuleDelegateFactory extends GlobalDelegateFactory
                 "Class $moduleClass needs to implement Application\\ModuleInterface"
             );
 
-            $router->addRoute(
-                $prefix,
-                new Delegate($module->build($container), $delegate),
-                ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'OPTIONS', 'DELETE', 'TRACE']
-            );
+            $delegate = new Delegate($module->build($container), $delegate);
         }
 
-        return new Delegate($router, $delegate);
+        return $delegate;
     }
 }

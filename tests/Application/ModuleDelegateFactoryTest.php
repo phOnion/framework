@@ -39,10 +39,10 @@ class ModuleDelegateFactoryTest extends \PHPUnit_Framework_TestCase
         $container->get(MiddlewareStub::class)->willReturn(new MiddlewareStub());
         $container->get(\stdClass::class)->willReturn(new \stdClass());
         $container->get(Stubs\SimpleModuleStub::class)->willReturn(new Stubs\SimpleModuleStub());
-        $container->get('middleware')->willReturn([MiddlewareStub::class]);
+        $container->get('middleware')->willReturn([MiddlewareStub::class, 'modules']);
         $container->has('modules')->willReturn(true);
         $container->get('modules')->willReturn([
-            '/' => \stdClass::class
+            \stdClass::class
         ]);
 
         $factory = new ModuleDelegateFactory();
