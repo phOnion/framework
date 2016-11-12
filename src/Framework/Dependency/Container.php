@@ -185,12 +185,12 @@ class Container implements ContainerInterface
         /**
          * @var $factory FactoryInterface
          */
-        $result = $factory->build($this);
+        $result = $this->enforceReturnType($className, $factory->build($this));
         if (in_array($className, $this->dependencies['shared'], true)) {
             $this->dependencies['invokables'][$className] = $result;
             unset($this->dependencies['factories'][$className]);
         }
 
-        return $this->enforceReturnType($className, $result);
+        return $result;
     }
 }
