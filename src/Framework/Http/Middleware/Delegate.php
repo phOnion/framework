@@ -7,7 +7,7 @@ use Interop\Http\Middleware\MiddlewareInterface;
 use Interop\Http\Middleware\ServerMiddlewareInterface;
 use Psr\Http\Message;
 
-class Delegate implements DelegateInterface
+final class Delegate implements DelegateInterface
 {
     /**
      * @var MiddlewareInterface|ServerMiddlewareInterface

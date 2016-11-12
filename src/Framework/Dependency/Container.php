@@ -9,7 +9,7 @@ use Onion\Framework\Dependency\Exception\ContainerErrorException;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 
-class Container implements ContainerInterface
+final class Container implements ContainerInterface
 {
     private $dependencies = [];
 
