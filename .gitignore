@@ -46,3 +46,8 @@ crashlytics-build.properties
 fabric.properties
 
 vendor/
+.idea
+site/
+demo/
+.vscode
+composer.lock
