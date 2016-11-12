@@ -16,7 +16,7 @@ use Zend\Diactoros\Response\EmitterInterface;
  *
  * @package Onion\Framework\Application\Factory
  */
-class ApplicationFactory implements FactoryInterface
+final class ApplicationFactory implements FactoryInterface
 {
     /**
      * @param ContainerInterface $container

@@ -10,7 +10,7 @@ use Onion\Framework\Router\Interfaces\ParserInterface;
 use Onion\Framework\Router\Matchers\Regex;
 use Onion\Framework\Router\Router;
 
-class RouterFactory implements FactoryInterface
+final class RouterFactory implements FactoryInterface
 {
     public function build(ContainerInterface $container)
     {

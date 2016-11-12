@@ -6,7 +6,7 @@ use Interop\Container\ContainerInterface;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-class ServerRequestFactory implements FactoryInterface
+final class ServerRequestFactory implements FactoryInterface
 {
 
     /**

@@ -18,7 +18,7 @@ use Onion\Framework\Http\Middleware\Delegate;
  *
  * @package Onion\Framework\Application\Factory
  */
-class ModuleDelegateFactory implements FactoryInterface
+final class ModuleDelegateFactory implements FactoryInterface
 {
     /**
      * @param ContainerInterface $container

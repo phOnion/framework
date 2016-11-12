@@ -20,7 +20,7 @@ use Onion\Framework\Http\Middleware\Delegate;
  *
  * @package Onion\Framework\Application\Factory
  */
-class GlobalDelegateFactory implements FactoryInterface
+final class GlobalDelegateFactory implements FactoryInterface
 {
 
     /**
