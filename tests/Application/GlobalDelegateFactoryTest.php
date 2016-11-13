@@ -25,4 +25,17 @@ class GlobalDelegateFactoryTest extends \PHPUnit_Framework_TestCase
         $this->expectException(\TypeError::class);
         $this->assertInstanceOf(DelegateInterface::class, $factory->build($container->reveal()));
     }
+
+    public function testDelegateBuildingChain()
+    {
+        $container = $this->prophesize(ContainerInterface::class);
+        $container->get('class')->willReturn(new Stubs\MiddlewareStub());
+
+        $container->get('middleware')->willReturn([
+            'class'
+        ]);
+
+        $factory = new GlobalDelegateFactory();
+        $this->assertInstanceOf(DelegateInterface::class, $factory->build($container->reveal()));
+    }
 }
