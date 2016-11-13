@@ -24,8 +24,7 @@ class DelegatorTest extends \PHPUnit_Framework_TestCase
 {
     public function testExceptionWhenMiddlewareDoesNotImplementRequiredInterfaces()
     {
-        $this->expectException(MiddlewareException::class);
-        $this->expectExceptionMessage('either MiddlewareInterface or ServerMiddlewareInterface');
+        $this->expectException(\TypeError::class);
 
         new Delegate('foobar');
     }
