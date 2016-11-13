@@ -10,7 +10,7 @@ use Psr\Http\Message;
 final class Delegate implements DelegateInterface
 {
     /**
-     * @var ServerMiddlewareInterface
+     * @var MiddlewareInterface|ServerMiddlewareInterface
      */
     protected $middleware;
 
@@ -19,12 +19,19 @@ final class Delegate implements DelegateInterface
     /**
      * MiddlewareDelegate constructor.
      *
-     * @param ServerMiddlewareInterface $middleware Middleware of the frame
-     * @param Delegate                  $delegate   The next frame
+     * @param MiddlewareInterface|ServerMiddlewareInterface $middleware Middleware of the frame
+     * @param Delegate                                      $delegate   The next frame
      *
      */
-    public function __construct(ServerMiddlewareInterface $middleware, DelegateInterface $delegate = null)
+    public function __construct($middleware, DelegateInterface $delegate = null)
     {
+        assert(
+            $middleware instanceof MiddlewareInterface || $middleware instanceof ServerMiddlewareInterface,
+            new Exceptions\MiddlewareException(
+                'Provided middleware must implement either MiddlewareInterface or ServerMiddlewareInterface'
+            )
+        );
+
         $this->middleware = $middleware;
         $this->next = $delegate;
     }

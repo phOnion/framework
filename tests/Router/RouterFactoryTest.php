@@ -90,7 +90,8 @@ class RouterFactoryTest extends \PHPUnit_Framework_TestCase
         ]);
         $this->container->get(\stdClass::class)->willReturn(new \stdClass());
 
-        $this->expectException(\TypeError::class);
+        $this->expectException(MiddlewareException::class);
+        $this->expectExceptionMessage('either MiddlewareInterface or ServerMiddlewareInterface');
         $factory = new RouterFactory();
         $factory->build($this->container->reveal());
     }
