@@ -3,7 +3,6 @@ declare(strict_types=1);
 namespace Onion\Framework\Http\Middleware;
 
 use Interop\Http\Middleware\DelegateInterface;
-use Interop\Http\Middleware\MiddlewareInterface;
 use Interop\Http\Middleware\ServerMiddlewareInterface;
 use Psr\Http\Message;
 
@@ -23,15 +22,8 @@ final class Delegate implements DelegateInterface
      * @param Delegate                                      $delegate   The next frame
      *
      */
-    public function __construct($middleware, DelegateInterface $delegate = null)
+    public function __construct(ServerMiddlewareInterface $middleware, DelegateInterface $delegate = null)
     {
-        assert(
-            $middleware instanceof MiddlewareInterface || $middleware instanceof ServerMiddlewareInterface,
-            new Exceptions\MiddlewareException(
-                'Provided middleware must implement either MiddlewareInterface or ServerMiddlewareInterface'
-            )
-        );
-
         $this->middleware = $middleware;
         $this->next = $delegate;
     }

@@ -76,23 +76,4 @@ class RouterFactoryTest extends \PHPUnit_Framework_TestCase
         $this->expectExceptionMessage('A route definition must have a "middleware" key');
         $factory->build($this->container->reveal());
     }
-
-    public function testExceptionWhenMiddlewareEntryIsNotRegisteredWithContainer()
-    {
-        $this->container->has(\stdClass::class)->willReturn(false);
-        $this->container->get('routes')->willReturn([
-            [
-                'pattern' => '/',
-                'middleware' => [
-                    \stdClass::class
-                ]
-            ]
-        ]);
-        $this->container->get(\stdClass::class)->willReturn(new \stdClass());
-
-        $this->expectException(MiddlewareException::class);
-        $this->expectExceptionMessage('either MiddlewareInterface or ServerMiddlewareInterface');
-        $factory = new RouterFactory();
-        $factory->build($this->container->reveal());
-    }
 }
