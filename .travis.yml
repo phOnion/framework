@@ -5,6 +5,9 @@ before_script:
 php:
   - '7.0'
   - nightly
+matrix:
+  allow_failures:
+    - php: nightly
 install: composer install -o --no-interaction
 script: vendor/bin/phpunit --bootstrap vendor/autoload.php --coverage-clover=coverage.xml
 after_success:
