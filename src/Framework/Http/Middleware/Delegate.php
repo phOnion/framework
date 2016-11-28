@@ -9,7 +9,7 @@ use Psr\Http\Message;
 final class Delegate implements DelegateInterface
 {
     /**
-     * @var MiddlewareInterface|ServerMiddlewareInterface
+     * @var ServerMiddlewareInterface
      */
     protected $middleware;
 
@@ -18,7 +18,7 @@ final class Delegate implements DelegateInterface
     /**
      * MiddlewareDelegate constructor.
      *
-     * @param MiddlewareInterface|ServerMiddlewareInterface $middleware Middleware of the frame
+     * @param ServerMiddlewareInterface $middleware Middleware of the frame
      * @param Delegate                                      $delegate   The next frame
      *
      */
