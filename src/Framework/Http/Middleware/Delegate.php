@@ -37,16 +37,5 @@ final class Delegate implements DelegateInterface
     public function process(Message\RequestInterface $request): Message\ResponseInterface
     {
         return $this->middleware->process($request, $this->next);
-        /*
-         * Workaround rewriting already written response, possible bug with
-         * StreamInterface implementation in diactoros.
-         *
-         * @ToDo
-         */
-        if ($response->getBody()->isSeekable() && $response->getBody()->tell() !== $response->getBody()->getSize()) {
-            $response->getBody()->seek($response->getBody()->getSize());
-        }
-
-        return $response;
     }
 }
