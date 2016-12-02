@@ -32,6 +32,14 @@ class ModuleDelegateFactoryTest extends \PHPUnit_Framework_TestCase
 
     public function testExceptionWhenNotImplementingInterface()
     {
+        if (ini_get('zend.assertions') === '-1') {
+            $this->markTestSkipped('In production mode assertions probably are disabled and this test will fail');
+        }
+
+        if (ini_get('assert.exception') === '0') {
+            $this->markTestSkipped('The "assert.exception" should be set to "1" to throw the exception');
+        }
+
         $container = $this->prophesize(ContainerInterface::class);
         $container->get(MiddlewareStub::class)->willReturn(new MiddlewareStub());
         $container->get(\stdClass::class)->willReturn(new \stdClass());

@@ -78,6 +78,14 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
     public function testExceptionWhenNamedRouteDoesNotExist()
     {
+        if (ini_get('zend.assertions') === '-1') {
+            $this->markTestSkipped('In production mode assertions probably are disabled and this test will fail');
+        }
+
+        if (ini_get('assert.exception') === '0') {
+            $this->markTestSkipped('The "assert.exception" should be set to "1" to throw the exception');
+        }
+
         $this->expectException(\InvalidArgumentException::class);
         $this->router->getRouteByName('cool-route');
     }
@@ -137,6 +145,14 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
     public function testRouteRetrievalByName()
     {
+        if (ini_get('zend.assertions') === '-1') {
+            $this->markTestSkipped('In production mode assertions probably are disabled and this test will fail');
+        }
+
+        if (ini_get('assert.exception') === '0') {
+            $this->markTestSkipped('The "assert.exception" should be set to "1" to throw the exception');
+        }
+
         $uri = $this->prophesize(UriInterface::class);
         $uri->getPath()->willReturn('/bar');
 
