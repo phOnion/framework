@@ -41,25 +41,37 @@ final class ModuleDelegateFactory implements FactoryInterface
          * @var array[] $middleware
          */
         $middleware = $container->get('middleware');
-        $stack = [];
 
-        foreach ($middleware as $handler) {
+        foreach ($middleware as $index =>$handler) {
             if ($handler === 'modules') {
-                $stack = $this->getModulesStack($container, $delegate);
+                $moduleMiddlewareStack = $this->getModulesStack($container);
+                $router = new Router\Router(
+                    new Router\Parsers\Flat(),
+                    new Router\Matchers\Prefix()
+                );
 
+                foreach ($moduleMiddlewareStack as $prefix => $stack) {
+                    array_unshift($stack, new \Onion\Framework\Middleware\Internal\ModulePathStripperMiddleware($prefix));
+                    $router->addRoute($prefix, new Delegate($stack), [
+                        'GET', 'HEAD', 'POST', 'PUT', 'OPTIONS', 'DELETE', 'TRACE', 'CONNECT'
+                    ]);
+                }
+
+                $middleware[] = $router;
+                unset($middleware[$index]);
                 continue;
             }
 
-            $stack[] = $container->get($handler);
+            $middleware[$index] = $container->get($handler);
         }
 
-        return new Delegate($stack);
+        return new Delegate($middleware);
     }
 
     private function getModulesStack(ContainerInterface $container): array
     {
         $middlewareStack = [];
-        foreach ($container->get('modules') as $moduleClass) {
+        foreach ($container->get('modules') as $prefix => $moduleClass) {
             /**
              * @var ModuleInterface
              */
@@ -69,7 +81,9 @@ final class ModuleDelegateFactory implements FactoryInterface
                 "Class $moduleClass needs to implement Application\\ModuleInterface"
             );
 
-            $middlewareStack[] = $module->build($container);
+            $middlewareStack[$prefix] = [
+                $module->build($container)
+            ];
         }
 
         return $middlewareStack;
