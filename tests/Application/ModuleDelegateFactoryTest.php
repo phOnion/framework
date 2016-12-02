@@ -68,7 +68,7 @@ class ModuleDelegateFactoryTest extends \PHPUnit_Framework_TestCase
         $container->get(Stubs\MiddlewareStub::class)->willReturn($stub->reveal());
         $container->get('middleware')->willReturn(['modules']);
         $container->has('modules')->willReturn(true);
-        $container->get('modules')->willReturn([Stubs\MiddlewareStub::class]);
+        $container->get('modules')->willReturn(['/test' => Stubs\MiddlewareStub::class]);
 
         $factory = new ModuleDelegateFactory();
         $this->assertInstanceOf(DelegateInterface::class, $factory->build($container->reveal()));

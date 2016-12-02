@@ -13,19 +13,14 @@ final class Delegate implements DelegateInterface
      */
     protected $middleware;
 
-    protected $next;
-
     /**
      * MiddlewareDelegate constructor.
      *
-     * @param ServerMiddlewareInterface $middleware Middleware of the frame
-     * @param Delegate                                      $delegate   The next frame
-     *
+     * @param ServerMiddlewareInterface[] $middleware Middleware of the frame
      */
-    public function __construct(ServerMiddlewareInterface $middleware, DelegateInterface $delegate = null)
+    public function __construct(array $middleware)
     {
         $this->middleware = $middleware;
-        $this->next = $delegate;
     }
 
     /**
@@ -36,6 +31,12 @@ final class Delegate implements DelegateInterface
      */
     public function process(Message\RequestInterface $request): Message\ResponseInterface
     {
-        return $this->middleware->process($request, $this->next);
+        if ($this->middleware !== []) {
+            $middleware = array_shift($this->middleware);
+
+            return $middleware->process($request, $this);
+        }
+
+        return new \Zend\Diactoros\Response();
     }
 }

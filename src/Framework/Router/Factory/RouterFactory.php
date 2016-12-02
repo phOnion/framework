@@ -35,16 +35,14 @@ final class RouterFactory implements FactoryInterface
             $name = $route['name'] ?? null;
             $methods = $route['methods'] ?? ['GET', 'HEAD'];
 
-            $delegate = null;
+            $stack = [];
             foreach ($route['middleware'] as $middleware) {
-                $delegate = new Delegate($container->get($middleware), $delegate);
+                $stack[] = $container->get($middleware);
             }
-
-            $route['middleware'] = $delegate;
-
+            
             $router->addRoute(
                 $route['pattern'],
-                $delegate,
+                new Delegate($stack),
                 $methods,
                 $name
             );

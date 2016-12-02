@@ -7,6 +7,7 @@ use Interop\Http\Middleware\DelegateInterface;
 use Onion\Framework\Application\Interfaces\ModuleInterface;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Onion\Framework\Http\Middleware\Delegate;
+use Onion\Framework\Router;
 
 /**
  * A factory, very similar to GlobalDelegateFactory except that
@@ -37,23 +38,27 @@ final class ModuleDelegateFactory implements FactoryInterface
         );
 
         /**
-         * @var array[][] $middleware
+         * @var array[] $middleware
          */
         $middleware = $container->get('middleware');
+        $stack = [];
 
         foreach ($middleware as $handler) {
             if ($handler === 'modules') {
-                $delegate = $this->getModulesDelegate($container, $delegate);
+                $stack = $this->getModulesStack($container, $delegate);
+
                 continue;
             }
-            $delegate = new Delegate($container->get($handler), $delegate);
+
+            $stack[] = $container->get($handler);
         }
 
-        return $delegate;
+        return new Delegate($stack);
     }
 
-    private function getModulesDelegate(ContainerInterface $container, DelegateInterface $delegate = null): DelegateInterface
+    private function getModulesStack(ContainerInterface $container): array
     {
+        $middlewareStack = [];
         foreach ($container->get('modules') as $moduleClass) {
             /**
              * @var ModuleInterface
@@ -64,9 +69,9 @@ final class ModuleDelegateFactory implements FactoryInterface
                 "Class $moduleClass needs to implement Application\\ModuleInterface"
             );
 
-            $delegate = new Delegate($module->build($container), $delegate);
+            $middlewareStack[] = $module->build($container);
         }
 
-        return $delegate;
+        return $middlewareStack;
     }
 }

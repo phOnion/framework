@@ -35,11 +35,11 @@ final class GlobalDelegateFactory implements FactoryInterface
          */
         $middleware = $container->get('middleware');
 
-        $delegate = null;
+        $stack = [];
         foreach ($middleware as $handler) {
-            $delegate = new Delegate($container->get($handler), $delegate);
+            $stack[] = $container->get($handler);
         }
 
-        return $delegate;
+        return new Delegate($stack);
     }
 }
