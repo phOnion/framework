@@ -49,5 +49,6 @@ vendor/
 .idea
 site/
 demo/
+build/
 .vscode
 composer.lock
