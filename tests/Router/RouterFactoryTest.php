@@ -12,6 +12,7 @@ use Onion\Framework\Router\Interfaces\MatcherInterface;
 use Onion\Framework\Router\Interfaces\ParserInterface;
 use Onion\Framework\Router\Interfaces\RouterInterface;
 use Onion\Framework\Router\Factory\RouterFactory;
+use Psr\Http\Message\ResponseInterface;
 
 class RouterFactoryTest extends \PHPUnit_Framework_TestCase
 {
@@ -36,6 +37,7 @@ class RouterFactoryTest extends \PHPUnit_Framework_TestCase
         $this->container->has('routes')->willReturn(true);
         $this->container->has(ParserInterface::class)->willReturn(true);
         $this->container->has(MatcherInterface::class)->willReturn(true);
+        $this->container->has(ResponseInterface::class)->willReturn(false);
     }
 
     public function testCreationOfRouterFromTheFactory()

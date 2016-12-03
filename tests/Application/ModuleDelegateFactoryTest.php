@@ -1,14 +1,12 @@
 <?php
-
-
 namespace Tests\Application;
-
 
 use Interop\Container\ContainerInterface;
 use Interop\Http\Middleware\DelegateInterface;
 use Onion\Framework\Application\Factory\ModuleDelegateFactory;
 use Tests\Application\Stubs\MiddlewareStub;
 use Zend\Diactoros\Response\EmitterInterface;
+use Psr\Http\Message\ResponseInterface;
 
 class ModuleDelegateFactoryTest extends \PHPUnit_Framework_TestCase
 {
@@ -25,6 +23,7 @@ class ModuleDelegateFactoryTest extends \PHPUnit_Framework_TestCase
         $container->get('modules')->willReturn([
             '/' => Stubs\SimpleModuleStub::class
         ]);
+        $container->has(ResponseInterface::class)->willReturn(false);
 
         $factory = new ModuleDelegateFactory();
         $this->assertInstanceOf(DelegateInterface::class, $factory->build($container->reveal()));
@@ -60,15 +59,17 @@ class ModuleDelegateFactoryTest extends \PHPUnit_Framework_TestCase
         $stub = $this->prophesize(Subs\MiddlewareStub::class);
         $stub->willImplement(\Onion\Framework\Application\Interfaces\ModuleInterface::class);
         $stub->build(new \Prophecy\Argument\Token\AnyValueToken())
-            ->willReturn($this->prophesize(\Onion\Framework\Application\Application::class)
-            ->reveal()
-        );
+            ->willReturn(
+                $this->prophesize(\Onion\Framework\Application\Application::class)
+                ->reveal()
+            );
 
         $container = $this->prophesize(ContainerInterface::class);
         $container->get(Stubs\MiddlewareStub::class)->willReturn($stub->reveal());
         $container->get('middleware')->willReturn(['modules']);
         $container->has('modules')->willReturn(true);
         $container->get('modules')->willReturn(['/test' => Stubs\MiddlewareStub::class]);
+        $container->has(ResponseInterface::class)->willReturn(false);
 
         $factory = new ModuleDelegateFactory();
         $this->assertInstanceOf(DelegateInterface::class, $factory->build($container->reveal()));

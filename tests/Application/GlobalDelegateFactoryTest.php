@@ -9,6 +9,7 @@ use Interop\Container\ContainerInterface;
 use Interop\Http\Middleware\DelegateInterface;
 use Onion\Framework\Application\Factory\GlobalDelegateFactory;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
+use Psr\Http\Message\ResponseInterface;
 
 class GlobalDelegateFactoryTest extends \PHPUnit_Framework_TestCase
 {
@@ -16,6 +17,7 @@ class GlobalDelegateFactoryTest extends \PHPUnit_Framework_TestCase
     {
         $container = $this->prophesize(ContainerInterface::class);
         $container->get('class')->willReturn(new Stubs\MiddlewareStub());
+        $container->has(ResponseInterface::class)->willReturn(false);
 
         $container->get('middleware')->willReturn([
             'class'
