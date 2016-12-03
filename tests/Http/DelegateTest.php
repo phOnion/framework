@@ -45,7 +45,7 @@ class DelegatorTest extends \PHPUnit_Framework_TestCase
             new AnyValueToken()
         )->willReturn($response->reveal());
 
-        $frame = new Delegate([$middleware->reveal()], $this->prophesize(DelegateInterface::class)->reveal());
+        $frame = new Delegate([$middleware->reveal()]);
 
         $this->assertSame(
             $response->reveal(),
@@ -63,7 +63,7 @@ class DelegatorTest extends \PHPUnit_Framework_TestCase
             new AnyValueToken()
         )->willReturn(null);
 
-        $frame = new Delegate([$middleware->reveal()], $this->prophesize(DelegateInterface::class)->reveal());
+        $frame = new Delegate([$middleware->reveal()]);
 
         $this->expectException(\TypeError::class);
         $frame->process($request->reveal());
