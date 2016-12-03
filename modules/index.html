@@ -95,6 +95,9 @@
                 <li class="toctree-l3"><a href="#configuration">Configuration</a></li>
                 
             
+                <li class="toctree-l3"><a href="#recommendations">Recommendations</a></li>
+                
+            
             </ul>
         
     </li>
@@ -140,16 +143,23 @@
             <div class="section">
               
                 <h2 id="introduction">Introduction</h2>
-<p>Modules are not a new concept in the development world, nor they re new 
+<p>Modules are not a new concept in the development world, nor they re new
 to the PHP frameworks/applications. The implementation used here is not
 too different from what has already been implemented in other frameworks
-but the intent is clear and is aimed at enforcing the separation of 
-applications in logical parts, rather than having module provide 
-helper functionality (although they can also be used in that way, but 
+but the intent is clear and is aimed at enforcing the separation of
+applications in logical parts, rather than having module provide
+helper functionality (although they can also be used in that way, but
 might fee less intuitive)</p>
 <h2 id="setup">Setup</h2>
-<p>A module should have it's logic as self-contained as possible, except 
-for configurations, since that will change from application to 
+<p>A module must be as self-contained as possible. It is up to the module
+developer to determine what configuration is comming from where, but
+mandatory (such as internal dependency mapping) should be defined and
+might even be appropriate to have it hardcoded, but optional things,
+such as database connection settings, etc. should be retrieved from the
+main application container via an acceptable method explained inside
+module's <code>readme</code> on <code>installation</code> files.</p>
+<p>A module should have it's logic as self-contained as possible, except
+for configurations, since that will change from application to
 application.</p>
 <p>The only requirement in order to ensure consistency (as of now it is not
 enforced) is for the module to serve as a factory that MUST return
@@ -162,8 +172,11 @@ instance <code>Application</code> assigned it's own prefix inside a <code>module
 <p>The minimal configuration to the container is:</p>
 <pre><code>return [
     // .. other configuration
+    'middleware' =&gt; [
+        'modules'
+    ],
     'modules' =&gt; [
-        '/api' =&gt; MyApp\API\Module::class
+        '/path/prefix' =&gt; MyApp\API\Module::class
     ]
 ]
 </code></pre>
@@ -177,6 +190,7 @@ use Onion\Framework\Application\Interfaces\ModuleInterface;
 
 class Module implements ModuleInterface
 {
+    // Optional, but makes things clearer
     private function getConfigurations(): array
     {
         return [
@@ -193,31 +207,94 @@ class Module implements ModuleInterface
 
     public function build(ContainerInterface $container): Application
     {
-        // Logic of creating a router ONLY with module-specific routes
         return new Application
-            $router,
+            // Retrieve everything from a contextual container
+            $this-&gt;getOwnContainer()-&gt;get(\Interop\Middleware\DelegateInterface),
             $container-&gt;get(EmitterInterface::class)
         );
     }
 }
 </code></pre>
 
-<p>It is recommended for a module class to fetch the <code>EmitterInterface</code> 
-from the main container, instead of defining it's own since it will 
+<p>It is recommended for a module class to fetch the <code>EmitterInterface</code>
+from the main container, instead of defining it's own since it will
 avoid issues with custom emitter implementations if applicable. Also
 note that the route must have the prefix defined by default in order to
 avoid this duplication (if that is your thing, but do keep in mind that
-the intent behind this kind of modules is that a module can and should 
+the intent behind this kind of modules is that a module can and should
 be able to function as it's own application and not only as a module of
 another). Once the initial testing has been performed a CLI application
-will be developed allowing for the generation of module classes from 
+will be developed allowing for the generation of module classes from
 existing applications, which will empower use-cases such as minimal blog
-to be embedded inside another application at a prefix; as well as 
-install/uninstall steps, but that is TBD as of now so don't rely 
+to be embedded inside another application at a prefix; as well as
+install/uninstall steps, but that is TBD as of now so don't rely
 completely on that, but do keep in mind that the reasoning behind the
 modules is here to stay.</p>
-<p><strong><em> This is only intended to be a WEB framework and not a multi-purpose 
-one that can aid building of CLI apps</em></strong></p>
+<h2 id="recommendations">Recommendations</h2>
+<p><em>Majority of the following points are intended to serve only as
+guide lines, and developers are free to ignore them, but complying
+will ensure consistency between module structure and workflow, hence
+improving experience</em></p>
+<ul>
+<li>
+<p>A module is a component of an application or website that provides visitor
+ access to specific part of the website, a module should not only provide
+ libraries and/or frameworks (for that part please stick with composer, see
+ <a href="https://getcomposer.org/doc/02-libraries.md#publishing-to-a-vcs">composer documentation for information on how to use VCS for package distribution</a>).</p>
+</li>
+<li>
+<p>A module should provide contact information to allow users to report issues
+ make/discuss feature requests and/or disclose security vulnerabilities.</p>
+</li>
+<li>
+<p>Another highly recommended thing to do is follow the PHP standards (PSR) to
+ ensure compatibility with other libraries/modules/frameworks, that the
+ user might be using within their application, out of the box.</p>
+</li>
+<li>
+<p>Following the HTTP standards is also a good thing to do, since that will
+ increase the flexibility of user implementations in a magnitude. Example:
+ if you provide <code>Last-Modified</code> header and check for <code>If-Modified-Since</code>
+ the application may become more performant, since no data should be
+ transfered.</p>
+</li>
+<li>
+<p>As a developer you should try to keep the dependencies for your module
+ as minimal as possible so users do not get bloated with dependencies,
+ also as a added benefit you lower the risk of your module breaking, because
+ of external changes.</p>
+</li>
+<li>
+<p>A module, should not provide/enforce specific view components, since it
+ may break application/website functionality/appearance, rather a API backend
+ should be previded with information/tutorials/examples on how to communicate
+ with said backend in a consistent way. *Design your modules for front ends
+ built using modern frameworks like, ReactJS and Angular2 or other similar ones.</p>
+</li>
+<li>
+<p>A module should be kept as small and self-contained as possible. For example
+ if a module is intended to provide blogging functionality it should (where applicable)
+ be split in separate compoenets for <code>posts</code>, <code>comments</code>, <code>editing</code>. That way users
+ would have the opportunity to mix and match compoents that are compatible or directly
+ write a custom one to fit their needs or bridge gaps between different modules.</p>
+</li>
+<li>
+<p>A module may communicate with existing services, but it is recommended to provide
+ information with which services/3rd parties information is exchanged and for what
+ purposes.</p>
+</li>
+<li>
+<p>A module should not intend to modify files inside or outside of itself, when such
+ configuration is required it should provide detailed information what, where and why
+ should be changed for the user to configure (or optionally a script can be provided,
+ but not automatically executed)</p>
+</li>
+<li>
+<p>Optionally your module may provide a UI, but it should be implemented in such a way
+ that it's styling should be easily changeable since, different people have different
+ tastes.</p>
+</li>
+</ul>
               
             </div>
           </div>
