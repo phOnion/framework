@@ -39,7 +39,7 @@ final class RouterFactory implements FactoryInterface
             foreach ($route['middleware'] as $middleware) {
                 $stack[] = $container->get($middleware);
             }
-            
+
             $router->addRoute(
                 $route['pattern'],
                 new Delegate($stack),

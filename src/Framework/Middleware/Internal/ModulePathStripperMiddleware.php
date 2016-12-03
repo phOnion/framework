@@ -15,7 +15,7 @@ class ModulePathStripperMiddleware implements ServerMiddlewareInterface
     {
         $this->routePathPrefix = $prefix;
     }
-    
+
     public function process(Request $request, DelegateInterface $delegate): ResponseInterface
     {
         $path = $request->getUri()->getPath();

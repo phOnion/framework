@@ -160,7 +160,6 @@ class Router implements Interfaces\RouterInterface, ServerMiddlewareInterface
             assert(array_key_exists(3, $route), 'Array must contain index 3');
             assert(is_array($route[3]), 'Array index 3 must be an array');
 
-
             if (($matches = $this->getMatcher()->match($route[0], $uri->getPath())) !== [false]) {
                 if (!in_array($method, $route[2], true)) {
                     throw new Exceptions\MethodNotAllowedException($route[2]);
