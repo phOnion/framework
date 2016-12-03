@@ -7,7 +7,9 @@ use Interop\Http\Middleware\DelegateInterface;
 use Onion\Framework\Application\Interfaces\ModuleInterface;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Onion\Framework\Http\Middleware\Delegate;
+use Onion\Framework\Middleware\Internal\ModulePathStripperMiddleware;
 use Onion\Framework\Router;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * A factory, very similar to GlobalDelegateFactory except that
@@ -30,8 +32,6 @@ final class ModuleDelegateFactory implements FactoryInterface
      */
     public function build(ContainerInterface $container): DelegateInterface
     {
-        $delegate = null;
-
         assert(
             $container->has('modules'),
             'No modules available in container, check configuration'
@@ -42,7 +42,7 @@ final class ModuleDelegateFactory implements FactoryInterface
          */
         $middleware = $container->get('middleware');
 
-        foreach ($middleware as $index =>$handler) {
+        foreach ($middleware as $index => $handler) {
             if ($handler === 'modules') {
                 $moduleMiddlewareStack = $this->getModulesStack($container);
                 $router = new Router\Router(
@@ -51,7 +51,7 @@ final class ModuleDelegateFactory implements FactoryInterface
                 );
 
                 foreach ($moduleMiddlewareStack as $prefix => $stack) {
-                    array_unshift($stack, new \Onion\Framework\Middleware\Internal\ModulePathStripperMiddleware($prefix));
+                    array_unshift($stack, new ModulePathStripperMiddleware($prefix));
                     $router->addRoute($prefix, new Delegate($stack), [
                         'GET', 'HEAD', 'POST', 'PUT', 'OPTIONS', 'DELETE', 'TRACE', 'CONNECT'
                     ]);
@@ -65,7 +65,11 @@ final class ModuleDelegateFactory implements FactoryInterface
             $middleware[$index] = $container->get($handler);
         }
 
-        return new Delegate($middleware);
+        return new Delegate(
+            $middleware,
+            $container->has(ResponseInterface::class) ?
+                $container->get(ResponseInterface::class) : null
+        );
     }
 
     private function getModulesStack(ContainerInterface $container): array

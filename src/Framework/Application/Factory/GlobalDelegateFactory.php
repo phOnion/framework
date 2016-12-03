@@ -6,6 +6,7 @@ use Interop\Container\ContainerInterface;
 use Interop\Http\Middleware\DelegateInterface;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Onion\Framework\Http\Middleware\Delegate;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * This factory builds the defined global middleware
@@ -40,6 +41,10 @@ final class GlobalDelegateFactory implements FactoryInterface
             $stack[] = $container->get($handler);
         }
 
-        return new Delegate($stack);
+        return new Delegate(
+            $stack,
+            $container->has(ResponseInterface::class) ?
+                $container->get(ResponseInterface::class) : null
+        );
     }
 }

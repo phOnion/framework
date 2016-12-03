@@ -9,6 +9,7 @@ use Onion\Framework\Router\Interfaces\MatcherInterface;
 use Onion\Framework\Router\Interfaces\ParserInterface;
 use Onion\Framework\Router\Matchers\Regex;
 use Onion\Framework\Router\Router;
+use Psr\Http\Message\ResponseInterface;
 
 final class RouterFactory implements FactoryInterface
 {
@@ -42,7 +43,11 @@ final class RouterFactory implements FactoryInterface
 
             $router->addRoute(
                 $route['pattern'],
-                new Delegate($stack),
+                new Delegate(
+                    $stack,
+                    $container->has(ResponseInterface::class) ?
+                        $container->get(ResponseInterface::class) : null
+                ),
                 $methods,
                 $name
             );
