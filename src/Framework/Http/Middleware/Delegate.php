@@ -46,9 +46,13 @@ final class Delegate implements DelegateInterface
                         'All members of middleware must implement ServerMiddlewareInterface'
                     );
                 }
-            }
 
-            return $middleware->process($request, $this);
+                return $middleware->process($request, $this);
+            }
+        }
+
+        if (null === $this->response) {
+            throw new \RuntimeException('No response template provide');
         }
 
         return $this->response;
