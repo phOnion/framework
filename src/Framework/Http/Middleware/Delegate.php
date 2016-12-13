@@ -35,7 +35,7 @@ final class Delegate implements DelegateInterface
      * @throws Exceptions\MiddlewareException if returned response is not instance of ResponseInterface
      * @return Message\ResponseInterface
      */
-    public function process(Message\RequestInterface $request): Message\ResponseInterface
+    public function process(Message\ServerRequestInterface $request): Message\ResponseInterface
     {
         if ($this->middleware !== []) {
             $middleware = array_shift($this->middleware);
