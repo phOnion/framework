@@ -43,7 +43,7 @@ final class Delegate implements DelegateInterface
             if ($middleware !== null) {
                 assert(
                     $middleware instanceof ServerMiddlewareInterface,
-                    new \TypeError('All members of middleware must implement ServerMiddlewareInterface')
+                    new \TypeError('All members of middleware must implement ServerMiddlewareInterface, '  . gettype($middleware) . ': ' . print_r($middleware, true) . ' given')
                 );
 
                 return $middleware->process($request, $this);
