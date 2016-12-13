@@ -41,18 +41,17 @@ final class Delegate implements DelegateInterface
             $middleware = array_shift($this->middleware);
 
             if ($middleware !== null) {
-                if (!$middleware instanceof ServerMiddlewareInterface) {
-                    throw new \TypeError(
-                        'All members of middleware must implement ServerMiddlewareInterface'
-                    );
-                }
+                assert(
+                    $middleware instanceof ServerMiddlewareInterface,
+                    new \TypeError('All members of middleware must implement ServerMiddlewareInterface')
+                );
 
                 return $middleware->process($request, $this);
             }
         }
 
         if (null === $this->response) {
-            throw new \RuntimeException('No response template provide');
+            throw new \RuntimeException('No response template provided');
         }
 
         return $this->response;
