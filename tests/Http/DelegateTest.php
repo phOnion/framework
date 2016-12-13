@@ -84,4 +84,19 @@ class DelegatorTest extends \PHPUnit_Framework_TestCase
         $delegate = new Delegate(['bad-middleware']);
         $delegate->process($request->reveal());
     }
+
+    public function testDelegateErrorWhenNoResponseTemplateInjected()
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('No response template provided');
+        $request = $this->prophesize(ServerRequestInterface::class);
+        $middleware = $this->prophesize(ServerMiddlewareInterface::class);
+        $middleware->process(
+            new AnyValueToken(), // Fails for some reason when using `Argument::type`
+            new AnyValueToken()
+        )->willReturn($this->prophesize(ResponseInterface::class)->reveal());
+        $delegate = new Delegate([$middleware->reveal()]);
+        $delegate->process($request->reveal());
+        $delegate->process($request->reveal());
+    }
 }
