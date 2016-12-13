@@ -113,16 +113,20 @@ class Router implements Interfaces\RouterInterface, ServerMiddlewareInterface
      */
     public function process(ServerRequestInterface $request, DelegateInterface $delegate = null): ResponseInterface
     {
-        /**
-         * @var array[] $route
-         */
-        $route = $this->match($request->getMethod(), $request->getUri());
+        try {
+            /**
+            * @var array[] $route
+            */
+            $route = $this->match($request->getMethod(), $request->getUri());
 
-        foreach ($route[3] as $name => $param) {
-            $request = $request->withAttribute($name, $param);
+            foreach ($route[3] as $name => $param) {
+                $request = $request->withAttribute($name, $param);
+            }
+
+            return $route[1]->process($request);
+        } catch (Exception\NotFoundException $ex) {
+            return $delegate->process($request);
         }
-
-        return $route[1]->process($request);
     }
 
     /**
