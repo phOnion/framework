@@ -52,7 +52,7 @@ final class ModuleDelegateFactory implements FactoryInterface
                 );
 
                 foreach ($moduleMiddlewareStack as $prefix => $module) {
-                    $router->addRoute($prefix, new Delegate([$module, new ModulePathStripperMiddleware($prefix)]), [
+                    $router->addRoute($prefix, new Delegate([new ModulePathStripperMiddleware($prefix), $module]), [
                         'GET', 'HEAD', 'POST', 'PUT', 'OPTIONS', 'DELETE', 'TRACE', 'CONNECT'
                     ]);
                 }
