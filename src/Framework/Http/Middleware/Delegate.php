@@ -40,6 +40,14 @@ final class Delegate implements DelegateInterface
         if ($this->middleware !== []) {
             $middleware = array_shift($this->middleware);
 
+            if ($middleware !== null) {
+                if (!$middleware instanceof ServerMiddlewareInterface) {
+                    throw new \TypeError(
+                        'All members of middleware must implement ServerMiddlewareInterface'
+                    );
+                }
+            }
+
             return $middleware->process($request, $this);
         }
 
