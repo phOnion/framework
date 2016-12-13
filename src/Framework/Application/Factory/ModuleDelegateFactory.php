@@ -51,9 +51,8 @@ final class ModuleDelegateFactory implements FactoryInterface
                     new Router\Matchers\Prefix()
                 );
 
-                foreach ($moduleMiddlewareStack as $prefix => $stack) {
-                    array_unshift($stack, new ModulePathStripperMiddleware($prefix));
-                    $router->addRoute($prefix, new Delegate($stack), [
+                foreach ($moduleMiddlewareStack as $prefix => $module) {
+                    $router->addRoute($prefix, [new Delegate($module), new ModulePathStripperMiddleware($prefix)], [
                         'GET', 'HEAD', 'POST', 'PUT', 'OPTIONS', 'DELETE', 'TRACE', 'CONNECT'
                     ]);
                 }
@@ -85,9 +84,7 @@ final class ModuleDelegateFactory implements FactoryInterface
                 "Class $moduleClass needs to implement Application\\ModuleInterface"
             );
 
-            $middlewareStack[$prefix] = [
-                $module->build($container)
-            ];
+            $middlewareStack[$prefix] = $module->build($container);
         }
 
         return $middlewareStack;
