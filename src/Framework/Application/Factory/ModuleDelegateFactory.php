@@ -41,6 +41,7 @@ final class ModuleDelegateFactory implements FactoryInterface
          * @var array[] $middleware
          */
         $middleware = $container->get('middleware');
+        $stack = [];
 
         foreach ($middleware as $index => $handler) {
             if ($handler === 'modules') {
@@ -57,12 +58,11 @@ final class ModuleDelegateFactory implements FactoryInterface
                     ]);
                 }
 
-                $middleware[] = $router;
-                unset($middleware[$index]);
+                $stack[] = $router;
                 continue;
             }
 
-            $middleware[$index] = $container->get($handler);
+            $stack[] = $container->get($handler);
         }
 
         return new Delegate(
