@@ -66,7 +66,7 @@ final class ModuleDelegateFactory implements FactoryInterface
         }
 
         return new Delegate(
-            $middleware,
+            $stack,
             $container->has(ResponseInterface::class) ?
                 $container->get(ResponseInterface::class) : null
         );
