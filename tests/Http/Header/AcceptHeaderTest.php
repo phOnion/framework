@@ -53,6 +53,21 @@ class AcceptHeaderTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($header->supports('es'));
     }
 
+    public function testParsingOfMultiValueAcceptWithMoreThanOneAttribute()
+    {
+        $header = new \Onion\Framework\Http\Header\Accept(
+            'application/json;q=0.8, text/plain;level=2;q=0.2, application/*;level=3'
+        );
+
+        // var_dump($header);
+        $this->assertTrue($header->supports('application/json'));
+        $this->assertTrue($header->supports('text/plain'));
+        $this->assertTrue($header->supports('application/*'));
+        $this->assertSame($header->getPriority('application/json'), 0.8);
+        $this->assertSame($header->getPriority('text/plain'), 0.2);
+        $this->assertSame($header->getPriority('application/*'), 1.0);
+    }
+
     public function testParsingOfMultiValueEncoding()
     {
         $header = new \Onion\Framework\Http\Header\Accept(
