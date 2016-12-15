@@ -23,7 +23,7 @@ class ModulePathStripperMiddleware implements ServerMiddlewareInterface
         return $delegate->process(
             $request->withUri(
                 $request->getUri()->withPath(
-                    '/' . ltrim(substr($path, strlen($this->routePathPrefix)). '/')
+                    '/' . ltrim(substr($path, strlen($this->routePathPrefix)), '/')
                 )
             )
         );
