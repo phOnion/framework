@@ -3,7 +3,7 @@ declare(strict_types=1);
 namespace Onion\Framework\Application\Factory;
 
 use Interop\Container\ContainerInterface;
-use Interop\Http\Middleware\DelegateInterface;
+use Interop\Http\ServerMiddleware\DelegateInterface;
 use Onion\Framework\Application\Application;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Zend\Diactoros\Response\EmitterInterface;

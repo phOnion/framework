@@ -11,7 +11,7 @@
 
 namespace Tests;
 
-use Interop\Http\Middleware\DelegateInterface;
+use Interop\Http\ServerMiddleware\DelegateInterface;
 use Onion\Framework\Application\Application;
 use Prophecy\Argument\Token\AnyValueToken;
 use Prophecy\Argument\Token\TypeToken;
