@@ -32,7 +32,7 @@ final class Delegate implements DelegateInterface
     /**
      * @param Message\RequestInterface $request
      *
-     * @throws Exceptions\MiddlewareException if returned response is not instance of ResponseInterface
+     * @throws \RuntimeException If asked to return the response template, but the template is empty
      * @return Message\ResponseInterface
      */
     public function process(Message\ServerRequestInterface $request): Message\ResponseInterface
@@ -43,7 +43,12 @@ final class Delegate implements DelegateInterface
             if ($middleware !== null) {
                 assert(
                     $middleware instanceof MiddlewareInterface,
-                    new \TypeError('All members of middleware must implement ServerMiddleware\MiddlewareInterface, '  . gettype($middleware) . ': ' . print_r($middleware, true) . ' given')
+                    new \TypeError(
+                        'All members of middleware must implement ServerMiddleware\MiddlewareInterface, '  .
+                            gettype($middleware) . ': ' .
+                            print_r($middleware, true) .
+                            ' given'
+                    )
                 );
 
                 return $middleware->process($request, $this);
