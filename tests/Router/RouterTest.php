@@ -11,7 +11,7 @@
 
 namespace Tests\Router;
 
-use Interop\Http\Middleware\DelegateInterface;
+use Interop\Http\ServerMiddleware\DelegateInterface;
 use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
 use Onion\Framework\Router\Interfaces\Exception\NotFoundException;
 use Onion\Framework\Router\Interfaces\Exception\NotAllowedException;

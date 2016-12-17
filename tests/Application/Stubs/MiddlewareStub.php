@@ -2,12 +2,12 @@
 declare(strict_types=1);
 namespace Tests\Application\Stubs;
 
-use Interop\Http\Middleware\DelegateInterface;
-use Interop\Http\Middleware\ServerMiddlewareInterface;
+use Interop\Http\ServerMiddleware\DelegateInterface;
+use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-class MiddlewareStub implements ServerMiddlewareInterface
+class MiddlewareStub implements MiddlewareInterface
 {
 
     /**

@@ -12,7 +12,7 @@
 namespace Tests\Http;
 
 use Interop\Http\Middleware\DelegateInterface;
-use Interop\Http\Middleware\ServerMiddlewareInterface;
+use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Onion\Framework\Http\Middleware\Delegate;
 use Onion\Framework\Http\Middleware\Exceptions\MiddlewareException;
 use Prophecy\Argument\Token\AnyValueToken;
@@ -20,7 +20,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 
-class DelegatorTest extends \PHPUnit_Framework_TestCase
+class DelegateTest extends \PHPUnit_Framework_TestCase
 {
     public function testExceptionWhenMiddlewareDoesNotImplementRequiredInterfaces()
     {
@@ -32,7 +32,7 @@ class DelegatorTest extends \PHPUnit_Framework_TestCase
     public function testInvocationOfProperFrameWithoutNext()
     {
         $request = $this->prophesize(ServerRequestInterface::class);
-        $middleware = $this->prophesize(ServerMiddlewareInterface::class);
+        $middleware = $this->prophesize(MiddlewareInterface::class);
         $response = $this->prophesize(ResponseInterface::class);
         $stream = $this->prophesize(StreamInterface::class);
         $stream->isSeekable()->willReturn(true);
@@ -57,7 +57,7 @@ class DelegatorTest extends \PHPUnit_Framework_TestCase
     {
 
         $request = $this->prophesize(ServerRequestInterface::class);
-        $middleware = $this->prophesize(ServerMiddlewareInterface::class);
+        $middleware = $this->prophesize(MiddlewareInterface::class);
         $middleware->process(
             new AnyValueToken(), // Fails for some reason when using `Argument::type`
             new AnyValueToken()
@@ -90,7 +90,7 @@ class DelegatorTest extends \PHPUnit_Framework_TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('No response template provided');
         $request = $this->prophesize(ServerRequestInterface::class);
-        $middleware = $this->prophesize(ServerMiddlewareInterface::class);
+        $middleware = $this->prophesize(MiddlewareInterface::class);
         $middleware->process(
             new AnyValueToken(), // Fails for some reason when using `Argument::type`
             new AnyValueToken()

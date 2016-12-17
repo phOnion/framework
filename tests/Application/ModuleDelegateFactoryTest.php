@@ -2,7 +2,7 @@
 namespace Tests\Application;
 
 use Interop\Container\ContainerInterface;
-use Interop\Http\Middleware\DelegateInterface;
+use Interop\Http\ServerMiddleware\DelegateInterface;
 use Onion\Framework\Application\Factory\ModuleDelegateFactory;
 use Tests\Application\Stubs\MiddlewareStub;
 use Zend\Diactoros\Response\EmitterInterface;

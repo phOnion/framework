@@ -2,13 +2,13 @@
 declare(strict_types=1);
 namespace Onion\Framework\Application;
 
-use Interop\Http\Middleware\DelegateInterface;
-use Interop\Http\Middleware\ServerMiddlewareInterface;
+use Interop\Http\ServerMiddleware\DelegateInterface;
+use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Zend\Diactoros\Response\EmitterInterface;
 
-class Application implements ServerMiddlewareInterface
+class Application implements MiddlewareInterface
 {
     /**
      * @var DelegateInterface

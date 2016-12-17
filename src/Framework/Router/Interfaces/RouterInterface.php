@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Onion\Framework\Router\Interfaces;
 
-use Interop\Http\Middleware\DelegateInterface;
+use Interop\Http\ServerMiddleware\DelegateInterface;
 use Onion\Framework\Interfaces;
 use Psr\Http\Message;
 
