@@ -29,8 +29,9 @@ trait PropertyHydrator
         $data = [];
         if ($keys === []) {
             $reflection = new \ReflectionObject($this);
-            foreach ($reflection->getProperties(\ReflectionProperty::IS_PUBLIC) as $name => $value) {
-                $data[strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $name))] = $value;
+            foreach ($reflection->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+                $data[strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $property->getName()))] =
+                    $property->getValue($this);
             }
 
             return $data;
