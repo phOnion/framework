@@ -32,5 +32,5 @@ interface HydratableInterface
      *
      * @return array The extracted data
      */
-    public function extract(array $keys): array;
+    public function extract(array $keys = []): array;
 }
