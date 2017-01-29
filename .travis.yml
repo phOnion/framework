@@ -4,6 +4,7 @@ before_script:
   - echo 'assert.exception=1' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
 php:
   - '7.0'
+  - '7.1'
   - nightly
 matrix:
   allow_failures:
