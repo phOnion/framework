@@ -11,8 +11,13 @@ class Accept implements Interfaces\Header
         $contentTypes=explode(',', $headerValue);
 
         foreach ($contentTypes as $pair) {
-            if (preg_match('~^(?P<type>[a-z0-9+-/.*]+)(?:[a-z0-9=\-;]+)?(?:;q=(?P<priority>[0-9.]{1,3}))?(?:[a-z0-9=\-;]+)?$~i', trim($pair), $matches)) {
-                $this->types[strtolower(trim($matches['type']))] = (float) (isset($matches['priority']) ? trim($matches['priority']) : 1);
+            if (preg_match(
+                '~^(?P<type>[a-z0-9+-/.*]+)(?:[a-z0-9=\-;]+)?(?:;q=(?P<priority>[0-9.]{1,3}))?(?:[a-z0-9=\-;]+)?$~i',
+                trim($pair),
+                $matches
+            )) {
+                $this->types[strtolower(trim($matches['type']))] =
+                    (float) (isset($matches['priority']) ? trim($matches['priority']) : 1);
             }
         }
     }
