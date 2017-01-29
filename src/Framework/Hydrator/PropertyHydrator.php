@@ -37,8 +37,8 @@ trait PropertyHydrator
             return $data;
         }
 
-        foreach ($keys as $name => $value) {
-            $data[strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $name))] = $value;
+        foreach ($keys as $name) {
+            $data[$name] = $this->{str_replace('_', '', lcfirst(ucwords($name, '_')))};
         }
 
         return $data;
