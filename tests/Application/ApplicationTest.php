@@ -84,28 +84,6 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         $app->process($this->prophesize(ServerRequestInterface::class)->reveal(), null);
     }
 
-    public function testDelegateInvocationOnException()
-    {
-        $request = $this->prophesize(ServerRequestInterface::class);
-        $request->withAttribute()->willReturn(function () use ($request) {
-            return $request->reveal();
-        });
-        $this->stack->process(new TypeToken(RequestInterface::class), null)
-            ->willThrow(\Exception::class);
-
-        $delegate = $this->prophesize(DelegateInterface::class);
-        $delegate->process(new AnyValueToken())->willThrow(new \Exception('Delegate Error'));
-
-        $app = new Application(
-            $this->stack->reveal(),
-            $this->emitter->reveal()
-        );
-
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Delegate Error');
-        $app->process($request->reveal(), $delegate->reveal());
-    }
-
     public function testApplicationFrameRun()
     {
         $request = $this->prophesize(ServerRequestInterface::class);
