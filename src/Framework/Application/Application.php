@@ -41,14 +41,6 @@ class Application implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, DelegateInterface $delegate = null): ResponseInterface
     {
-        try {
-            return $this->delegate->process($request);
-        } catch (\Throwable $ex) {
-            if ($delegate === null) {
-                throw $ex;
-            }
-
-            return $delegate->process($request->withAttribute('exception', $ex));
-        }
+        return $this->delegate->process($request);
     }
 }
