@@ -113,7 +113,7 @@ class Router implements Interfaces\RouterInterface, MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, DelegateInterface $delegate = null): ResponseInterface
     {
-       /**
+        /**
         * @var array[] $route
         */
         $route = $this->match($request->getMethod(), $request->getUri());
