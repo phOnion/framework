@@ -2,8 +2,8 @@
 declare(strict_types=1);
 namespace Onion\Framework\Dependency\Exception;
 
-use Interop\Container\Exception\NotFoundException;
+use Psr\Container\NotFoundExceptionInterface;
 
-class UnknownDependency extends \Exception implements NotFoundException
+class UnknownDependency extends \Exception implements NotFoundExceptionInterface
 {
 }

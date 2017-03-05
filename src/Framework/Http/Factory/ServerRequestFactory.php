@@ -2,8 +2,8 @@
 declare(strict_types=1);
 namespace Onion\Framework\Http\Factory;
 
-use Interop\Container\ContainerInterface;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 final class ServerRequestFactory implements FactoryInterface

@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Onion\Framework\Http\Header;
 
-class Accept implements Interfaces\Header
+class Accept implements Interfaces\AcceptInterface
 {
     private $types = [];
     

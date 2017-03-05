@@ -2,8 +2,8 @@
 declare(strict_types=1);
 namespace Onion\Framework\Dependency\Exception;
 
-use Interop\Container\Exception\ContainerException;
+use Psr\Container\ContainerExceptionInterface;
 
-class ContainerErrorException extends \Exception implements ContainerException, \Throwable
+class ContainerErrorException extends \Exception implements ContainerExceptionInterface
 {
 }
