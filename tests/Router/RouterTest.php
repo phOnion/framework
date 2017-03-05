@@ -47,12 +47,18 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             $matcher->reveal()
         );
 
-
-
         $this->delegate = $this->prophesize(DelegateInterface::class)->reveal();
 
         $this->parser = $parser->reveal();
         $this->matcher = $matcher->reveal();
+    }
+
+    public function testTraverasble()
+    {
+        $this->router->addRoute('/', $this->delegate, ['GET'], 'test');
+        $iter = $this->router->getIterator();
+        $this->assertContains('/', $iter->current());
+        $this->assertContains(['GET'], $iter->current());
     }
 
     public function testExceptionWhenNoRouteRootObjectDefined()
