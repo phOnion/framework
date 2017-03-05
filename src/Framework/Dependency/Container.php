@@ -2,9 +2,9 @@
 declare(strict_types=1);
 namespace Onion\Framework\Dependency;
 
-use Interop\Container\ContainerInterface;
-use Interop\Container\Exception\ContainerException;
-use Interop\Container\Exception\NotFoundException;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Onion\Framework\Dependency\Exception\ContainerErrorException;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
@@ -28,8 +28,8 @@ final class Container implements ContainerInterface
      *
      * @param string $key Identifier of the entry to look for.
      *
-     * @throws NotFoundException|UnknownDependency  No entry was found for this identifier.
-     * @throws ContainerException|ContainerErrorException Error while retrieving the entry.
+     * @throws NotFoundExceptionInterface|UnknownDependency  No entry was found for this identifier.
+     * @throws ContainerExceptionInterface|ContainerErrorException Error while retrieving the entry.
      * @throws \InvalidArgumentException If the provided identifier is not a string
      *
      * @return mixed Entry.

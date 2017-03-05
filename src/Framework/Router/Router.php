@@ -176,6 +176,11 @@ class Router implements Interfaces\RouterInterface, MiddlewareInterface
         ));
     }
 
+    public function getIterator(): \Traversable
+    {
+        return new \ArrayIterator($this->routes);
+    }
+
     private function getMatcher(): Interfaces\MatcherInterface
     {
         return $this->matcher;

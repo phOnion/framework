@@ -5,8 +5,8 @@
 
 namespace Tests\Dependency;
 
-use Interop\Container\Exception\ContainerException;
-use Interop\Container\Exception\NotFoundException;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Onion\Framework\Dependency\Container;
 use Onion\Framework\Dependency\Exception\ContainerErrorException;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
@@ -49,7 +49,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
             ]
         ]);
 
-        $this->expectException(ContainerException::class);
+        $this->expectException(ContainerExceptionInterface::class);
         $container->get(\stdClass::class);
     }
 
@@ -126,7 +126,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     public function testExceptionOnNonExistingEntry()
     {
         $container = new Container([]);
-        $this->expectException(NotFoundException::class);
+        $this->expectException(NotFoundExceptionInterface::class);
         $container->get('foo');
     }
 
@@ -156,7 +156,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
             $this->markTestSkipped('The "assert.exception" should be set to "1" to throw the exception');
         }
 
-        $this->expectException(ContainerException::class);
+        $this->expectException(ContainerExceptionInterface::class);
         $container = new Container([
             'factories' => [
                 \stdClass::class => function () {
@@ -176,7 +176,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
             $this->markTestSkipped('The "assert.exception" should be set to "1" to throw the exception');
         }
 
-        $this->expectException(ContainerException::class);
+        $this->expectException(ContainerExceptionInterface::class);
         $container = new Container(
             [
                 'factories' => [
@@ -210,7 +210,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
             $this->markTestSkipped('The "assert.exception" should be set to "1" to throw the exception');
         }
 
-        $this->expectException(ContainerException::class);
+        $this->expectException(ContainerExceptionInterface::class);
         $container = new Container(
             [
                 'invokables' => [
@@ -250,14 +250,14 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     {
         $container = new Container([]);
 
-        $this->expectException(ContainerException::class);
+        $this->expectException(ContainerExceptionInterface::class);
         $container->get(DependencyE::class);
     }
 
     public function testUnknownInterfaceResolution()
     {
         $container = new Container([]);
-        $this->expectException(ContainerException::class);
+        $this->expectException(ContainerExceptionInterface::class);
         $container->get(DependencyF::class);
     }
 }

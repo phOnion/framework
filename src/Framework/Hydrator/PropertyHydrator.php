@@ -3,12 +3,18 @@ declare(strict_types=1);
 
 namespace Onion\Framework\Hydrator;
 
+use Onion\Framework\Hydrator\Interfaces\HydratableInterface;
+
 trait PropertyHydrator
 {
     /**
-     * @inheritdoc
+     * Hydrates the object with the $data provided
+     *
+     * @param array $data Assoc array with param
+     *
+     * @return $this A hydrated copy of the object provided
      */
-    public function hydrate(array $data)
+    public function hydrate(array $data): HydratableInterface
     {
         $target = clone $this;
         foreach ($data as $name => $value) {

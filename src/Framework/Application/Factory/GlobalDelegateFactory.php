@@ -2,10 +2,10 @@
 declare(strict_types=1);
 namespace Onion\Framework\Application\Factory;
 
-use Interop\Container\ContainerInterface;
 use Interop\Http\ServerMiddleware\DelegateInterface;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Onion\Framework\Http\Middleware\Delegate;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
