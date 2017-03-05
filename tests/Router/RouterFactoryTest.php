@@ -5,7 +5,7 @@
 
 namespace Tests\Router;
 
-use Interop\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 use Interop\Http\Middleware\ServerMiddlewareInterface;
 use Onion\Framework\Http\Middleware\Exceptions\MiddlewareException;
 use Onion\Framework\Router\Interfaces\MatcherInterface;

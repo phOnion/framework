@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Onion\Framework\Router\Factory;
 
-use Interop\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Onion\Framework\Http\Middleware\Delegate;
 use Onion\Framework\Router\Interfaces\MatcherInterface;

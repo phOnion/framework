@@ -5,7 +5,7 @@
 
 namespace Tests\Application;
 
-use Interop\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 use Interop\Http\ServerMiddleware\DelegateInterface;
 use Onion\Framework\Application\Factory\GlobalDelegateFactory;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
