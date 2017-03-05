@@ -11,7 +11,7 @@
 
 namespace Tests\Factory;
 
-use Interop\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 use Onion\Framework\Http\Factory\ServerRequestFactory;
 use Psr\Http\Message\ServerRequestInterface;
 

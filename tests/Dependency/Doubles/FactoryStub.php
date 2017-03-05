@@ -4,7 +4,7 @@
  */
 namespace Tests\Dependency\Doubles;
 
-use Interop\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 
 class FactoryStub implements FactoryInterface
