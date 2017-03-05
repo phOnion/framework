@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Onion\Framework\Hydrator;
 
+use Onion\Framework\Hydrator\Interfaces\HydratableInterface;
+
 /**
  * Hydrates and extracts objects using getters and setters
  */
@@ -15,7 +17,7 @@ trait MethodHydrator
      *
      * @return $this A hydrated copy of the object provided
      */
-    public function hydrate(array $data)
+    public function hydrate(array $data): HydratableInterface
     {
         $target = clone $this;
         foreach ($data as $name => $value) {
