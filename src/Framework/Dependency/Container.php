@@ -147,10 +147,11 @@ final class Container implements ContainerInterface
     {
         if (is_string($identifier)) {
             if (class_exists($identifier) || interface_exists($identifier) ||
-                (function_exists("is_$identifier") && call_user_func("is_$identifier", $result))
+                (function_exists("is_$identifier"))
             ) {
                 assert(
-                    $result instanceof $identifier,
+                    $result instanceof $identifier ||
+                    (function_exists("is_$identifier") && call_user_func("is_$identifier", $result)),
                     new ContainerErrorException(sprintf(
                         'Unable to verify that "%s" is of type "%s"',
                         is_object($result) ? get_class($result) : $result,
@@ -177,7 +178,7 @@ final class Container implements ContainerInterface
         $constructorRef = $classReflection->getConstructor();
         $parameters = [];
         foreach ($constructorRef->getParameters() as $parameter) {
-            if (!$parameter->hasType() && !$parameter->isOptional()) {
+            if (!$parameter->hasType() && !$parameter->isOptional() && !$this->has($parameter->getName())) {
                 throw new ContainerErrorException(sprintf(
                     'Unable to resolve a class parameter "%s" of "%s::%s" without type ',
                     $parameter->getName(),
@@ -192,7 +193,6 @@ final class Container implements ContainerInterface
             }
 
             if ($parameter->getType() !== null && $parameter->getType()->isBuiltin() && !$parameter->isOptional()) {
-                $className = (string) $parameter->getType();
                 $parameters[$parameter->getPosition()] = $this->get($parameter->getName());
                 continue;
             }
