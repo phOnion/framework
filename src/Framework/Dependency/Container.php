@@ -94,10 +94,10 @@ final class Container implements ContainerInterface
                 $keys = explode('.', $namePath);
                 $ref = &$this->dependencies;
                 while ($keys !== []) {
-                    $k = array_shift($keys);
-                    if (isset($ref[$k])) {
+                    $component = array_shift($keys);
+                    if (isset($ref[$component])) {
                         $exists=true;
-                        $ref= &$ref[$k];
+                        $ref= &$ref[$component];
                         continue;
                     }
 
