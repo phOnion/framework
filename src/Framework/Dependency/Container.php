@@ -57,6 +57,14 @@ final class Container implements ContainerInterface
             if (class_exists($key)) {
                 return $this->retrieveFromReflection($key);
             }
+
+            if (is_string($key)) {
+                if (strpos($this->convertVariableName($key), '.') !== false) {
+                    $key=$this->convertVariableName($key);
+
+                    return $this->retrieveFromDotString($key);
+                }
+            }
         } catch (\RuntimeException $ex) {
             throw new ContainerErrorException($ex->getMessage(), 0, $ex);
         }
@@ -74,12 +82,32 @@ final class Container implements ContainerInterface
      */
     public function has($key): bool
     {
-        return (
+        $exists = (
             array_key_exists($key, $this->dependencies) ||
             isset($this->dependencies['invokables'][$key]) ||
             isset($this->dependencies['factories'][$key]) ||
             class_exists($key)
         );
+
+        if (!$exists) {
+            if (strpos(($namePath = $this->convertVariableName($key)), '.') !== false) {
+                $keys = explode('.', $namePath);
+                $ref = &$this->dependencies;
+                while ($keys !== []) {
+                    $k = array_shift($keys);
+                    if (isset($ref[$k])) {
+                        $exists=true;
+                        $ref= &$ref[$k];
+                        continue;
+                    }
+
+                    $exists = false;
+                    break;
+                }
+            }
+        }
+
+        return $exists;
     }
 
     private function retrieveInvokable(string $className)
@@ -117,15 +145,19 @@ final class Container implements ContainerInterface
      */
     private function enforceReturnType($identifier, $result)
     {
-        if (class_exists($identifier) || interface_exists($identifier)) {
-            assert(
-                $result instanceof $identifier,
-                new ContainerErrorException(sprintf(
-                    'Unable to verify that "%s" is instance of "%s"',
-                    get_class($result),
-                    $identifier
-                ))
-            );
+        if (is_string($identifier)) {
+            if (class_exists($identifier) || interface_exists($identifier) ||
+                (function_exists("is_$identifier") && call_user_func("is_$identifier", $result))
+            ) {
+                assert(
+                    $result instanceof $identifier,
+                    new ContainerErrorException(sprintf(
+                        'Unable to verify that "%s" is of type "%s"',
+                        get_class($result),
+                        $identifier
+                    ))
+                );
+            }
         }
 
         return $result;
@@ -139,7 +171,7 @@ final class Container implements ContainerInterface
         }
 
         if ($classReflection->getConstructor() !== null && $classReflection->getConstructor()->getParameters() === []) {
-            return $classReflection->newInstanceArgs([]);
+            return $classReflection->newInstance();
         }
 
         $constructorRef = $classReflection->getConstructor();
@@ -159,8 +191,15 @@ final class Container implements ContainerInterface
                 continue;
             }
 
+            if ($parameter->getType() !== null && $parameter->getType()->isBuiltin() && !$parameter->isOptional()) {
+                $className = (string) $parameter->getType();
+                $parameters[$parameter->getPosition()] = $this->get($parameter->getName());
+                continue;
+            }
+
             if ($parameter->isOptional()) {
-                $parameters[$parameter->getPosition()] = $parameter->getDefaultValue();
+                $parameters[$parameter->getPosition()] = $this->has($parameter->getName()) ?
+                    $this->get($parameter->getName()) : $parameter->getDefaultValue();
                 continue;
             }
 
@@ -197,5 +236,42 @@ final class Container implements ContainerInterface
         }
 
         return $result;
+    }
+
+    private function retrieveFromDotString(string $name)
+    {
+        $fragments = explode('.', $name);
+        $lead = array_shift($fragments);
+        $stack = "$lead";
+
+        assert(
+            isset($this->dependencies[$lead]),
+            new ContainerErrorException(
+                "No definition available for '{$stack}' inside container"
+            )
+        );
+
+        $component = $this->dependencies[$lead];
+
+        foreach ($fragments as $fragment) {
+            $stack .= ".$fragment";
+            assert(
+                (
+                    is_array($component) || $component instanceof \ArrayAccess || $component instanceof \ArrayObject
+                ) && isset($component[$fragment]),
+                new ContainerErrorException(
+                    "No definition available for '{$stack}' inside container"
+                )
+            );
+
+            $component = $component[$fragment];
+        }
+
+        return $component;
+    }
+
+    private function convertVariableName(string $name): string
+    {
+        return str_replace('_', '.', strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $name)));
     }
 }
