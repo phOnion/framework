@@ -153,7 +153,7 @@ final class Container implements ContainerInterface
                     $result instanceof $identifier,
                     new ContainerErrorException(sprintf(
                         'Unable to verify that "%s" is of type "%s"',
-                        get_class($result),
+                        is_object($result) ? get_class($result) : $result,
                         $identifier
                     ))
                 );
