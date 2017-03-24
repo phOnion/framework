@@ -318,4 +318,13 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $container = new Container([]);
         $this->assertInstanceOf(DependencyI::class, $container->get(DependencyI::class));
     }
+
+    public function testRetrievalOfDotString()
+    {
+        $container = new Container([
+            'foo' => ['bar' => 'baz']
+        ]);
+        $this->assertTrue($container->has('foo.bar'));
+        $this->assertSame($container->get('foo.bar'), 'baz');
+    }
 }
