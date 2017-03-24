@@ -40,6 +40,16 @@ class CacheAwareContainer implements ContainerInterface
     private $cache;
 
     /**
+     * A list of keys that are excluded from the caching and
+     * will always be retrieved from the resolved container.
+     * This is to allow the construction of dependencies that
+     * might change on some factors external to the application.
+     *
+     * @var array
+     */
+    private $blacklist;
+
+    /**
      * CacheAwareContainer constructor.
      * This is a composition-based extension to the regular container,
      * it receives a factory class that should prevent initialization
@@ -49,11 +59,13 @@ class CacheAwareContainer implements ContainerInterface
      *
      * @param FactoryInterface $factory A factory to build the real container
      * @param CacheInterface $cache Cache in which to store resolved deps
+     * @param array $blacklist List of keys to not include in the cache
      */
-    public function __construct(FactoryInterface $factory, CacheInterface $cache)
+    public function __construct(FactoryInterface $factory, CacheInterface $cache, array $blacklist = [])
     {
         $this->containerFactory = $factory;
         $this->cache = $cache;
+        $this->blacklist = $blacklist;
     }
 
     /**
@@ -72,25 +84,28 @@ class CacheAwareContainer implements ContainerInterface
 
     /**
      * @inheritdoc
+     * @throws \Psr\SimpleCache\InvalidArgumentException
+     * @throws \Onion\Framework\Dependency\Exception\ContainerErrorException
      */
     public function get($id)
     {
-        if ($this->cache->has($id)) {
+        if (!in_array($id, $this->blacklist, true) && $this->cache->has($id)) {
             return $this->cache->get($id);
         }
 
         $dependency = $this->resolveContainer()->get($id);
-        if ($this->cache->set($id, $dependency)) {
-            return $dependency;
+        if (!in_array($id, $this->blacklist, true) && !$this->cache->set($id, $dependency)) {
+            throw new ContainerErrorException(
+                "Unable to persist resolved dependency '$id' in cache"
+            );
         }
 
-        throw new ContainerErrorException(
-            "Unable to persist resolved dependency '$id' in cache"
-        );
+        return $dependency;
     }
 
     /**
      * @inheritdoc
+     * @throws \Psr\SimpleCache\InvalidArgumentException
      */
     public function has($id): bool
     {
