@@ -1,58 +1,68 @@
 ## About
 
-This is a minimalistic PSR-2, PSR-4, PSR-7, PSR-11, PSR-15 compliant
-framework intended to provide the absolute minimum for writing a
-web application that utilizes the middleware concept as well as other
-accepted standards from the community. There are no plans at least for
-now to provide functionality that will allow usages other than web
-oriented.
+This is a minimalistic core framework that complies with, supports and uses various 
+PSRs:
 
-It implements the PSR-15 spec (`http-interop/http-middleware: dev-master`)
-since some changes ware made that made the client middleware obsolete.
+ - PSR-2 (Coding Standard)
+ - PSR-4 (Autoloading)
+ - PSR-7 (HTTP Message)
+ - PSR-11 (Container Interface)
+ - PSR-15 (HTTP Middleware)
+ - PSR-16 (Simple Caching) - *container wrapper only*
+ 
+While it can be used to power a full-blown application framework as of now
+it is mainly oriented towards the core tools needed for building an API.
+Regardless of the fact that it does not come with any transformers/serializers/etc.
+for doing so there is a complimentary package `onion/rest` which provides the ability
+to build APIs that return multiple RESTful responses. It is built only with depending
+on `zendframework/zend-diactoros` (PSR-7 implementation) so there are no wrappers
+around any external frameworks/components/bundles/etc. so the developer(s) have absolute
+control over what they want to use.
 
-## Foreword
+The components included are: DI Container, Middleware Dispatcher, Router and Hydrator traits.
+nothing more, nothing less. There are complementary packages, that are aimed to add
+some additional features which are more nice-to-have, but not necessarily needed or always 
+needed by everyone, so they will be implemented as separate optional packages and some could
+be included in the if they prove to be useful for a majority of users and stable enough.
 
-The drive behind the project was to write cleaner code utilizing php7
-features + standards + learning new stuff and I think that it is worth
-sharing, if not for people building the world's next best application at
-least to help those, like me, who are looking in to get new idea,
-understand some things or in general see how some things can be done or
-at the worst case scenario, how NOT to do certain stuff :D.
+*NOTICE*
+There is no and there will not be an ORM, Template Engine or any-high-level-feature. There are
+pleanty of those already available, there is no need to reinvent the wheel.
 
-## Development tips
+  - ORM:
+    - Doctrine (1 and 2)
+    - Eloquent
+    - Propel
+  - Template Engine:
+    - Smarty
+    - Twig
+    - Blade
+    - Plates
 
-In the development environment and when testing the php.ini directives
-`zend.assertions` and `assert.exceptions` should both be set to 1, since
-the internals of the framework actually utilise the exceptions to warn
-about development mistakes, but are intended to be turned off on
-production in order to squeeze maximum performance out of the framework
-by disabling some checks. An example of such is the container that will
-throw when a dependency does not match it's key type (if class/interface
-name is used) and when a factory does not implement `FactoryInterface`,
-when assertions are on, but will fail, if they are disabled, since those
-are not things that should be affected by user input or any other input
-for that matter (they are developer made mistakes).
 
-## Dependency Injection
+One of the main goals for this project was to have a minimal core, without dependencies, 
+compliant with PSRs and allow every oen using it, use what they are familiar with in terms
+of additional packages without having to create wrappers/adapters framework.
 
-The framework comes with a capable DI container that can resolve
-dependencies using a combination of a interface-class map, class-factory
-map and also reflection-based type resolution. These should be enough
-for any developer to achieve everything necessary without relying on
-external sources, such as JSON, XML or annotations (although any usage
-in combination with annotations/AOP is encouraged, but not without a
-very good reason to be used, since it can make the code very cryptic,
-error prone and hard to understand/maintain/pickup for others.
+## Requirements
 
-## Routing
+ 1. PHP 7.0+
+ 2. php.ini (Optional but recommended while development)
+    - `zend.assertions=1`
+    - `assert.exceptions=1`
+ 
+The php.ini configuration is suggested only while development, so that some errors, which 
+could happen only while developing (misspelled array key, invalid configuration, etc.) are
+not checked all the time while running on production environment - squeezing as much 
+performance as possible.
 
-Also a routing component is presented as well, which can be altered
-without changing the actual implementation through the use of
-parsers and matchers:
+For a quick start you can clone [`onion/bootstrap`](https://github.com/phOnion/bootstrap) and 
+see how the basic setup looks like and play around to test the features available.
 
-  - **Parsers** - They are responsible to prepare the route to be
-  processed later when matching against the current request URI.
+## Configuration
 
-  - **Matchers** - are responsible for making the heavy lifting in terms
-  of extracting parameters if applicable and determining if the current
-  request URI matches the offered pattern
+The approach taken for setting up the framework is more configuration over convention
+because everyone has different code-style and different tastes, there is no point in 
+enforcing a specific way to code something so that it works, without providing any 
+other way. So there are some configurations for some components and they are explained
+in their respectful sections of this documentation.
