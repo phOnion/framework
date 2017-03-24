@@ -90,4 +90,14 @@ class CacheAwareContainerTest extends \PHPUnit_Framework_TestCase
         $this->expectException(ContainerExceptionInterface::class);
         $cacheContainer->get('bar');
     }
+
+    public function testHonoringOfBlacklistedKeys()
+    {
+        $this->cache->set('bar', 'baz')->willThrow(new \LogicException('Should not be called'));
+        $this->cache->has('bar')->willReturn(false);
+        $container = new CacheAwareContainer($this->factory, $this->cache->reveal(), [
+            'bar'
+        ]);
+        $this->assertSame($container->get('bar'), 'baz');
+    }
 }
