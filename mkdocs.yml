@@ -5,6 +5,7 @@ pages:
     - Introduction: dependency/index.md
     - Invokables: dependency/invokables.md
     - Factories: dependency/factories.md
+    - Caching: dependency/caching.md
   - Tutorial: setup.md
   - "Advanced":
     - "Routing": routing.md
