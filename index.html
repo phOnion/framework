@@ -5,34 +5,26 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="None">
   
-  
-  
-  <title>Onion - Framework</title>
-  
-
   <link rel="shortcut icon" href="./img/favicon.ico">
-
-  
+  <title>Intro - Onion - Framework</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="./css/theme.css" type="text/css" />
   <link rel="stylesheet" href="./css/theme_extra.css" type="text/css" />
   <link rel="stylesheet" href="./css/highlight.css">
-
   
   <script>
     // Current page data
-    var mkdocs_page_name = "None";
+    var mkdocs_page_name = "Intro";
     var mkdocs_page_input_path = "index.md";
     var mkdocs_page_url = "/";
   </script>
   
   <script src="./js/jquery-2.1.1.min.js"></script>
   <script src="./js/modernizr-2.8.3.min.js"></script>
-  <script type="text/javascript" src="./js/highlight.pack.js"></script>
-  <script src="./js/theme.js"></script> 
-
+  <script type="text/javascript" src="./js/highlight.pack.js"></script> 
   
 </head>
 
@@ -52,7 +44,7 @@
       </div>
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-        <ul class="current">
+	<ul class="current">
           
             <li>
     <li class="toctree-l1 current">
@@ -63,21 +55,51 @@
                 <li class="toctree-l3"><a href="#about">About</a></li>
                 
             
-                <li class="toctree-l3"><a href="#foreword">Foreword</a></li>
+                <li class="toctree-l3"><a href="#requirements">Requirements</a></li>
                 
             
-                <li class="toctree-l3"><a href="#development-tips">Development tips</a></li>
-                
-            
-                <li class="toctree-l3"><a href="#dependency-injection">Dependency Injection</a></li>
-                
-            
-                <li class="toctree-l3"><a href="#routing">Routing</a></li>
+                <li class="toctree-l3"><a href="#configuration">Configuration</a></li>
                 
             
             </ul>
         
     </li>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Dependency</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="dependency/">Introduction</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="dependency/invokables/">Invokables</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="dependency/factories/">Factories</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="dependency/caching/">Caching</a>
+        
+    </li>
+
+        
+    </ul>
 <li>
           
             <li>
@@ -142,57 +164,71 @@
             <div class="section">
               
                 <h2 id="about">About</h2>
-<p>This is a minimalistic PSR-2, PSR-4, PSR-7, PSR-11, PSR-15 compliant
-framework intended to provide the absolute minimum for writing a
-web application that utilizes the middleware concept as well as other
-accepted standards from the community. There are no plans at least for
-now to provide functionality that will allow usages other than web
-oriented.</p>
-<p>It implements the PSR-15 spec (<code>http-interop/http-middleware: dev-master</code>)
-since some changes ware made that made the client middleware obsolete.</p>
-<h2 id="foreword">Foreword</h2>
-<p>The drive behind the project was to write cleaner code utilizing php7
-features + standards + learning new stuff and I think that it is worth
-sharing, if not for people building the world's next best application at
-least to help those, like me, who are looking in to get new idea,
-understand some things or in general see how some things can be done or
-at the worst case scenario, how NOT to do certain stuff :D.</p>
-<h2 id="development-tips">Development tips</h2>
-<p>In the development environment and when testing the php.ini directives
-<code>zend.assertions</code> and <code>assert.exceptions</code> should both be set to 1, since
-the internals of the framework actually utilise the exceptions to warn
-about development mistakes, but are intended to be turned off on
-production in order to squeeze maximum performance out of the framework
-by disabling some checks. An example of such is the container that will
-throw when a dependency does not match it's key type (if class/interface
-name is used) and when a factory does not implement <code>FactoryInterface</code>,
-when assertions are on, but will fail, if they are disabled, since those
-are not things that should be affected by user input or any other input
-for that matter (they are developer made mistakes).</p>
-<h2 id="dependency-injection">Dependency Injection</h2>
-<p>The framework comes with a capable DI container that can resolve
-dependencies using a combination of a interface-class map, class-factory
-map and also reflection-based type resolution. These should be enough
-for any developer to achieve everything necessary without relying on
-external sources, such as JSON, XML or annotations (although any usage
-in combination with annotations/AOP is encouraged, but not without a
-very good reason to be used, since it can make the code very cryptic,
-error prone and hard to understand/maintain/pickup for others.</p>
-<h2 id="routing">Routing</h2>
-<p>Also a routing component is presented as well, which can be altered
-without changing the actual implementation through the use of
-parsers and matchers:</p>
+<p>This is a minimalistic core framework that complies with, supports and uses various 
+PSRs:</p>
 <ul>
-<li>
-<p><strong>Parsers</strong> - They are responsible to prepare the route to be
-  processed later when matching against the current request URI.</p>
+<li>PSR-2 (Coding Standard)</li>
+<li>PSR-4 (Autoloading)</li>
+<li>PSR-7 (HTTP Message)</li>
+<li>PSR-11 (Container Interface)</li>
+<li>PSR-15 (HTTP Middleware)</li>
+<li>PSR-16 (Simple Caching) - <em>container wrapper only</em></li>
+</ul>
+<p>While it can be used to power a full-blown application framework as of now
+it is mainly oriented towards the core tools needed for building an API.
+Regardless of the fact that it does not come with any transformers/serializers/etc.
+for doing so there is a complimentary package <code>onion/rest</code> which provides the ability
+to build APIs that return multiple RESTful responses. It is built only with depending
+on <code>zendframework/zend-diactoros</code> (PSR-7 implementation) so there are no wrappers
+around any external frameworks/components/bundles/etc. so the developer(s) have absolute
+control over what they want to use.</p>
+<p>The components included are: DI Container, Middleware Dispatcher, Router and Hydrator traits.
+nothing more, nothing less. There are complementary packages, that are aimed to add
+some additional features which are more nice-to-have, but not necessarily needed or always 
+needed by everyone, so they will be implemented as separate optional packages and some could
+be included in the if they prove to be useful for a majority of users and stable enough.</p>
+<p><em>NOTICE</em>
+There is no and there will not be an ORM, Template Engine or any-high-level-feature. There are
+pleanty of those already available, there is no need to reinvent the wheel.</p>
+<ul>
+<li>ORM:<ul>
+<li>Doctrine (1 and 2)</li>
+<li>Eloquent</li>
+<li>Propel</li>
+</ul>
 </li>
-<li>
-<p><strong>Matchers</strong> - are responsible for making the heavy lifting in terms
-  of extracting parameters if applicable and determining if the current
-  request URI matches the offered pattern</p>
+<li>Template Engine:<ul>
+<li>Smarty</li>
+<li>Twig</li>
+<li>Blade</li>
+<li>Plates</li>
+</ul>
 </li>
 </ul>
+<p>One of the main goals for this project was to have a minimal core, without dependencies, 
+compliant with PSRs and allow every oen using it, use what they are familiar with in terms
+of additional packages without having to create wrappers/adapters framework.</p>
+<h2 id="requirements">Requirements</h2>
+<ol>
+<li>PHP 7.0+</li>
+<li>php.ini (Optional but recommended while development)<ul>
+<li><code>zend.assertions=1</code></li>
+<li><code>assert.exceptions=1</code></li>
+</ul>
+</li>
+</ol>
+<p>The php.ini configuration is suggested only while development, so that some errors, which 
+could happen only while developing (misspelled array key, invalid configuration, etc.) are
+not checked all the time while running on production environment - squeezing as much 
+performance as possible.</p>
+<p>For a quick start you can clone <a href="https://github.com/phOnion/bootstrap"><code>onion/bootstrap</code></a> and 
+see how the basic setup looks like and play around to test the features available.</p>
+<h2 id="configuration">Configuration</h2>
+<p>The approach taken for setting up the framework is more configuration over convention
+because everyone has different code-style and different tastes, there is no point in 
+enforcing a specific way to code something so that it works, without providing any 
+other way. So there are some configurations for some components and they are explained
+in their respectful sections of this documentation.</p>
               
             </div>
           </div>
@@ -200,7 +236,7 @@ parsers and matchers:</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="setup/" class="btn btn-neutral float-right" title="Tutorial">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="dependency/" class="btn btn-neutral float-right" title="Introduction">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
     </div>
@@ -220,23 +256,24 @@ parsers and matchers:</p>
       </div>
 
     </section>
-
+    
   </div>
 
-<div class="rst-versions" role="note" style="cursor: pointer">
+  <div class="rst-versions" role="note" style="cursor: pointer">
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
       
-        <span style="margin-left: 15px"><a href="setup/" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="dependency/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
+    <script src="./js/theme.js"></script>
 
 </body>
 </html>
 
 <!--
-MkDocs version : 0.15.3
-Build Date UTC : 2016-12-03 20:25:13.974771
+MkDocs version : 0.16.1
+Build Date UTC : 2017-03-24 18:13:14
 -->

@@ -3,16 +3,8 @@
 
     
     <url>
-     <loc>None/</loc>
-     <lastmod>2016-12-03</lastmod>
-     <changefreq>daily</changefreq>
-    </url>
-    
-
-    
-    <url>
-     <loc>None/setup/</loc>
-     <lastmod>2016-12-03</lastmod>
+     <loc>/</loc>
+     <lastmod>2017-03-24</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
@@ -20,14 +12,50 @@
     
         
     <url>
-     <loc>None/routing/</loc>
-     <lastmod>2016-12-03</lastmod>
+     <loc>/dependency/</loc>
+     <lastmod>2017-03-24</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
-     <loc>None/modules/</loc>
-     <lastmod>2016-12-03</lastmod>
+     <loc>/dependency/invokables/</loc>
+     <lastmod>2017-03-24</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/dependency/factories/</loc>
+     <lastmod>2017-03-24</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/dependency/caching/</loc>
+     <lastmod>2017-03-24</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    
+
+    
+    <url>
+     <loc>/setup/</loc>
+     <lastmod>2017-03-24</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    
+
+    
+        
+    <url>
+     <loc>/routing/</loc>
+     <lastmod>2017-03-24</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/modules/</loc>
+     <lastmod>2017-03-24</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
