@@ -8,14 +8,15 @@ namespace Tests\Dependency;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Onion\Framework\Dependency\Container;
-use Onion\Framework\Dependency\Exception\ContainerErrorException;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
-use Tests\Dependency\Doubles\DependencyA;
 use Tests\Dependency\Doubles\DependencyB;
 use Tests\Dependency\Doubles\DependencyC;
 use Tests\Dependency\Doubles\DependencyD;
 use Tests\Dependency\Doubles\DependencyE;
 use Tests\Dependency\Doubles\DependencyF;
+use Tests\Dependency\Doubles\DependencyG;
+use Tests\Dependency\Doubles\DependencyH;
+use Tests\Dependency\Doubles\DependencyI;
 use Tests\Dependency\Doubles\FactoryStub;
 
 class ContainerTest extends \PHPUnit_Framework_TestCase
@@ -254,10 +255,74 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $container->get(DependencyE::class);
     }
 
+    public function testResolutionBasedOnSimpleVariableName()
+    {
+        $container = new Container([
+            'name' => 'foo'
+        ]);
+
+        $this->assertNotEmpty($container->get(DependencyE::class)->getName());
+        $this->assertSame('foo', $container->get(DependencyE::class)->getName());
+    }
+
+    public function testResolutionWithComplexVariableName()
+    {
+        $container = new Container([
+            'test' => [
+                'mock' => [
+                    'name' => 'foo'
+                ]
+            ]
+        ]);
+        $this->assertTrue($container->has('test.mock.name'));
+        $dep = $container->get(DependencyG::class);
+        $this->assertNotEmpty($dep->getName());
+        $this->assertSame('foo', $dep->getname());
+    }
+
+    public function testExceptionWhenComplexResolutionFails()
+    {
+        $container = new Container(['foo' => ['bar'=> 'baz']]);
+        $this->assertFalse($container->has('foo.bar.baz'));
+//        $this->expectException(ContainerExceptionInterface::class);
+//        $this->expectExceptionMessage('Unable to resolve "foo.bar.baz"');
+    }
+
+    public function testExceptionOnComplexResolutionTypeMismatch()
+    {
+        $container = new Container(['test' => ['mock' => ['name' => 5]]]);
+        $this->assertSame('5', $container->get(DependencyG::class)->getName());
+    }
+
     public function testUnknownInterfaceResolution()
     {
         $container = new Container([]);
         $this->expectException(ContainerExceptionInterface::class);
         $container->get(DependencyF::class);
+    }
+
+    public function testExceptionOnConstructorParameterNotAvailable()
+    {
+        $container = new Container([]);
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage(
+            'Unable to resolve a class parameter "foo" of "Tests\Dependency\Doubles\DependencyH::__construct"'
+        );
+        $container->get(DependencyH::class);
+    }
+
+    public function testRetrievalOfEmptyConstructorArgs()
+    {
+        $container = new Container([]);
+        $this->assertInstanceOf(DependencyI::class, $container->get(DependencyI::class));
+    }
+
+    public function testRetrievalOfDotString()
+    {
+        $container = new Container([
+            'foo' => ['bar' => 'baz']
+        ]);
+        $this->assertTrue($container->has('foo.bar'));
+        $this->assertSame($container->get('foo.bar'), 'baz');
     }
 }

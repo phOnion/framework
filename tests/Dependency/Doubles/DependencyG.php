@@ -1,15 +1,14 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Tests\Dependency\Doubles;
 
-class DependencyE
+class DependencyG
 {
     private $name;
-
-    public function __construct(string $name)
+    public function __construct(string $testMockName)
     {
-        $this->name = $name;
+        $this->name = $testMockName;
     }
 
     public function getName(): string
