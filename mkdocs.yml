@@ -12,6 +12,7 @@ pages:
     - Parsers: routing/parsers.md
     - Matchers: routing/matchers.md
     - Pipes: routing/pipes.md
+  - Hydration: hydratable.md
   - "Advanced":
     - "Modules": modules.md
 theme: readthedocs
