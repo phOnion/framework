@@ -61,9 +61,6 @@ class Router implements Interfaces\RouterInterface, MiddlewareInterface
         );
 
         $this->routes[$name] = $route;
-        uasort($this->routes, function ($left, $right) {
-            return strlen($left[0])<=>strlen($right[0]);
-        });
     }
 
     private function getParser(): Interfaces\ParserInterface
