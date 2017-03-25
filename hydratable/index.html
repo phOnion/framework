@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>Introduction - Onion - Framework</title>
+  <title>Hydration - Onion - Framework</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -17,9 +17,9 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "Introduction";
-    var mkdocs_page_input_path = "dependency/index.md";
-    var mkdocs_page_url = "/dependency/";
+    var mkdocs_page_name = "Hydration";
+    var mkdocs_page_input_path = "hydratable.md";
+    var mkdocs_page_url = "/hydratable/";
   </script>
   
   <script src="../js/jquery-2.1.1.min.js"></script>
@@ -66,33 +66,29 @@
 
         
             
-    <li class="toctree-l1 current">
-        <a class="current" href="./">Introduction</a>
-        
-            <ul>
-            
-            </ul>
+    <li class="toctree-l1 ">
+        <a class="" href="../dependency/">Introduction</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="invokables/">Invokables</a>
+        <a class="" href="../dependency/invokables/">Invokables</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="factories/">Factories</a>
+        <a class="" href="../dependency/factories/">Factories</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="caching/">Caching</a>
+        <a class="" href="../dependency/caching/">Caching</a>
         
     </li>
 
@@ -137,8 +133,12 @@
 <li>
           
             <li>
-    <li class="toctree-l1 ">
-        <a class="" href="../hydratable/">Hydration</a>
+    <li class="toctree-l1 current">
+        <a class="current" href="./">Hydration</a>
+        
+            <ul>
+            
+            </ul>
         
     </li>
 <li>
@@ -179,12 +179,8 @@
     <li><a href="..">Docs</a> &raquo;</li>
     
       
-        
-          <li>Dependency &raquo;</li>
-        
-      
     
-    <li>Introduction</li>
+    <li>Hydration</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -194,35 +190,14 @@
           <div role="main">
             <div class="section">
               
-                <p>The app comes with a very capable DI container, that provides the essential
-functionality to get an app running with as little issues as possible. It is
-pretty similar to the one provided from ZF, but with some features omitted. 
-The container's dependencies are passed as an array in it's constructor and 
-have 3 special keys: <code>invokables</code>, <code>factories</code> and <code>shared</code></p>
-<p>Everything outside of these 3 keys is treated just as a value and can be retrieved by calling 
-<code>Container::get('someKey)</code> and that will return the value of 'someKey' as-is, without performing
-any operations on it. Also if you need to access a specific key which is located in a nested 
-array you can use a dot notation, which the container will interpret as indication for a level
-of the array. Say for example, you have an array:</p>
-<pre><code class="php">[
-    // ...
-    'doctrine' =&gt; [
-        'connection' =&gt; [
-            'dbname' =&gt; 'foo',
-            // ...
-        ]
-    ]
-    // ...
-]
-</code></pre>
-
-<p>In order to access <code>'dbname</code>, you might have to do at least 2 ifs (to ensure the key is there)
-and definitely will have to make something like: <code>Container::get('doctrine')['connection']['dbname']</code>,
-not the prettiest... This is where this could come in to play, instead of doing that you can just du
-<code>Container::get('doctrine.connection.dbname'); // Returns 'foo'</code> and you are all set, and it looks 
-clearer too + on thje bonus side if you are writing a distributable module, you can be sure that the
-container will throw the appropriate error if any key is not defined and notify the user, no more 
-piles of <code>if</code>s in your factories :)</p>
+                <p>The hydratables are traits which provide you the ability to "inject" data within objects that are initialized, but please note that those preserve the class' immutability and as such return new instance on every hydration. While there is an interface defining the <code>hydrate</code> and <code>extract</code> methods, there are 2 traits providing the 2 most common strategies for hydration:</p>
+<ul>
+<li><code>Method</code> - uses getters/setters</li>
+<li><code>Property</code> - uses public properties</li>
+</ul>
+<p>Both hydration strategies perform transformation on the keys provided, so the keys 
+of the array get translated from <code>snake_case</code> to <code>cammelCase</code>, so if you provide an array like <code>['username' =&gt; 'foo', 'first_name' =&gt; 'John']</code> the Method strategy will attempt to use <code>setUsername</code> and <code>setFirstName</code> in order to hydrate the object; if the Property strategy is used it will look for <code>username</code> and <code>firstName</code> public properties on the object.</p>
+<p>Both will preserve immutability of the hydrated object so you should keep that in mind</p>
               
             </div>
           </div>
@@ -230,10 +205,10 @@ piles of <code>if</code>s in your factories :)</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="invokables/" class="btn btn-neutral float-right" title="Invokables">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../modules/" class="btn btn-neutral float-right" title="Modules">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="../setup/" class="btn btn-neutral" title="Tutorial"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../routing/pipes/" class="btn btn-neutral" title="Pipes"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -259,10 +234,10 @@ piles of <code>if</code>s in your factories :)</p>
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="../setup/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="../routing/pipes/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="invokables/" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="../modules/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
