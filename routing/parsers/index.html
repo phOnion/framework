@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../../img/favicon.ico">
-  <title>Caching - Onion - Framework</title>
+  <title>Parsers - Onion - Framework</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../../css/theme.css" type="text/css" />
@@ -17,9 +17,9 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "Caching";
-    var mkdocs_page_input_path = "dependency/caching.md";
-    var mkdocs_page_url = "/dependency/caching/";
+    var mkdocs_page_name = "Parsers";
+    var mkdocs_page_input_path = "routing/parsers.md";
+    var mkdocs_page_url = "/routing/parsers/";
   </script>
   
   <script src="../../js/jquery-2.1.1.min.js"></script>
@@ -67,32 +67,28 @@
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../">Introduction</a>
+        <a class="" href="../../dependency/">Introduction</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../invokables/">Invokables</a>
+        <a class="" href="../../dependency/invokables/">Invokables</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../factories/">Factories</a>
+        <a class="" href="../../dependency/factories/">Factories</a>
         
     </li>
 
         
             
-    <li class="toctree-l1 current">
-        <a class="current" href="./">Caching</a>
-        
-            <ul>
-            
-            </ul>
+    <li class="toctree-l1 ">
+        <a class="" href="../../dependency/caching/">Caching</a>
         
     </li>
 
@@ -107,28 +103,32 @@
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../routing/">Introduction</a>
+        <a class="" href="../">Introduction</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 current">
+        <a class="current" href="./">Parsers</a>
+        
+            <ul>
+            
+            </ul>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../routing/parsers/">Parsers</a>
+        <a class="" href="../matchers/">Matchers</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../routing/matchers/">Matchers</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../../routing/pipes/">Pipes</a>
+        <a class="" href="../pipes/">Pipes</a>
         
     </li>
 
@@ -173,11 +173,11 @@
     
       
         
-          <li>Dependency &raquo;</li>
+          <li>Routing &raquo;</li>
         
       
     
-    <li>Caching</li>
+    <li>Parsers</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -187,21 +187,20 @@
           <div role="main">
             <div class="section">
               
-                <p>When applications are running on production it is safe to assume that DI containers 
-can make relatively heavy use of caching so they can squeeze the maximum 
-performance. This is should not be any different. And to make this possible
-it is not necessary to come up with your own solution. A caching (delegate)container 
-comes bundled inside the framework - <code>Onion\Framework\Dependency\CacheAwareContainer</code>.
-In order to utilize it you just have to define a container factory (a class
-implementing the <code>FactoryInterface</code>) and pass it as the first argument to the
-cache-aware container, pass an instance of <code>Psr\SimpleCache\CacheInterface</code>
-as the second one and you are ready to go.</p>
-<p>By default that container will cache every dependency that it retrieves, but
-if you have a factory that, for example checks for results in the database and
-uses information from there to build the dependency on a per-user basis you 
-might not want to cache that result, here comes the third argument of the 
-container - blacklist. It allows you to specify a list of keys that should 
-not be cached and should always be retrieved from the delegated container.</p>
+                <p>Parsers are responsible for translating the route's path definition
+to something that the matchers can understand and process. The ones provided by default are:</p>
+<ul>
+<li><code>Flat</code>: Extracts the path of the current request and returns it. The main purpose of the flat parser is to ensure only the path of the request is extracted in order to allow static routing (i.e one without any parameters, useful for small static sites).</li>
+<li><code>Regex</code>: This one is more complex as it adds the ability to have parameters inside the path. It translates a path definition to a parametrized regex should serve most cases for dynamic applications.</li>
+</ul>
+<p>The flat parser does not have any specific semantics, but the regex (as you might have guessed) has. When defining the pattern,
+you should denote the parameters in square braces <code>[]</code>, so a pattern for a user endpoint becomes <code>/users/[id]</code> this will extract the the value of <code>id</code> and set it as attribute of the Request object when it gets processed by the matcher and router.</p>
+<p>If you need to provide constraints to your patterns you can use <code>:</code> after the parameter name and provide either a regex pattern or one of the <code>*</code> or <code>?</code> which map to <code>\w+</code> and <code>\w</code> respectively.</p>
+<p>So <code>/users/[id:*]</code> will match <code>/users/a</code> as well as <code>/users/alpha</code>, but <code>/users/[id:?]</code> will match only <code>/users/a</code>.
+But sometimes one might want to add a more specific pattern, like when the <code>id</code> can only be a number. This is also possible with the syntax above, just change the pattern to <code>/users/[id:\d+]</code> that way it will match only arguments that match the <code>\d+</code> regex.</p>
+<p>And there is a special case for regex patterns that provide the catch-all functionality, its syntax is like the following
+<code>/users*</code>, note that there is no <code>:</code> nor braces. This is the absolute wildcard so to speak. If you have a pattern 
+<code>/users/*/[id:\d+]</code> this will match all sorts of paths, like: <code>/users/some/non/strict/path/with/id/5</code></p>
               
             </div>
           </div>
@@ -209,10 +208,10 @@ not be cached and should always be retrieved from the delegated container.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../../routing/" class="btn btn-neutral float-right" title="Introduction">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../matchers/" class="btn btn-neutral float-right" title="Matchers">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="../factories/" class="btn btn-neutral" title="Factories"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../" class="btn btn-neutral" title="Introduction"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -238,10 +237,10 @@ not be cached and should always be retrieved from the delegated container.</p>
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="../factories/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="../" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="../../routing/" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="../matchers/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
