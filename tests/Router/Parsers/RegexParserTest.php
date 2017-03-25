@@ -88,4 +88,29 @@ class RegexParserTest extends \PHPUnit_Framework_TestCase
             )
         );
     }
+
+    public function testCatchAll()
+    {
+        $this->assertSame('/resource(?:.*)?', $this->parser->parse('/resource*'));
+        $this->assertSame('/resource/(?:.*)?', $this->parser->parse('/resource/*'));
+        $this->assertSame('/resource/(?:.*)?/(?P<user>\w+)', $this->parser->parse('/resource/*/[user:*]'));
+        $this->assertSame(['/resource/some/random/endpoint'], $this->parser->match(
+            '~' . $this->parser->parse('/resource/*') . '~x',
+            '/resource/some/random/endpoint'
+        ));
+
+        $this->assertSame(['/resources/some/random/endpoint'], $this->parser->match(
+            '~' . $this->parser->parse('/resource*') . '~x',
+            '/resources/some/random/endpoint'
+        ));
+
+        $this->assertSame([
+            0 => '/resource/some/random/endpoint',
+            'name' => 'endpoint',
+            1 => 'endpoint'
+        ], $this->parser->match(
+            '~' . $this->parser->parse('/resource/*/[name:*]') . '~x',
+            '/resource/some/random/endpoint'
+        ));
+    }
 }
