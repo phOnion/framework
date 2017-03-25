@@ -10,7 +10,7 @@ class Regex implements ParserInterface
     {
         $path = str_replace(
             [':*', ':?', '*'],
-            [':\w+', ':\w', '(?:(\w*))'],
+            [':\w+', ':\w', '(?:.*)?'],
             $path
         );
 
