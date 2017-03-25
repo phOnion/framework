@@ -1,13 +1,17 @@
 site_name: Onion - Framework
 pages:
   - Intro: index.md
+  - Tutorial: setup.md
   - Dependency:
     - Introduction: dependency/index.md
     - Invokables: dependency/invokables.md
     - Factories: dependency/factories.md
     - Caching: dependency/caching.md
-  - Tutorial: setup.md
+  - Routing:
+    - Introduction: routing/index.md
+    - Parsers: routing/parsers.md
+    - Matchers: routing/matchers.md
+    - Pipes: routing/pipes.md
   - "Advanced":
-    - "Routing": routing.md
     - "Modules": modules.md
 theme: readthedocs
