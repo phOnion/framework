@@ -67,8 +67,7 @@ final class ModuleDelegateFactory implements FactoryInterface
                             'methods' => [
                                 'GET', 'HEAD', 'POST', 'PUT', 'OPTIONS', 'DELETE', 'TRACE', 'CONNECT',
                             ],
-                        ]
-                    ));
+                        ]));
                 }
 
                 $stack[] = $router;
