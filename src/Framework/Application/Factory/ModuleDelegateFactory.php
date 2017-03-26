@@ -23,6 +23,12 @@ use Psr\Http\Message\ResponseInterface;
  */
 final class ModuleDelegateFactory implements FactoryInterface
 {
+    private $route;
+    public function __construct()
+    {
+        $this->route = new Router\Route();
+    }
+
     /**
      * @param ContainerInterface $container
      *
@@ -47,18 +53,22 @@ final class ModuleDelegateFactory implements FactoryInterface
             if ($handler === 'modules') {
                 $moduleMiddlewareStack = $this->getModulesStack($container);
                 $router = new Router\Router(
-                    new Router\Parsers\Flat(),
                     new Router\Matchers\Prefix()
                 );
 
                 foreach ($moduleMiddlewareStack as $prefix => $module) {
-                    $router->addRoute($prefix, new Delegate(
-                        [new ModulePathStripperMiddleware($prefix), $module],
-                        $container->has(ResponseInterface::class) ?
-                                $container->get(ResponseInterface::class) : null
-                    ), [
-                        'GET', 'HEAD', 'POST', 'PUT', 'OPTIONS', 'DELETE', 'TRACE', 'CONNECT'
-                        ]);
+                    $router->addRoute($this->route->hydrate([
+                            'pattern' => $prefix,
+                            'delegate' => new Delegate(
+                                [new ModulePathStripperMiddleware($prefix), $module],
+                                $container->has(ResponseInterface::class) ?
+                                    $container->get(ResponseInterface::class) : null
+                            ),
+                            'methods' => [
+                                'GET', 'HEAD', 'POST', 'PUT', 'OPTIONS', 'DELETE', 'TRACE', 'CONNECT',
+                            ],
+                        ]
+                    ));
                 }
 
                 $stack[] = $router;
