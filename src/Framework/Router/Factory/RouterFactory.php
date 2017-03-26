@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace Onion\Framework\Router\Factory;
 
+use Onion\Framework\Router\Route;
 use Psr\Container\ContainerInterface;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Onion\Framework\Http\Middleware\Delegate;
@@ -13,6 +14,12 @@ use Psr\Http\Message\ResponseInterface;
 
 final class RouterFactory implements FactoryInterface
 {
+    private $route;
+    public function __construct()
+    {
+        $this->route = new Route();
+    }
+
     public function build(ContainerInterface $container)
     {
         assert($container->has('routes'), 'No routes defined in container');
@@ -25,31 +32,30 @@ final class RouterFactory implements FactoryInterface
         $routes = $container->get('routes');
 
         $router = new Router(
-            $container->get(ParserInterface::class),
             $container->get(MatcherInterface::class)
         );
 
         foreach ($routes as $route) {
             assert(array_key_exists('pattern', $route), 'A route definition must have a "pattern" key');
             assert(array_key_exists('middleware', $route), 'A route definition must have a "middleware" key');
-
             $name = $route['name'] ?? null;
-            $methods = $route['methods'] ?? ['GET', 'HEAD'];
+            $methods = ['GET', 'HEAD'];
 
-            $stack = [];
-            foreach ($route['middleware'] as $middleware) {
-                $stack[] = $container->get($middleware);
-            }
+            array_walk($route['middleware'], function (&$value) use ($container) {
+                $value = $container->get($value);
+            });
 
             $router->addRoute(
-                $route['pattern'],
-                new Delegate(
-                    $stack,
-                    $container->has(ResponseInterface::class) ?
-                        $container->get(ResponseInterface::class) : null
-                ),
-                $methods,
-                $name
+                $this->route->hydrate([
+                    'pattern' => $container->get(ParserInterface::class)->parse($route['pattern']),
+                    'name' => $name,
+                    'delegate' => new Delegate(
+                        $route['middleware'],
+                        $container->has(ResponseInterface::class) ?
+                            $container->get(ResponseInterface::class) : null
+                    ),
+                    'methods' => $methods
+                ])
             );
         }
 
