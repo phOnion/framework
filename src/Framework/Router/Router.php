@@ -5,6 +5,7 @@ namespace Onion\Framework\Router;
 use Interop\Http\ServerMiddleware\DelegateInterface;
 use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Onion\Framework\Router\Interfaces\MatcherInterface;
+use Onion\Framework\Router\Interfaces\RouteInterface;
 use Psr\Http\Message;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -12,11 +13,7 @@ use Psr\Http\Message\ServerRequestInterface;
 class Router implements Interfaces\RouterInterface, MiddlewareInterface
 {
     /**
-     * @var ParserInterface
-     */
-    protected $parser;
-    /**
-     * @var array[]
+     * @var RouteInterface[]
      */
     protected $routes = [];
     /**
@@ -24,9 +21,8 @@ class Router implements Interfaces\RouterInterface, MiddlewareInterface
      */
     private $matcher;
 
-    public function __construct(Interfaces\ParserInterface $parser, Interfaces\MatcherInterface $matcher)
+    public function __construct(Interfaces\MatcherInterface $matcher)
     {
-        $this->parser = $parser;
         $this->matcher = $matcher;
     }
 
@@ -34,41 +30,17 @@ class Router implements Interfaces\RouterInterface, MiddlewareInterface
      * {@inheritdoc}
      * @throws \InvalidArgumentException When adding a duplicate pattern
      */
-    public function addRoute(
-        string $pattern,
-        DelegateInterface $handler,
-        array $methods,
-        string $name = null
-    ) {
-        array_walk($methods, function (&$value) {
-            $value = strtoupper($value);
-        });
-
-        $route = [
-            $this->getParser()->parse($pattern),
-            $handler,
-            $methods,
-            [],
-        ];
-        $name = $name ?? $pattern;
-
+    public function addRoute(RouteInterface $route)
+    {
         assert(
-            !array_key_exists($name, $this->routes),
+            !array_key_exists($route->getName(), $this->routes),
             new \InvalidArgumentException(sprintf(
-                'Route "%s" overlaps with another route using the same name and/or pattern',
-                $name
+                'Route "%s" overlaps with another route using the same or similar pattern',
+                $route->getPattern()
             ))
         );
 
-        $this->routes[$name] = $route;
-        uasort($this->routes, function ($left, $right) {
-            return strlen($left[0])<=>strlen($right[0]);
-        });
-    }
-
-    private function getParser(): Interfaces\ParserInterface
-    {
-        return $this->parser;
+        $this->routes[$route->getName()] = $route;
     }
 
     public function getRouteByName(string $name, array $params = []): string
@@ -79,17 +51,13 @@ class Router implements Interfaces\RouterInterface, MiddlewareInterface
         );
 
         $route = $this->routes[$name];
-        $pattern = $route[0];
+        $pattern = $route->getPattern();
         foreach ($params as $param => $value) {
-            $pattern = preg_replace(
-                sprintf('~(\(\?P\<%s\>.*)~i', $param),
-                $value,
-                $pattern
-            );
+            $pattern = preg_replace(sprintf('~(\(\?P\<%s\>.*)~i', $param), $value, $pattern);
         }
 
         assert(
-            preg_match('~^(?:' . $route[0] . ')$~x', $pattern) !== 0,
+            strpos($pattern, '(?P<') === false,
             new \InvalidArgumentException(
                 'Unable to create route from provided parameters'
             )
@@ -110,19 +78,22 @@ class Router implements Interfaces\RouterInterface, MiddlewareInterface
      * @param DelegateInterface|null $delegate
      *
      * @return ResponseInterface
+     *
+     * @throws \RuntimeException
+     * @throws \Onion\Framework\Router\Interfaces\Exception\NotFoundException
+     * @throws \Onion\Framework\Router\Interfaces\Exception\NotAllowedException
+     * @throws \Onion\Framework\Router\Exceptions\NotFoundException
+     * @throws \Onion\Framework\Router\Exceptions\MethodNotAllowedException
+     * @throws \InvalidArgumentException
      */
     public function process(ServerRequestInterface $request, DelegateInterface $delegate = null): ResponseInterface
     {
-        /**
-        * @var array[] $route
-        */
         $route = $this->match($request->getMethod(), $request->getUri());
-
-        foreach ($route[3] as $name => $param) {
+        foreach ($route->getParameters() as $name => $param) {
             $request = $request->withAttribute($name, $param);
         }
 
-        return $route[1]->process($request);
+        return $route->getDelegate()->process($request);
     }
 
     /**
@@ -142,31 +113,22 @@ class Router implements Interfaces\RouterInterface, MiddlewareInterface
      *
      * @covers Router::process
      *
-     * @return array[]
+     * @return \Onion\Framework\Hydrator\Interfaces\HydratableInterface|RouteInterface
      */
-    public function match(string $method, Message\UriInterface $uri): array
+    public function match(string $method, Message\UriInterface $uri): RouteInterface
     {
         $method = strtoupper($method);
         foreach ($this->routes as $pattern => $route) {
-            assert(count($route) === 4, 'Route array must hold only 4 elements');
-
-            assert(array_key_exists(0, $route), 'Array must contain index 0');
-            assert(is_string($route[0]), 'Array index 0 must be a string');
-            assert(array_key_exists(1, $route), 'Array must contain index 1');
-            assert($route[1] instanceof DelegateInterface, 'Array index 1 must implement DelegateInterface');
-            assert(array_key_exists(2, $route), 'Array must contain index 2');
-            assert(is_array($route[2]), 'Array index 2 must be an array');
-            assert($route[2] !== [], 'Array index 2 must be a non-empty array');
-            assert(array_key_exists(3, $route), 'Array must contain index 3');
-            assert(is_array($route[3]), 'Array index 3 must be an array');
-
-            if (($matches = $this->getMatcher()->match($route[0], $uri->getPath())) !== [false]) {
-                if (!in_array($method, $route[2], true)) {
-                    throw new Exceptions\MethodNotAllowedException($route[2]);
+            if (($matches = $this->getMatcher()->match($route->getPattern(), $uri->getPath())) !== [false]) {
+                if (!in_array($method, $route->getMethods(), true)) {
+                    throw new Exceptions\MethodNotAllowedException($route->getMethods());
                 }
 
-                $route[3] = array_filter((array)$matches);
-                return $route;
+                return $route->hydrate([
+                    'parameters' => array_filter((array)$matches, function ($key) {
+                        return !is_numeric($key);
+                    }, ARRAY_FILTER_USE_KEY)
+                ]);
             }
         }
 
