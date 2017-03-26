@@ -5,6 +5,7 @@ namespace Onion\Framework\Router;
 use Interop\Http\ServerMiddleware\DelegateInterface;
 use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Onion\Framework\Router\Interfaces\MatcherInterface;
+use Onion\Framework\Router\Interfaces\ParserInterface;
 use Psr\Http\Message;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -61,9 +62,6 @@ class Router implements Interfaces\RouterInterface, MiddlewareInterface
         );
 
         $this->routes[$name] = $route;
-        uasort($this->routes, function ($left, $right) {
-            return strlen($left[0])<=>strlen($right[0]);
-        });
     }
 
     private function getParser(): Interfaces\ParserInterface
