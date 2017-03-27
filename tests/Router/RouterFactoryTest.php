@@ -22,7 +22,6 @@ class RouterFactoryTest extends \PHPUnit_Framework_TestCase
     protected function setUp()
     {
         $this->container = $this->prophesize(ContainerInterface::class);
-//        $this->container->get(Configuration::class)->willReturn($configuration->reveal());
 
         $parser = $this->prophesize(ParserInterface::class);
         $this->container->get(ParserInterface::class)
@@ -51,8 +50,6 @@ class RouterFactoryTest extends \PHPUnit_Framework_TestCase
                 'methods' => ['GET']
             ]
         ]);
-
-
 
         $controller = $this->prophesize(MiddlewareInterface::class)->reveal();
         $this->container->get(\stdClass::class)->willReturn($controller);
