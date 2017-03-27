@@ -6,7 +6,6 @@ use Interop\Http\ServerMiddleware\DelegateInterface;
 use Onion\Framework\Application\Interfaces\ModuleInterface;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Onion\Framework\Http\Middleware\Delegate;
-use Onion\Framework\Middleware\Internal\ModulePathStripperMiddleware;
 use Onion\Framework\Router;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -53,14 +52,14 @@ final class ModuleDelegateFactory implements FactoryInterface
             if ($handler === 'modules') {
                 $moduleMiddlewareStack = $this->getModulesStack($container);
                 $router = new Router\Router(
-                    new Router\Matchers\Prefix()
+                    new Router\Matchers\Regex()
                 );
 
                 foreach ($moduleMiddlewareStack as $prefix => $module) {
                     $router->addRoute($this->route->hydrate([
-                            'pattern' => $prefix,
+                            'pattern' => '/' . ltrim($prefix, '/') . '*',
                             'delegate' => new Delegate(
-                                [new ModulePathStripperMiddleware($prefix), $module],
+                                [$module],
                                 $container->has(ResponseInterface::class) ?
                                     $container->get(ResponseInterface::class) : null
                             ),
