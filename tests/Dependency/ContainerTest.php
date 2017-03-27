@@ -1,8 +1,4 @@
 <?php
-/**
- * @author Dimitar Dimitrov <daghostman.dd@gmail.com>
- */
-
 namespace Tests\Dependency;
 
 use Psr\Container\ContainerExceptionInterface;

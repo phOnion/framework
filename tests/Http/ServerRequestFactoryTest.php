@@ -1,14 +1,4 @@
 <?php
-/**
- * PHP Version 5.6.0
- *
- * @category Unknown Category
- * @package  Tests\Factory
- * @author   Dimitar Dimitrov <daghostman.dd@gmail.com>
- * @license  MIT https://opensource.org/licenses/MIT
- * @link     https://github.com/phOnion/framework
- */
-
 namespace Tests\Factory;
 
 use Psr\Container\ContainerInterface;

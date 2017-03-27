@@ -1,7 +1,4 @@
 <?php
-/**
- * @author Dimitar Dimitrov <daghostman.dd@gmail.com>
- */
 namespace Tests\Dependency\Doubles;
 
 use Psr\Container\ContainerInterface;
