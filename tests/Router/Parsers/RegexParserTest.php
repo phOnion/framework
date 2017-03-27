@@ -113,4 +113,15 @@ class RegexParserTest extends \PHPUnit_Framework_TestCase
             '/resource/some/random/endpoint'
         ));
     }
+
+    public function testMatchWithWildcard()
+    {
+        $this->assertSame('/(?:.*)?foo/bar', $this->parser->parse('/*foo/bar'));
+        $this->assertSame([
+            '/foo/bar'
+        ], $this->parser->match(
+            '~' . $this->parser->parse('/*foo/bar') . '~x',
+            '/foo/bar'
+        ));
+    }
 }
