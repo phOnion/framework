@@ -7,6 +7,11 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Zend\Diactoros\Response\EmitterInterface;
 
+/**
+ * Class Application
+ *
+ * @package Onion\Framework\Application
+ */
 class Application implements ApplicationInterface
 {
     /**
@@ -19,6 +24,12 @@ class Application implements ApplicationInterface
      */
     protected $emitter;
 
+    /**
+     * Application constructor.
+     *
+     * @param DelegateInterface $delegate
+     * @param EmitterInterface $emitter
+     */
     public function __construct(DelegateInterface $delegate, EmitterInterface $emitter)
     {
         $this->delegate = $delegate;
@@ -27,18 +38,17 @@ class Application implements ApplicationInterface
 
     public function run(ServerRequestInterface $request)
     {
-        return $this->emitter->emit($this->process($request, null));
+        return $this->emitter->emit($this->process($request));
     }
 
     /**
      * @param ServerRequestInterface $request
-     * @param DelegateInterface      $delegate
      *
      * @throws \Throwable Rethrows the exceptions if no $delegate is available
      *
      * @return ResponseInterface
      */
-    public function process(ServerRequestInterface $request, DelegateInterface $delegate = null): ResponseInterface
+    public function process(ServerRequestInterface $request): ResponseInterface
     {
         return $this->delegate->process($request);
     }
