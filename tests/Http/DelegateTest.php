@@ -11,10 +11,10 @@
 
 namespace Tests\Http;
 
-use Interop\Http\Middleware\DelegateInterface;
+use Interop\Http\ServerMiddleware\DelegateInterface;
 use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Onion\Framework\Http\Middleware\Delegate;
-use Onion\Framework\Http\Middleware\Exceptions\MiddlewareException;
+use Prophecy\Argument;
 use Prophecy\Argument\Token\AnyValueToken;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -98,5 +98,13 @@ class DelegateTest extends \PHPUnit_Framework_TestCase
         $delegate = new Delegate([$middleware->reveal()]);
         $delegate->process($request->reveal());
         $delegate->process($request->reveal());
+    }
+
+    public function testDelegateReturningResponse()
+    {
+        $request = $this->prophesize(ServerRequestInterface::class);
+        $delegate = new Delegate([], $this->prophesize(ResponseInterface::class)->reveal());
+
+        $this->assertInstanceOf(ResponseInterface::class, $delegate->process($request->reveal()));
     }
 }
