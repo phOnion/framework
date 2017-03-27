@@ -1,5 +1,4 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 namespace Onion\Framework\Router\Matchers;
 
 use Onion\Framework\Router\Interfaces\MatcherInterface;
