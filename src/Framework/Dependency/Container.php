@@ -8,17 +8,41 @@ use Onion\Framework\Dependency\Exception\ContainerErrorException;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 
+/**
+ * Class Container
+ *
+ * @package Onion\Framework\Dependency
+ */
 final class Container implements ContainerInterface
 {
     private $dependencies = [];
+    private $invokables = [];
+    private $factories = [];
+    private $shared = [];
 
+    /**
+     * Container constructor.
+     *
+     * @param array $dependencies
+     */
     public function __construct(array $dependencies)
     {
-        $this->dependencies = [
-            'invokables' => [],
-            'factories' => [],
-            'shared' => []
-        ];
+        $this->dependencies = $dependencies;
+        if (isset($this->dependencies['invokables'])) {
+            $this->invokables = $this->dependencies['invokables'];
+            unset($this->dependencies['invokables']);
+        }
+
+        if (isset($this->dependencies['factories'])) {
+            $this->factories = $this->dependencies['factories'];
+            unset($this->dependencies['factories']);
+        }
+
+        if (isset($this->dependencies['shared'])) {
+            $this->shared = $this->dependencies['shared'] ?? [];
+            unset($this->dependencies['shared']);
+        }
+
         $this->dependencies = array_merge($this->dependencies, $dependencies);
     }
 
@@ -45,11 +69,11 @@ final class Container implements ContainerInterface
         }
 
         try {
-            if (isset($this->dependencies['invokables'][$key])) {
+            if (isset($this->invokables[$key])) {
                 return $this->retrieveInvokable($key);
             }
 
-            if (isset($this->dependencies['factories'][$key])) {
+            if (isset($this->factories[$key])) {
                 return $this->retrieveFromFactory($key);
             }
 
@@ -109,9 +133,15 @@ final class Container implements ContainerInterface
         return $exists;
     }
 
+    /**
+     * @param string $className
+     * @return mixed
+     * @throws \RuntimeException
+     * @throws UnknownDependency
+     */
     private function retrieveInvokable(string $className)
     {
-        $dependency = $this->dependencies['invokables'][$className];
+        $dependency = $this->invokables[$className];
         if (is_object($dependency)) {
             return $dependency;
         }
@@ -133,36 +163,10 @@ final class Container implements ContainerInterface
     }
 
     /**
-     * Helper to verify that the result is instance of
-     * the identifier (if it is a class/interface)
-     *
-     * @param string $identifier
-     * @param mixed  $result
-     *
-     * @return mixed
+     * @param string $className
+     * @return mixed|object
      * @throws ContainerErrorException
      */
-    private function enforceReturnType($identifier, $result)
-    {
-        if (is_string($identifier)) {
-            if (class_exists($identifier) || interface_exists($identifier) ||
-                (function_exists("is_$identifier"))
-            ) {
-                assert(
-                    $result instanceof $identifier ||
-                    (function_exists("is_$identifier") && call_user_func("is_$identifier", $result)),
-                    new ContainerErrorException(sprintf(
-                        'Unable to verify that "%s" is of type "%s"',
-                        is_object($result) ? get_class($result) : $result,
-                        $identifier
-                    ))
-                );
-            }
-        }
-
-        return $result;
-    }
-
     private function retrieveFromReflection(string $className)
     {
         $classReflection = new \ReflectionClass($className);
@@ -211,9 +215,13 @@ final class Container implements ContainerInterface
         return $this->enforceReturnType($className, $classReflection->newInstance(...$parameters));
     }
 
+    /**
+     * @param string $className
+     * @return mixed
+     */
     private function retrieveFromFactory(string $className)
     {
-        $factory = $this->dependencies['factories'][$className];
+        $factory = $this->factories[$className];
         if (!is_object($factory)) {
             $factory = new $factory();
         }
@@ -229,14 +237,18 @@ final class Container implements ContainerInterface
          * @var $factory FactoryInterface
          */
         $result = $this->enforceReturnType($className, $factory->build($this));
-        if (in_array($className, $this->dependencies['shared'], true)) {
-            $this->dependencies['invokables'][$className] = $result;
-            unset($this->dependencies['factories'][$className]);
+        if (in_array($className, $this->shared, true)) {
+            $this->invokables[$className] = $result;
+            unset($this->factories[$className]);
         }
 
         return $result;
     }
 
+    /**
+     * @param string $name
+     * @return mixed
+     */
     private function retrieveFromDotString(string $name)
     {
         $fragments = explode('.', $name);
@@ -269,8 +281,43 @@ final class Container implements ContainerInterface
         return $component;
     }
 
+    /**
+     * @param string $name
+     * @return string
+     */
     private function convertVariableName(string $name): string
     {
         return str_replace('_', '.', strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $name)));
+    }
+
+    /**
+     * Helper to verify that the result is instance of
+     * the identifier (if it is a class/interface)
+     *
+     * @param string $identifier
+     * @param mixed  $result
+     *
+     * @return mixed
+     * @throws ContainerErrorException
+     */
+    private function enforceReturnType($identifier, $result)
+    {
+        if (is_string($identifier)) {
+            if (class_exists($identifier) || interface_exists($identifier) ||
+                (function_exists("is_$identifier"))
+            ) {
+                assert(
+                    $result instanceof $identifier ||
+                    (function_exists("is_$identifier") && call_user_func("is_$identifier", $result)),
+                    new ContainerErrorException(sprintf(
+                        'Unable to verify that "%s" is of type "%s"',
+                        is_object($result) ? get_class($result) : $result,
+                        $identifier
+                    ))
+                );
+            }
+        }
+
+        return $result;
     }
 }
