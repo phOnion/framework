@@ -1,8 +1,4 @@
 <?php
-/**
- * @author Dimitar Dimitrov <daghostman.dd@gmail.com>
- */
-
 namespace Test\Router\Parsers;
 
 use Onion\Framework\Router\Parsers\Regex;
