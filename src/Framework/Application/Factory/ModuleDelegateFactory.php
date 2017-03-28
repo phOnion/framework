@@ -33,6 +33,8 @@ final class ModuleDelegateFactory implements FactoryInterface
      * @throws \InvalidArgumentException
      *
      * @return DelegateInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     * @throws \Psr\Container\ContainerExceptionInterface
      */
     public function build(ContainerInterface $container): DelegateInterface
     {
@@ -47,14 +49,14 @@ final class ModuleDelegateFactory implements FactoryInterface
         $middleware = $container->get('middleware');
         $stack = [];
 
-        foreach ($middleware as $index => $handler) {
+        foreach ($middleware as $handler) {
             if ($handler === 'modules') {
-                $moduleMiddlewareStack = $this->getModulesStack($container);
+                $moduleStack = $this->getModulesStack($container);
                 $router = new Router\Router(
                     new Router\Matchers\Regex()
                 );
 
-                foreach ($moduleMiddlewareStack as $prefix => $module) {
+                foreach ($moduleStack as $prefix => $module) {
                     $router->addRoute($this->route->hydrate([
                             'pattern' => '/' . ltrim($prefix, '/') . '*',
                             'delegate' => new Delegate(
@@ -82,6 +84,12 @@ final class ModuleDelegateFactory implements FactoryInterface
         );
     }
 
+    /**
+     * Retrieve and build every module
+     *
+     * @param ContainerInterface $container
+     * @return array
+     */
     private function getModulesStack(ContainerInterface $container): array
     {
         $middlewareStack = [];

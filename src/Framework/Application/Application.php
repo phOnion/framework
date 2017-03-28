@@ -27,8 +27,8 @@ class Application implements ApplicationInterface
     /**
      * Application constructor.
      *
-     * @param DelegateInterface $delegate
-     * @param EmitterInterface $emitter
+     * @param DelegateInterface $delegate The delegate with the global middleware
+     * @param EmitterInterface $emitter The emitter that processes and sends the response to the client
      */
     public function __construct(DelegateInterface $delegate, EmitterInterface $emitter)
     {
@@ -36,15 +36,26 @@ class Application implements ApplicationInterface
         $this->emitter = $emitter;
     }
 
+    /**
+     * "Run" the application. Triggers the delegate
+     * provided and when a repsonse is returned it
+     * passes it to the emitter for final processing
+     * before sending it to the client
+     *
+     * @param ServerRequestInterface $request
+     * @return null
+     */
     public function run(ServerRequestInterface $request)
     {
         return $this->emitter->emit($this->process($request));
     }
 
     /**
-     * @param ServerRequestInterface $request
+     * Triggers processing of the provided delegate,
+     * without emitting the response. Useful in the
+     * context of the application running as a module
      *
-     * @throws \Throwable Rethrows the exceptions if no $delegate is available
+     * @param ServerRequestInterface $request
      *
      * @return ResponseInterface
      */

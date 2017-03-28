@@ -3,10 +3,22 @@ namespace Onion\Framework\Router\Exceptions;
 
 use Onion\Framework\Router\Interfaces\Exception\NotAllowedException;
 
+/**
+ * Class MethodNotAllowedException
+ *
+ * @package Onion\Framework\Router\Exceptions
+ */
 class MethodNotAllowedException extends \Exception implements NotAllowedException
 {
     protected $allowedMethods = [];
 
+    /**
+     * MethodNotAllowedException constructor.
+     *
+     * @param array $methods The methods which are supported by the current route
+     * @param int $code
+     * @param \Exception|null $previous
+     */
     public function __construct(array $methods, $code = 0, \Exception $previous = null)
     {
         parent::__construct('HTTP method not allowed', $code, $previous);
