@@ -15,3 +15,4 @@ script:
     - vendor/bin/phpcs src/ --standard=psr2
 after_success:
     - bash <(curl -s https://codecov.io/bash)
+    - php vendor/bin/codacycoverage clover coverage.xml
