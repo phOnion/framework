@@ -5,6 +5,11 @@ use Interop\Http\ServerMiddleware\DelegateInterface;
 use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Psr\Http\Message;
 
+/**
+ * Class Delegate
+ *
+ * @package Onion\Framework\Http\Middleware
+ */
 final class Delegate implements DelegateInterface
 {
     /**
@@ -29,7 +34,7 @@ final class Delegate implements DelegateInterface
     }
 
     /**
-     * @param Message\RequestInterface $request
+     * @param Message\ServerRequestInterface $request
      *
      * @throws \RuntimeException If asked to return the response template, but the template is empty
      * @return Message\ResponseInterface

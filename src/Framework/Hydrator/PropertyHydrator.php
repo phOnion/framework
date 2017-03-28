@@ -10,7 +10,7 @@ trait PropertyHydrator
      *
      * @param array $data Assoc array with param
      *
-     * @return $this A hydrated copy of the object provided
+     * @return self|HydratableInterface A hydrated copy of the object provided
      */
     public function hydrate(array $data): HydratableInterface
     {

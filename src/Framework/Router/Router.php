@@ -9,6 +9,11 @@ use Psr\Http\Message;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
+/**
+ * Class Router
+ *
+ * @package Onion\Framework\Router
+ */
 class Router implements Interfaces\RouterInterface, MiddlewareInterface
 {
     /**
@@ -20,6 +25,11 @@ class Router implements Interfaces\RouterInterface, MiddlewareInterface
      */
     private $matcher;
 
+    /**
+     * Router constructor.
+     *
+     * @param MatcherInterface $matcher
+     */
     public function __construct(Interfaces\MatcherInterface $matcher)
     {
         $this->matcher = $matcher;
@@ -42,6 +52,11 @@ class Router implements Interfaces\RouterInterface, MiddlewareInterface
         $this->routes[$route->getName()] = $route;
     }
 
+    /**
+     * @param string $name
+     * @param array $params
+     * @return string
+     */
     public function getRouteByName(string $name, array $params = []): string
     {
         assert(
@@ -65,6 +80,9 @@ class Router implements Interfaces\RouterInterface, MiddlewareInterface
         return $pattern;
     }
 
+    /**
+     * @return int
+     */
     public function count(): int
     {
         return count($this->routes);
@@ -117,7 +135,7 @@ class Router implements Interfaces\RouterInterface, MiddlewareInterface
     public function match(string $method, Message\UriInterface $uri): RouteInterface
     {
         $method = strtoupper($method);
-        foreach ($this->routes as $pattern => $route) {
+        foreach ($this->routes as $route) {
             if (($matches = $this->getMatcher()->match($route->getPattern(), $uri->getPath())) !== [false]) {
                 if (!in_array($method, $route->getMethods(), true)) {
                     throw new Exceptions\MethodNotAllowedException($route->getMethods());
@@ -137,11 +155,17 @@ class Router implements Interfaces\RouterInterface, MiddlewareInterface
         ));
     }
 
+    /**
+     * @return \Traversable
+     */
     public function getIterator(): \Traversable
     {
         return new \ArrayIterator($this->routes);
     }
 
+    /**
+     * @return MatcherInterface
+     */
     private function getMatcher(): Interfaces\MatcherInterface
     {
         return $this->matcher;
