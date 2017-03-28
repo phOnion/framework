@@ -22,9 +22,9 @@ trait MethodHydrator
         $target = clone $this;
         foreach ($data as $name => $value) {
             // Transform underscored keys to camelCase
-            $method = str_replace('_', '', ucfirst(ucwords($name, '_')));
+            $method = str_replace('_', '', ucwords($name, '_'));
             if (method_exists($target, 'set' . $method)) {
-                $target->{'set' . $method}(...(array) $value);
+                $target->{'set' . $method}($value);
             }
         }
 
@@ -56,11 +56,9 @@ trait MethodHydrator
         }
 
         foreach ($keys as $name) {
-            if (method_exists($this, 'get' . ucfirst(str_replace('_', '', ucwords($name))))) {
-                $data[strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $name))] = call_user_func([
-                    $this,
-                    'get' . str_replace('_', '', ucfirst(ucwords($name, '_')))
-                ]);
+            if (method_exists($this, 'get' . str_replace('_', '', ucwords($name)))) {
+                $data[strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $name))] =
+                    $this->{'get' . str_replace('_', '', ucwords($name, '_'))}();
             }
         }
 

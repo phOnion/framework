@@ -6,7 +6,6 @@ use Interop\Http\ServerMiddleware\DelegateInterface;
 use Onion\Framework\Application\Interfaces\ModuleInterface;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Onion\Framework\Http\Middleware\Delegate;
-use Onion\Framework\Middleware\Internal\ModulePathStripperMiddleware;
 use Onion\Framework\Router;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -23,6 +22,12 @@ use Psr\Http\Message\ResponseInterface;
  */
 final class ModuleDelegateFactory implements FactoryInterface
 {
+    private $route;
+    public function __construct()
+    {
+        $this->route = new Router\Route();
+    }
+
     /**
      * @param ContainerInterface $container
      *
@@ -47,18 +52,21 @@ final class ModuleDelegateFactory implements FactoryInterface
             if ($handler === 'modules') {
                 $moduleMiddlewareStack = $this->getModulesStack($container);
                 $router = new Router\Router(
-                    new Router\Parsers\Flat(),
-                    new Router\Matchers\Prefix()
+                    new Router\Matchers\Regex()
                 );
 
                 foreach ($moduleMiddlewareStack as $prefix => $module) {
-                    $router->addRoute($prefix, new Delegate(
-                        [new ModulePathStripperMiddleware($prefix), $module],
-                        $container->has(ResponseInterface::class) ?
-                                $container->get(ResponseInterface::class) : null
-                    ), [
-                        'GET', 'HEAD', 'POST', 'PUT', 'OPTIONS', 'DELETE', 'TRACE', 'CONNECT'
-                        ]);
+                    $router->addRoute($this->route->hydrate([
+                            'pattern' => '/' . ltrim($prefix, '/') . '*',
+                            'delegate' => new Delegate(
+                                [$module],
+                                $container->has(ResponseInterface::class) ?
+                                    $container->get(ResponseInterface::class) : null
+                            ),
+                            'methods' => [
+                                'GET', 'HEAD', 'POST', 'PUT', 'OPTIONS', 'DELETE', 'TRACE', 'CONNECT',
+                            ],
+                        ]));
                 }
 
                 $stack[] = $router;
