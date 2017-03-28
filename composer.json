@@ -20,7 +20,8 @@
     "require-dev": {
         "phpunit/phpunit": "^5.5",
         "phpspec/prophecy": "^1.6",
-        "squizlabs/php_codesniffer": "^2.7"
+        "squizlabs/php_codesniffer": "^2.7",
+        "codacy/coverage": "dev-master"
     },
     "autoload": {
         "psr-4": {
