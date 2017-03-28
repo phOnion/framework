@@ -159,7 +159,7 @@ final class Container implements ContainerInterface
             );
         }
 
-        return $this->enforceReturnType($className, $result ?? $this->retrieveFromReflection($dependency));
+        return $this->enforceReturnType($className, $this->retrieveFromReflection($dependency));
     }
 
     /**
