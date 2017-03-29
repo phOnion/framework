@@ -1,8 +1,4 @@
 <?php
-/**
- * @author Dimitar Dimitrov <daghostman.dd@gmail.com>
- */
-
 namespace Tests\Router\Parsers;
 
 use Onion\Framework\Interfaces\Router\ParserInterface;

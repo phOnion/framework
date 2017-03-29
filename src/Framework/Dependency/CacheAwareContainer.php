@@ -87,16 +87,16 @@ class CacheAwareContainer implements ContainerInterface
      * @throws \Psr\SimpleCache\InvalidArgumentException
      * @throws \Onion\Framework\Dependency\Exception\ContainerErrorException
      */
-    public function get($id)
+    public function get($key)
     {
-        if (!in_array($id, $this->blacklist, true) && $this->cache->has($id)) {
-            return $this->cache->get($id);
+        if (!in_array($key, $this->blacklist, true) && $this->cache->has($key)) {
+            return $this->cache->get($key);
         }
 
-        $dependency = $this->resolveContainer()->get($id);
-        if (!in_array($id, $this->blacklist, true) && !$this->cache->set($id, $dependency)) {
+        $dependency = $this->resolveContainer()->get($key);
+        if (!in_array($key, $this->blacklist, true) && !$this->cache->set($key, $dependency)) {
             throw new ContainerErrorException(
-                "Unable to persist resolved dependency '$id' in cache"
+                "Unable to persist resolved dependency '$key' in cache"
             );
         }
 
@@ -107,8 +107,8 @@ class CacheAwareContainer implements ContainerInterface
      * @inheritdoc
      * @throws \Psr\SimpleCache\InvalidArgumentException
      */
-    public function has($id): bool
+    public function has($key): bool
     {
-        return $this->cache->has($id) || $this->resolveContainer()->has($id);
+        return $this->cache->has($key) || $this->resolveContainer()->has($key);
     }
 }

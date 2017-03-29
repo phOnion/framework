@@ -1,5 +1,4 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 namespace Onion\Framework\Router\Factory;
 
 use Onion\Framework\Router\Route;
@@ -12,15 +11,31 @@ use Onion\Framework\Router\Matchers\Regex;
 use Onion\Framework\Router\Router;
 use Psr\Http\Message\ResponseInterface;
 
+/**
+ * Class RouterFactory
+ *
+ * @package Onion\Framework\Router\Factory
+ */
 final class RouterFactory implements FactoryInterface
 {
     private $route;
+
+    /**
+     * RouterFactory constructor.
+     */
     public function __construct()
     {
         $this->route = new Route();
     }
 
-    public function build(ContainerInterface $container)
+    /**
+     * @param ContainerInterface $container
+     * @return Router
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \InvalidArgumentException
+     */
+    public function build(ContainerInterface $container): Router
     {
         assert($container->has('routes'), 'No routes defined in container');
         assert($container->has(ParserInterface::class), 'No global route parser defined in container');

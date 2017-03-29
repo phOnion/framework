@@ -1,14 +1,4 @@
 <?php
-/**
- * PHP Version 5.6.0
- *
- * @category Tests
- * @package  Tests\Router
- * @author   Dimitar Dimitrov <daghostman.dd@gmail.com>
- * @license  MIT https://opensource.org/licenses/MIT
- * @link     https://github.com/phOnion/framework
- */
-
 namespace Tests\Router;
 
 use Interop\Http\ServerMiddleware\DelegateInterface;

@@ -72,6 +72,9 @@ class Route implements RouteInterface
         return $this->delegate;
     }
 
+    /**
+     * @return array
+     */
     public function getParameters(): array
     {
         return $this->parameters;
@@ -113,6 +116,9 @@ class Route implements RouteInterface
         $this->delegate = $delegate;
     }
 
+    /**
+     * @param array $parameters
+     */
     public function setParameters(array $parameters)
     {
         $this->parameters = $parameters;
