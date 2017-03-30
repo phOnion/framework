@@ -9,7 +9,6 @@
 [![codecov](https://codecov.io/gh/phOnion/framework/branch/master/graph/badge.svg)](https://codecov.io/gh/phOnion/framework)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/41629a45187c411aa61f6332b4017a93)](https://www.codacy.com/app/daghostman-dimitrov/framework?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=phOnion/framework&amp;utm_campaign=Badge_Grade)
 [![Total Downloads](https://poser.pugx.org/onion/framework/downloads)](https://packagist.org/packages/onion/framework)
-[![Join Chat](https://img.shields.io/badge/gitter-join%20chat-e80d7a.svg)](https://gitter.im/onion-framework/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
 
 [Documentation](http://phOnion.github.io/framework)
 [Getting Started - Bootstrap Application](https://github.com/phOnion/bootstrap)
