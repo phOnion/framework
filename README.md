@@ -1,5 +1,7 @@
 # phOnion - lightweight PSR-7 framework
 
+[![Join the chat at https://gitter.im/phOnion/framework](https://badges.gitter.im/phOnion/framework.svg)](https://gitter.im/phOnion/framework?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ----
 
 [![Latest Stable Version](https://poser.pugx.org/onion/framework/v/stable)](https://packagist.org/packages/onion/framework)
