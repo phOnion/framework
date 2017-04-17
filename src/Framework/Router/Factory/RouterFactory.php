@@ -54,7 +54,7 @@ final class RouterFactory implements FactoryInterface
             assert(array_key_exists('pattern', $route), 'A route definition must have a "pattern" key');
             assert(array_key_exists('middleware', $route), 'A route definition must have a "middleware" key');
             $name = $route['name'] ?? null;
-            $methods = ['GET', 'HEAD'];
+            $methods = $route['methods'] ?? ['GET', 'HEAD'];
 
             array_walk($route['middleware'], function (&$value) use ($container) {
                 $value = $container->get($value);
