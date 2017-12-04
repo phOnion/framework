@@ -4,10 +4,12 @@ namespace Onion\Framework\Dependency;
 use Psr\Container\ContainerInterface;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
 
-class DelegateContainer implements ContainerInterface
+class DelegateContainer implements ContainerInterface, \Countable
 {
     /** @var \ArrayIterator */
     private $containers;
+
+    /** @var ContainerInterface[] */
     public function __construct(array $containers)
     {
         $this->containers = new \ArrayIterator(array_filter($containers, function ($c) {
@@ -15,9 +17,14 @@ class DelegateContainer implements ContainerInterface
         }));
     }
 
+    public function count(): int
+    {
+        return count($this->containers);
+    }
+
     public function get($id)
     {
-        if ($this->containers->isEmpty()) {
+        if ($this->containers->count()) {
             throw new Exception\UnknownDependency("No containers provided, can't retrieve '$id'");
         }
 
