@@ -24,7 +24,7 @@ class DelegateContainer implements ContainerInterface, \Countable
 
     public function get($id)
     {
-        if ($this->containers->count()) {
+        if ($this->containers->count() === 0) {
             throw new Exception\UnknownDependency("No containers provided, can't retrieve '$id'");
         }
 
