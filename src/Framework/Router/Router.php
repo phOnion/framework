@@ -1,20 +1,21 @@
 <?php declare(strict_types=1);
 namespace Onion\Framework\Router;
 
-use Interop\Http\ServerMiddleware\DelegateInterface;
-use Interop\Http\ServerMiddleware\MiddlewareInterface;
-use Onion\Framework\Router\Interfaces\MatcherInterface;
-use Onion\Framework\Router\Interfaces\RouteInterface;
 use Psr\Http\Message;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Interop\Http\Server\MiddlewareInterface;
+use Onion\Framework\Router\Interfaces\RouteInterface;
+use Onion\Framework\Router\Interfaces\RouterInterface;
+use Onion\Framework\Router\Interfaces\MatcherInterface;
+use Onion\Framework\Http\Middleware\RequestHandler;
 
 /**
  * Class Router
  *
  * @package Onion\Framework\Router
  */
-class Router implements Interfaces\RouterInterface, MiddlewareInterface
+class Router implements RouterInterface, MiddlewareInterface
 {
     /**
      * @var RouteInterface[]
@@ -39,8 +40,9 @@ class Router implements Interfaces\RouterInterface, MiddlewareInterface
      * {@inheritdoc}
      * @throws \InvalidArgumentException When adding a duplicate pattern
      */
-    public function addRoute(RouteInterface $route)
+    public function addRoute(RouteInterface $route): RouterInterface
     {
+        $self = clone $this;
         assert(
             !array_key_exists($route->getName(), $this->routes),
             new \InvalidArgumentException(sprintf(
@@ -49,7 +51,9 @@ class Router implements Interfaces\RouterInterface, MiddlewareInterface
             ))
         );
 
-        $this->routes[$route->getName()] = $route;
+        $self->routes[$route->getName()] = $route;
+
+        return $self;
     }
 
     /**
@@ -92,7 +96,7 @@ class Router implements Interfaces\RouterInterface, MiddlewareInterface
      * @codeCoverageIgnore
      *
      * @param ServerRequestInterface $request
-     * @param DelegateInterface|null $delegate
+     * @param RequestHandlerInterface|null $requestHandler
      *
      * @return ResponseInterface
      *
@@ -103,14 +107,14 @@ class Router implements Interfaces\RouterInterface, MiddlewareInterface
      * @throws \Onion\Framework\Router\Exceptions\MethodNotAllowedException
      * @throws \InvalidArgumentException
      */
-    public function process(ServerRequestInterface $request, DelegateInterface $delegate = null): ResponseInterface
+    public function process(ServerRequestInterface $request, ?RequestHandler $requestHandler = null): ResponseInterface
     {
         $route = $this->match($request->getMethod(), $request->getUri());
         foreach ($route->getParameters() as $name => $param) {
             $request = $request->withAttribute($name, $param);
         }
 
-        return $route->getDelegate()->process($request);
+        return $route->getrequestHandler()->process($request);
     }
 
     /**
@@ -134,16 +138,15 @@ class Router implements Interfaces\RouterInterface, MiddlewareInterface
      */
     public function match(string $method, Message\UriInterface $uri): RouteInterface
     {
-        $method = strtoupper($method);
         foreach ($this->routes as $route) {
             if (($matches = $this->getMatcher()->match($route->getPattern(), $uri->getPath())) !== [false]) {
-                if (!in_array($method, $route->getMethods(), true)) {
+                if (($methods = $route->getMethods()) !== [] && !in_array(strtoupper($method), $methods, true)) {
                     throw new Exceptions\MethodNotAllowedException($route->getMethods());
                 }
 
                 return $route->hydrate([
-                    'parameters' => array_filter((array)$matches, function ($key) {
-                        return !is_numeric($key);
+                    'parameters' => array_filter($matches, function ($key) {
+                        return !is_int($key);
                     }, ARRAY_FILTER_USE_KEY)
                 ]);
             }
