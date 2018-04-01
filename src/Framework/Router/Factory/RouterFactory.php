@@ -66,7 +66,7 @@ final class RouterFactory implements FactoryInterface
                 $value = $container->get($value);
             });
 
-            $router->addRoute(
+            $router = $router->addRoute(
                 $this->route->hydrate([
                     'pattern' => $parser->parse($route['pattern']),
                     'name' => $name,
@@ -83,7 +83,7 @@ final class RouterFactory implements FactoryInterface
         if ($container->has('modules')) {
             foreach ($container->get('modules') as $pattern => $module) {
                 /** @var FactoryInterface $module */
-                $router->addRoute(
+                $router = $router->addRoute(
                     $this->route->hydrate([
                         'pattern' => $parser->parse($pattern),
                         'delegate' => $container->get($module)->build($container)

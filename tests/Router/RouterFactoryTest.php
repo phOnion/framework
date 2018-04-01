@@ -53,12 +53,14 @@ class RouterFactoryTest extends \PHPUnit_Framework_TestCase
         $this->container->get(\stdClass::class)->willReturn($controller);
         $this->container->has(\stdClass::class)->willReturn(true);
 
-
-
         $factory = new RouterFactory(
             new Route()
         );
         $this->assertInstanceOf(RouterInterface::class, $factory->build($this->container->reveal()));
+        $this->assertSame(
+            '/',
+            $factory->build($this->container->reveal())->getRouteByName('home')
+        );
     }
 
     public function testExceptionWhenRouteIsInvalid()
