@@ -2,12 +2,13 @@
 namespace Tests\Router;
 
 use Psr\Container\ContainerInterface;
-use Interop\Http\ServerMiddleware\MiddlewareInterface;
+use Psr\Http\Server\MiddlewareInterface;
 use Onion\Framework\Router\Interfaces\MatcherInterface;
 use Onion\Framework\Router\Interfaces\ParserInterface;
 use Onion\Framework\Router\Interfaces\RouterInterface;
 use Onion\Framework\Router\Factory\RouterFactory;
 use Psr\Http\Message\ResponseInterface;
+use Onion\Framework\Router\Route;
 
 class RouterFactoryTest extends \PHPUnit_Framework_TestCase
 {
@@ -29,6 +30,7 @@ class RouterFactoryTest extends \PHPUnit_Framework_TestCase
         $this->container->get(ParserInterface::class)->willReturn($parser->reveal());
         $this->container->get(MatcherInterface::class)->willReturn($matcher->reveal());
         $this->container->has('routes')->willReturn(true);
+        $this->container->has('modules')->willReturn(false);
         $this->container->has(ParserInterface::class)->willReturn(true);
         $this->container->has(MatcherInterface::class)->willReturn(true);
         $this->container->has(ResponseInterface::class)->willReturn(false);
@@ -53,7 +55,9 @@ class RouterFactoryTest extends \PHPUnit_Framework_TestCase
 
 
 
-        $factory = new RouterFactory();
+        $factory = new RouterFactory(
+            new Route()
+        );
         $this->assertInstanceOf(RouterInterface::class, $factory->build($this->container->reveal()));
     }
 
@@ -73,7 +77,7 @@ class RouterFactoryTest extends \PHPUnit_Framework_TestCase
             ]
         ]);
 
-        $factory = new RouterFactory();
+        $factory = new RouterFactory(new Route());
 
         $this->expectException(\AssertionError::class);
         $this->expectExceptionMessage('A route definition must have a "middleware" key');

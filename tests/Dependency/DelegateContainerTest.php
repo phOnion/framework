@@ -4,12 +4,14 @@ namespace Tests\Dependency;
 use Psr\Container\ContainerInterface;
 use Onion\Framework\Dependency\DelegateContainer;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
+use Onion\Framework\Dependency\Interfaces\AttachableContainer as Container;
+use Prophecy\Argument\Token\AnyValueToken;
 
 class DelegateContainerTest extends \PHPUnit_Framework_TestCase
 {
     public function testBasicConstruction()
     {
-        $c = $this->prophesize(ContainerInterface::class);
+        $c = $this->prophesize(Container::class);
         $this->assertCount(2, new DelegateContainer([
             $c->reveal(),
             $c->reveal()
@@ -18,7 +20,8 @@ class DelegateContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testExistanceInNthContainer()
     {
-        $c = $this->prophesize(ContainerInterface::class);
+        $c = $this->prophesize(Container::class);
+        $c->attach(new AnyValueToken())->willReturn(null);
         $c1 = $c->reveal();
         $c->has('foo')->willReturn(true);
 
@@ -29,8 +32,9 @@ class DelegateContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testRetrievalFromNthContainer()
     {
-        $c = $this->prophesize(ContainerInterface::class);
+        $c = $this->prophesize(Container::class);
         $c->has('foo')->willReturn(false);
+        $c->attach(new AnyValueToken())->willReturn(null);
 
         $delegate = new DelegateContainer([$c->reveal(), $c->reveal()]);
         $this->assertFalse($delegate->has('foo'));

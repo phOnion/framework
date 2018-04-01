@@ -1,7 +1,7 @@
 <?php
 namespace Tests\Router;
 
-use Interop\Http\ServerMiddleware\DelegateInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
 use Onion\Framework\Router\Interfaces\Exception\NotFoundException;
 use Onion\Framework\Router\Interfaces\Exception\NotAllowedException;
@@ -34,7 +34,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             $matcher->reveal()
         );
 
-        $this->delegate = $this->prophesize(DelegateInterface::class)->reveal();
+        $this->delegate = $this->prophesize(RequestHandlerInterface::class)->reveal();
 
         $this->matcher = $matcher->reveal();
     }
@@ -44,7 +44,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $route = $this->prophesize(RouteInterface::class);
         $route->getName()->willReturn('test');
         $route->getPattern()->willReturn('/');
-        $this->router->addRoute($route->reveal());
+        $this->router = $this->router->addRoute($route->reveal());
         $this->assertInstanceOf(
             RouteInterface::class,
             $this->router->getIterator()->current()
@@ -71,8 +71,8 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $route = $this->prophesize(RouteInterface::class);
         $route->getName()->willReturn('home');
         $route->getPattern()->willReturn('/');
-        $this->router->addRoute($route->reveal());
-        $this->router->addRoute($route->reveal());
+        $this->router = $this->router->addRoute($route->reveal());
+        $this->router = $this->router->addRoute($route->reveal());
     }
 
     public function testExceptionWhenNamedRouteDoesNotExist()
@@ -107,7 +107,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $route->getPattern()->willReturn('/');
         $route->getName()->willReturn('foo');
         $route->getMethods()->willReturn(['GET']);
-        $this->router->addRoute($route->reveal());
+        $this->router = $this->router->addRoute($route->reveal());
 
         $this->expectException(NotAllowedException::class);
         try {
@@ -125,7 +125,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $route = $this->prophesize(RouteInterface::class);
         $route->getPattern()->willReturn('/');
         $route->getName()->willReturn('home');
-        $this->router->addRoute($route->reveal());
+        $this->router = $this->router->addRoute($route->reveal());
         $this->assertEquals('/', $this->router->getRouteByName('home'));
         $this->assertCount(1, $this->router);
     }
@@ -141,11 +141,11 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $route->getName()->willReturn('foo');
         $route->getMethods()->willReturn(['GET']);
         $route->hydrate(['parameters' => ['foo' => 'bar']])->willReturn($route->reveal());
-        $router->addRoute($route->reveal());
+        $router = $router->addRoute($route->reveal());
 
         $this->assertInstanceOf(
             RouteInterface::class,
-                $router->match('GET', $uri->reveal())
+            $router->match('GET', $uri->reveal())
         );
     }
 
@@ -169,7 +169,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $route = $this->prophesize(RouteInterface::class);
         $route->getName()->willReturn('test');
         $route->getPattern()->willReturn('/(?P<foo>.*)');
-        $router->addRoute($route->reveal());
+        $router = $router->addRoute($route->reveal());
 
         $this->assertSame('/test', $router->getRouteByName('test', ['foo' => 'test']));
         $this->expectException(\InvalidArgumentException::class);

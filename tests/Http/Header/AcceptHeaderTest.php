@@ -37,8 +37,8 @@ class AcceptHeaderTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($header->getPriority('*/*'), 0.1);
         $this->assertSame($header->getPriority('application/json'), 1.0);
         $this->assertSame($header->getPriority('application/hal+json'), 0.2);
-        $this->assertFalse($header->supports('application/xml'));
-        $this->assertSame($header->getPriority('application/xml'), -1.0);
+        $this->assertTrue($header->supports('application/xml'));
+        $this->assertSame($header->getPriority('application/xml'), 0.1);
     }
 
     public function testParsingOfMultiValueLanguage()
@@ -59,7 +59,6 @@ class AcceptHeaderTest extends \PHPUnit_Framework_TestCase
             'application/json;q=0.8, text/plain;level=2;q=0.2, application/*;level=3'
         );
 
-        // var_dump($header);
         $this->assertTrue($header->supports('application/json'));
         $this->assertTrue($header->supports('text/plain'));
         $this->assertTrue($header->supports('application/*'));
