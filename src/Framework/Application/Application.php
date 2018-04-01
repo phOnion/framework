@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 namespace Onion\Framework\Application;
 
-use Interop\Http\ServerMiddleware\DelegateInterface;
-use Onion\Framework\Application\Interfaces\ApplicationInterface;
+use GuzzleHttp\Psr7\StreamWrapper;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Zend\Diactoros\Response\EmitterInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Onion\Framework\Application\Interfaces\ApplicationInterface;
 
 /**
  * Class Application
@@ -15,43 +15,58 @@ use Zend\Diactoros\Response\EmitterInterface;
 class Application implements ApplicationInterface
 {
     /**
-     * @var DelegateInterface
+     * @var RequestHandlerInterface
      */
-    protected $delegate;
-
-    /**
-     * @var EmitterInterface
-     */
-    protected $emitter;
+    protected $requestHandler;
 
     /**
      * Application constructor.
      *
-     * @param DelegateInterface $delegate The delegate with the global middleware
-     * @param EmitterInterface $emitter The emitter that processes and sends the response to the client
+     * @param RequestHandlerInterface $requestHandler The requestHandler with the global middleware
      */
-    public function __construct(DelegateInterface $delegate, EmitterInterface $emitter)
+    public function __construct(RequestHandlerInterface $requestHandler)
     {
-        $this->delegate = $delegate;
-        $this->emitter = $emitter;
+        $this->requestHandler = $requestHandler;
     }
 
     /**
-     * "Run" the application. Triggers the delegate
-     * provided and when a repsonse is returned it
+     * "Run" the application. Triggers the requestHandler
+     * provided and when a response is returned it
      * passes it to the emitter for final processing
      * before sending it to the client
      *
      * @param ServerRequestInterface $request
-     * @return null
+     * @return void
      */
-    public function run(ServerRequestInterface $request)
+    public function run(ServerRequestInterface $request): void
     {
-        return $this->emitter->emit($this->process($request));
+        /** @var ResponseInterface $response */
+        $response = $this->handle($request);
+
+        if (!$this->hasPreviousOutput()) {
+            $status = $response->getStatusCode();
+            $reasonPhrase = $response->getReasonPhrase();
+            header(
+                "HTTP/{$response->getProtocolVersion()} {$status} {$reasonPhrase}",
+                true,
+                $status
+            );
+
+            foreach ($response->getHeaders() as $header => $values) {
+                foreach ($values as $index => $value) {
+                    header("{$header}: $value", $index === 0);
+                }
+            }
+        }
+
+        stream_copy_to_stream(
+            StreamWrapper::getResource($response->getBody()),
+            fopen('php://output', 'wb')
+        );
     }
 
     /**
-     * Triggers processing of the provided delegate,
+     * Triggers processing of the provided requestHandler,
      * without emitting the response. Useful in the
      * context of the application running as a module
      *
@@ -59,8 +74,18 @@ class Application implements ApplicationInterface
      *
      * @return ResponseInterface
      */
-    public function process(ServerRequestInterface $request): ResponseInterface
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        return $this->delegate->process($request);
+        return $this->requestHandler->handle($request);
+    }
+
+    /**
+     * Helper to check if output has been sent to the client
+     *
+     * @return bool
+     */
+    private function hasPreviousOutput(): bool
+    {
+        return !headers_sent() && (ob_get_level() === 0 && ob_get_length() === 0);
     }
 }

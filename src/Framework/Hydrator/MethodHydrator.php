@@ -11,11 +11,11 @@ trait MethodHydrator
     /**
      * Hydrates the object with the $data provided
      *
-     * @param array $data Assoc array with param
+     * @param iterable $data Params
      *
      * @return $this|HydratableInterface A hydrated copy of the object provided
      */
-    public function hydrate(array $data): HydratableInterface
+    public function hydrate(iterable $data): HydratableInterface
     {
         $target = clone $this;
         foreach ($data as $name => $value) {
@@ -33,11 +33,11 @@ trait MethodHydrator
      * Extracts all data from the $object or extracts only
      * the provided $keys
      *
-     * @param array  $keys List of keys with which to filter the extracted keys
+     * @param iterable  $keys List of keys with which to filter the extracted keys
      *
-     * @return array The extracted data
+     * @return iterable The extracted data
      */
-    public function extract(array $keys = []): array
+    public function extract(iterable $keys = []): iterable
     {
         $data = [];
 

@@ -3,6 +3,7 @@ namespace Onion\Framework\Dependency;
 
 use Psr\Container\ContainerInterface;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
+use Onion\Framework\Dependency\Interfaces\AttachableContainer;
 
 class DelegateContainer implements ContainerInterface, \Countable
 {
@@ -12,9 +13,15 @@ class DelegateContainer implements ContainerInterface, \Countable
     /** @var ContainerInterface[] */
     public function __construct(array $containers)
     {
-        $this->containers = new \ArrayIterator(array_filter($containers, function ($c) {
+        $this->containers = new \ArrayIterator(array_map(function ($c) {
+            if ($c instanceof AttachableContainer) {
+                $c->attach($this);
+            }
+
+            return $c;
+        }, array_filter($containers, function ($c) {
             return ($c instanceof ContainerInterface);
-        }));
+        })));
     }
 
     public function count(): int

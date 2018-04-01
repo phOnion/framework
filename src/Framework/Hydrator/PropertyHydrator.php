@@ -8,11 +8,11 @@ trait PropertyHydrator
     /**
      * Hydrates the object with the $data provided
      *
-     * @param array $data Assoc array with param
+     * @param iterable $data Param
      *
      * @return self|HydratableInterface A hydrated copy of the object provided
      */
-    public function hydrate(array $data): HydratableInterface
+    public function hydrate(iterable $data): HydratableInterface
     {
         $target = clone $this;
         foreach ($data as $name => $value) {
@@ -28,7 +28,7 @@ trait PropertyHydrator
     /**
      * @inheritdoc
      */
-    public function extract(array $keys = []): array
+    public function extract(iterable $keys = []): iterable
     {
         $data = [];
         if ($keys === []) {

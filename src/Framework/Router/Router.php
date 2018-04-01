@@ -1,14 +1,14 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types=0);
 namespace Onion\Framework\Router;
 
 use Psr\Http\Message;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Interop\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Onion\Framework\Router\Interfaces\RouteInterface;
 use Onion\Framework\Router\Interfaces\RouterInterface;
 use Onion\Framework\Router\Interfaces\MatcherInterface;
-use Onion\Framework\Http\Middleware\RequestHandler;
 
 /**
  * Class Router
@@ -44,9 +44,9 @@ class Router implements RouterInterface, MiddlewareInterface
     {
         $self = clone $this;
         assert(
-            !array_key_exists($route->getName(), $this->routes),
+            !isset($this->routes[$route->getName()]),
             new \InvalidArgumentException(sprintf(
-                'Route "%s" overlaps with another route using the same or similar pattern',
+                'Route "%s" overlaps with another route using the name',
                 $route->getPattern()
             ))
         );
@@ -64,7 +64,7 @@ class Router implements RouterInterface, MiddlewareInterface
     public function getRouteByName(string $name, array $params = []): string
     {
         assert(
-            array_key_exists($name, $this->routes),
+            isset($this->routes[$name]),
             new \InvalidArgumentException(sprintf('No route identified by "%s"', $name))
         );
 
@@ -107,14 +107,15 @@ class Router implements RouterInterface, MiddlewareInterface
      * @throws \Onion\Framework\Router\Exceptions\MethodNotAllowedException
      * @throws \InvalidArgumentException
      */
-    public function process(ServerRequestInterface $request, ?RequestHandler $requestHandler = null): ResponseInterface
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $requestHandler): ResponseInterface
     {
-        $route = $this->match($request->getMethod(), $request->getUri());
-        foreach ($route->getParameters() as $name => $param) {
-            $request = $request->withAttribute($name, $param);
-        }
-
-        return $route->getrequestHandler()->process($request);
+        return $route->getRequestHandler()
+            ->process(
+                $request->withAttribute('route', $this->match(
+                    $request->getMethod(),
+                    $request->getUri()
+                ))
+            );
     }
 
     /**

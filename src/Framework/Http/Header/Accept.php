@@ -37,7 +37,13 @@ class Accept implements Interfaces\AcceptInterface
      */
     public function supports(string $contentType): bool
     {
-        return isset($this->types[strtolower($contentType)]);
+        foreach ($this->types as $pattern => $weight) {
+            $pattern = str_replace(['*', '.', '/', '+'], ['(.*)', '.', '\/', '\+'], $pattern);
+            if (preg_match("#^$pattern$#i", $contentType) > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -48,7 +54,13 @@ class Accept implements Interfaces\AcceptInterface
      */
     public function getPriority(string $contentType): float
     {
-        return $this->supports($contentType) ?
-            $this->types[strtolower($contentType)] : -1.0;
+        foreach ($this->types as $pattern => $weight) {
+            $pattern = str_replace(['*', '.', '/', '+'], ['(.*)', '.', '\/', '\+'], $pattern);
+            if (preg_match("#^$pattern$#i", $contentType) > 0) {
+                return $weight;
+            }
+        }
+
+        return -1.0;
     }
 }

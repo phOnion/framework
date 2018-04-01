@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 namespace Onion\Framework\Router;
 
-use Interop\Http\ServerMiddleware\DelegateInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Onion\Framework\Hydrator\MethodHydrator;
 use Onion\Framework\Router\Interfaces\RouteInterface;
 
@@ -31,7 +31,7 @@ class Route implements RouteInterface
     private $pattern;
 
     /**
-     * @var DelegateInterface
+     * @var RequestHandlerInterface
      */
     private $delegate;
 
@@ -65,9 +65,9 @@ class Route implements RouteInterface
     }
 
     /**
-     * @return DelegateInterface
+     * @return RequestHandlerInterface
      */
-    public function getDelegate(): DelegateInterface
+    public function getDelegate(): RequestHandlerInterface
     {
         return $this->delegate;
     }
@@ -111,7 +111,7 @@ class Route implements RouteInterface
     /**
      * @param mixed $delegate
      */
-    public function setDelegate($delegate)
+    public function setDelegate(RequestHandlerInterface $delegate)
     {
         $this->delegate = $delegate;
     }

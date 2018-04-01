@@ -1,11 +1,10 @@
 <?php declare(strict_types=1);
 namespace Onion\Framework\Application\Factory;
 
-use Interop\Http\ServerMiddleware\DelegateInterface;
-use Onion\Framework\Application\Application;
-use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Psr\Container\ContainerInterface;
-use Zend\Diactoros\Response\EmitterInterface;
+use Onion\Framework\Application\Application;
+use Psr\Http\Server\RequestHandlerInterface;
+use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 
 /**
  * A factory class solely responsible for assembling the Application
@@ -22,11 +21,10 @@ final class ApplicationFactory implements FactoryInterface
      *
      * @return Application
      */
-    public function build(ContainerInterface $container): Application
+    public function build(ContainerInterface $container): object
     {
         return new Application(
-            $container->get(DelegateInterface::class),
-            $container->get(EmitterInterface::class)
+            $container->get(RequestHandlerInterface::class)
         );
     }
 }

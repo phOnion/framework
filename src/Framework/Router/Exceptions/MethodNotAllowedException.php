@@ -19,7 +19,7 @@ class MethodNotAllowedException extends \Exception implements NotAllowedExceptio
      * @param int $code
      * @param \Exception|null $previous
      */
-    public function __construct(array $methods, $code = 0, \Exception $previous = null)
+    public function __construct(iterable $methods, $code = 0, \Exception $previous = null)
     {
         parent::__construct('HTTP method not allowed', $code, $previous);
         $this->setAllowedMethods($methods);
@@ -30,7 +30,7 @@ class MethodNotAllowedException extends \Exception implements NotAllowedExceptio
      *
      * @return array
      */
-    public function getAllowedMethods(): array
+    public function getAllowedMethods(): iterable
     {
         return $this->allowedMethods;
     }
@@ -42,7 +42,7 @@ class MethodNotAllowedException extends \Exception implements NotAllowedExceptio
      *
      * @return void
      */
-    public function setAllowedMethods(array $methods)
+    public function setAllowedMethods(iterable $methods): void
     {
         $this->allowedMethods = $methods;
     }

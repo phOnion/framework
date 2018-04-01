@@ -7,18 +7,22 @@ use Psr\Container\NotFoundExceptionInterface;
 use Onion\Framework\Dependency\Exception\ContainerErrorException;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
+use Onion\Framework\Dependency\Interfaces\AttachableContainer;
 
 /**
  * Class Container
  *
  * @package Onion\Framework\Dependency
  */
-final class Container implements ContainerInterface
+final class Container implements AttachableContainer
 {
     private $dependencies = [];
     private $invokables = [];
     private $factories = [];
     private $shared = [];
+
+    /** @var ContainerInterface */
+    private $delegate = null;
 
     /**
      * Container constructor.
@@ -44,6 +48,11 @@ final class Container implements ContainerInterface
         }
 
         $this->dependencies = array_merge($this->dependencies, $dependencies);
+    }
+
+    public function attach(ContainerInterface $container): void
+    {
+        $this->delegate = $container;
     }
 
     /**
@@ -236,7 +245,7 @@ final class Container implements ContainerInterface
         /**
          * @var $factory FactoryInterface
          */
-        $result = $this->enforceReturnType($className, $factory->build($this));
+        $result = $this->enforceReturnType($className, $factory->build($this->delegate ?? $this));
         if (in_array($className, $this->shared, true)) {
             $this->invokables[$className] = $result;
             unset($this->factories[$className]);
