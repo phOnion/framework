@@ -14,18 +14,10 @@ final class RequestHandler implements RequestHandlerInterface
     protected $response;
 
     /**
-     * @param MiddlewareInterface[] $middleware Middleware of the frame
+     * @param \Iterator $middleware Middleware of the frame
      */
-    public function __construct(iterable $middleware, Message\ResponseInterface $response = null)
+    public function __construct(\Iterator $middleware, Message\ResponseInterface $response = null)
     {
-        array_walk($middleware, function ($middleware) {
-            if (!$middleware instanceof MiddlewareInterface) {
-                throw new \TypeError(
-                    'All members of middleware must implement MiddlewareInterface, ' .
-                        gettype($middleware) . ': ' . print_r($middleware, true) . ' given'
-                );
-            }
-        });
         $this->middleware = $middleware;
         $this->response = $response;
     }
@@ -38,8 +30,9 @@ final class RequestHandler implements RequestHandlerInterface
      */
     public function handle(Message\ServerRequestInterface $request): Message\ResponseInterface
     {
-        if (!empty($this->middleware)) {
-            $middleware = array_shift($this->middleware);
+        if ($this->middleware->valid()) {
+            $middleware = $this->middleware->current();
+            $this->middleware->next();
 
             return $middleware->process($request, $this);
         }

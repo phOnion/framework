@@ -5,6 +5,7 @@ use Onion\Framework\Router\Route;
 use Psr\Container\ContainerInterface;
 use Onion\Framework\Router\Interfaces\RouterInterface;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
+use Onion\Framework\Http\Middleware\RequestHandler;
 
 class RequestHandlerFactory implements FactoryInterface
 {
@@ -25,8 +26,17 @@ class RequestHandlerFactory implements FactoryInterface
         }
 
         $middleware = $container->get('middleware');
-        $requestHandler = [];
 
-        return $requestHandler;
+        return new RequestHandler(function () use ($container, $middleware) {
+            foreach ($middleware as $identifier) {
+                $instance = $container->get($identifier);
+                assert(
+                    is_object($instance) && $instance instanceof MiddlewareInterface,
+                    new \TypeError("'{$identifier}' must implement MiddlewareInterface")
+                );
+
+                yield $instance;
+            }
+        });
     }
 }
