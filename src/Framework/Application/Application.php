@@ -5,7 +5,10 @@ use GuzzleHttp\Psr7\StreamWrapper;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Onion\Framework\Router\Interfaces\RouteInterface;
 use Onion\Framework\Application\Interfaces\ApplicationInterface;
+use Onion\Framework\Router\Exceptions\NotFoundException;
+use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
 
 /**
  * Class Application
@@ -15,18 +18,18 @@ use Onion\Framework\Application\Interfaces\ApplicationInterface;
 class Application implements ApplicationInterface
 {
     /**
-     * @var RequestHandlerInterface
+     * @var RouteInterface[]
      */
-    protected $requestHandler;
+    protected $routes = [];
 
     /**
      * Application constructor.
      *
-     * @param RequestHandlerInterface $requestHandler The requestHandler with the global middleware
+     * @param RouteInterface[] $routes Array of routes that are supported
      */
-    public function __construct(RequestHandlerInterface $requestHandler)
+    public function __construct(iterable $routes)
     {
-        $this->requestHandler = $requestHandler;
+        $this->routes = $routes;
     }
 
     /**
@@ -54,7 +57,7 @@ class Application implements ApplicationInterface
 
             foreach ($response->getHeaders() as $header => $values) {
                 foreach ($values as $index => $value) {
-                    header("{$header}: $value", $index === 0);
+                    header("{$header}: {$value}", $index === 0);
                 }
             }
         }
@@ -76,7 +79,23 @@ class Application implements ApplicationInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        return $this->requestHandler->handle($request);
+        foreach ($this->routes as $route) {
+            if ($route->isMatch($request->getUri()->getPath())) {
+                if (!$route->hasMethod($request->getMethod())) {
+                    throw new MethodNotAllowedException($route->getMethods());
+                }
+
+                foreach ($route->getParameters() as $attr => $value) {
+                    $request = $request->withAttribute($attr, $value);
+                }
+
+                return $route->getRequestHandler()->handle($request);
+            }
+        }
+
+        throw new NotFoundException(
+            "No route available to handle '{$request->getUri()->getPath()}'"
+        );
     }
 
     /**
