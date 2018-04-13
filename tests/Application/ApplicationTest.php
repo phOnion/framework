@@ -60,7 +60,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         $this->request->getMethod()->willReturn('GET');
 
         $this->route->isMatch('/')->willReturn(true);
-        $this->route->getRequestHandler()->willThrow(new \ErrorException('OK'));
+        $this->route->handle(new AnyValueToken())->willThrow(new \ErrorException('OK'));
         $app = new Application([$this->route->reveal()]);
         $app->run($this->request->reveal());
     }
