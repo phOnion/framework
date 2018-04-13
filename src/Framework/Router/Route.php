@@ -1,126 +1,79 @@
 <?php declare(strict_types=1);
 namespace Onion\Framework\Router;
 
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Onion\Framework\Hydrator\MethodHydrator;
 use Onion\Framework\Router\Interfaces\RouteInterface;
 
-/**
- * Class Route
- *
- * @package Onion\Framework\Router
- * @codeCoverageIgnore
- */
-class Route implements RouteInterface
+abstract class Route implements RouteInterface, RequestHandlerInterface
 {
-    use MethodHydrator;
-
-    /**
-     * @var string
-     */
     private $name;
-
-    /**
-     * @var array
-     */
-    private $methods = [];
-
-    /**
-     * @var string
-     */
     private $pattern;
+    private $handler;
+    private $methods;
 
-    /**
-     * @var RequestHandlerInterface
-     */
-    private $delegate;
+    private $parameters = [];
 
-    /**
-     * @var array
-     */
-    private $parameters;
-
-    /**
-     * @return string
-     */
-    public function getName(): string
+    public function __construct(string $pattern, string $name = null)
     {
-        return $this->name ?? spl_object_hash($this);
+        $this->pattern = $this->parse($pattern);
+        $this->name = $name ?? $pattern;
     }
 
-    /**
-     * @return array
-     */
-    public function getMethods(): array
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function getMethods(): iterable
     {
         return $this->methods;
     }
 
-    /**
-     * @return string
-     */
     public function getPattern(): string
     {
         return $this->pattern;
     }
 
-    /**
-     * @return RequestHandlerInterface
-     */
-    public function getDelegate(): RequestHandlerInterface
+    public function getRequestHandler(): RequestHandlerInterface
     {
-        return $this->delegate;
+        return $this->handler;
     }
 
-    /**
-     * @return array
-     */
-    public function getParameters(): array
+    public function getParameters(): iterable
     {
         return $this->parameters;
     }
 
-    /**
-     * @param mixed $name
-     */
-    public function setName($name)
+    public function hasName(): bool
     {
-        $this->name = $name;
+        return $this->name !== null;
     }
 
-    /**
-     * @param mixed $methods
-     */
-    public function setMethods(array $methods)
+    public function hasMethod(string $method): bool
     {
-        array_walk($methods, function (&$value) {
-            $value = strtoupper($value);
-        });
-
-        $this->methods = $methods;
+        return $this->methods === [] || in_array($method, $this->methods);
     }
 
-    /**
-     * @param mixed $pattern
-     */
-    public function setPattern($pattern)
+    public function withMethods(iterable $methods): self
     {
-        $this->pattern = $pattern;
+        $self = clone $this;
+        $self->methods = $methods;
+
+        return $self;
     }
 
-    /**
-     * @param mixed $delegate
-     */
-    public function setDelegate(RequestHandlerInterface $delegate)
+    public function withRequestHandler(RequestHandlerInterface $requestHandler): self
     {
-        $this->delegate = $delegate;
+        $self = clone $this;
+        $self->handler = $requestHandler;
+
+        return $self;
     }
 
-    /**
-     * @param array $parameters
-     */
-    public function setParameters(array $parameters)
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $this->parameters = $parameters;
+        return $this->getRequestHandler()->handle($request);
     }
 }
