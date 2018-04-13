@@ -3,6 +3,8 @@ namespace Onion\Framework\Http\Header;
 
 class Accept implements Interfaces\AcceptInterface
 {
+    private $name;
+    private $value;
     private $types = [];
 
     /**
@@ -10,8 +12,11 @@ class Accept implements Interfaces\AcceptInterface
      *
      * @param string $headerValue result of RequestInterface::getHeaderLine
      */
-    public function __construct(string $headerValue)
+    public function __construct(string $name, string $headerValue)
     {
+        $this->name = $name;
+        $this->value = $headerValue;
+
         $contentTypes=explode(',', $headerValue);
 
         foreach ($contentTypes as $pair) {
@@ -24,6 +29,16 @@ class Accept implements Interfaces\AcceptInterface
                     (float) (isset($matches['priority']) ? trim($matches['priority']) : 1);
             }
         }
+    }
+
+    public function getName(): string
+    {
+        return ucwords($this->name, '-');
+    }
+
+    public function getRawValue(): string
+    {
+        return $this->value;
     }
 
     /**
@@ -62,5 +77,10 @@ class Accept implements Interfaces\AcceptInterface
         }
 
         return -1.0;
+    }
+
+    public function __toString(): string
+    {
+        return "{$this->getName()}: {$this->getRawValue()}";
     }
 }

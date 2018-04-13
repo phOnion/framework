@@ -36,11 +36,11 @@ final class ServerRequestFactory implements FactoryInterface
     private function getHeaders(array $input)
     {
         $headers = [];
-        foreach ($server as $key => $value) {
+        foreach ($input as $key => $value) {
             if (strpos($key, 'REDIRECT_') === 0) {
                 $key = substr($key, 9);
 
-                if (array_key_exists($key, $server)) {
+                if (array_key_exists($key, $headers)) {
                     continue;
                 }
             }

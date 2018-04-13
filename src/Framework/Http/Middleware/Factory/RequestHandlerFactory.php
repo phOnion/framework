@@ -25,9 +25,9 @@ class RequestHandlerFactory implements FactoryInterface
             );
         }
 
-        $middleware = $container->get('middleware');
+        $middlewareGenerator = function () use ($container) {
+            $middleware = $container->get('middleware');
 
-        return new RequestHandler(function () use ($container, $middleware) {
             foreach ($middleware as $identifier) {
                 $instance = $container->get($identifier);
                 assert(
@@ -37,6 +37,7 @@ class RequestHandlerFactory implements FactoryInterface
 
                 yield $instance;
             }
-        });
+        };
+        return new RequestHandler($middlewareGenerator());
     }
 }

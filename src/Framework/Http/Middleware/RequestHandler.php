@@ -16,8 +16,12 @@ final class RequestHandler implements RequestHandlerInterface
     /**
      * @param \Iterator $middleware Middleware of the frame
      */
-    public function __construct(\Iterator $middleware, Message\ResponseInterface $response = null)
+    public function __construct(iterable $middleware, Message\ResponseInterface $response = null)
     {
+        if (is_array($middleware)) {
+            $middleware = new \ArrayIterator($middleware);
+        }
+
         $this->middleware = $middleware;
         $this->response = $response;
     }
@@ -32,6 +36,7 @@ final class RequestHandler implements RequestHandlerInterface
     {
         if ($this->middleware->valid()) {
             $middleware = $this->middleware->current();
+            assert($middleware instanceof MiddlewareInterface, new \TypeError('Invalid middleware type'));
             $this->middleware->next();
 
             return $middleware->process($request, $this);
