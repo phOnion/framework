@@ -89,7 +89,7 @@ class Application implements ApplicationInterface
                     $request = $request->withAttribute($attr, $value);
                 }
 
-                return $route->getRequestHandler()->handle($request);
+                return $route->handle($request);
             }
         }
 
