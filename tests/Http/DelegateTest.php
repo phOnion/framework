@@ -15,7 +15,10 @@ class DelegateTest extends \PHPUnit_Framework_TestCase
     {
         $this->expectException(\TypeError::class);
 
-        new Delegate('foobar');
+        $handler = new Delegate(['foobar']);
+        $request = $this->prophesize(ServerRequestInterface::class);
+
+        $handler->handle($request->reveal());
     }
 
     public function testInvocationOfProperFrameWithoutNext()

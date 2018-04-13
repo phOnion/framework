@@ -7,6 +7,7 @@ class AcceptHeaderTest extends \PHPUnit_Framework_TestCase
     public function testWithSingleValueWithoutWeight()
     {
         $header = new \Onion\Framework\Http\Header\Accept(
+            'accept',
             'application/json'
         );
 
@@ -17,6 +18,7 @@ class AcceptHeaderTest extends \PHPUnit_Framework_TestCase
     public function testWithSingleValueWithWeight()
     {
         $header = new \Onion\Framework\Http\Header\Accept(
+            'accept',
             'application/json;q=0.7,application/vnd.foobar+html'
         );
 
@@ -28,6 +30,7 @@ class AcceptHeaderTest extends \PHPUnit_Framework_TestCase
     public function testParsingWithMultipleValues()
     {
         $header = new \Onion\Framework\Http\Header\Accept(
+            'accept',
             'application/json,application/hal+json;q=0.2,*/*;q=0.1'
         );
 
@@ -44,6 +47,7 @@ class AcceptHeaderTest extends \PHPUnit_Framework_TestCase
     public function testParsingOfMultiValueLanguage()
     {
         $header = new \Onion\Framework\Http\Header\Accept(
+            'accept-language',
             'en, en-gb;q=0.8, bg;q=0.5'
         );
 
@@ -56,6 +60,7 @@ class AcceptHeaderTest extends \PHPUnit_Framework_TestCase
     public function testParsingOfMultiValueAcceptWithMoreThanOneAttribute()
     {
         $header = new \Onion\Framework\Http\Header\Accept(
+            'accept',
             'application/json;q=0.8, text/plain;level=2;q=0.2, application/*;level=3'
         );
 
@@ -70,6 +75,7 @@ class AcceptHeaderTest extends \PHPUnit_Framework_TestCase
     public function testParsingOfMultiValueEncoding()
     {
         $header = new \Onion\Framework\Http\Header\Accept(
+            'accept-encoding',
             'compress;q=0.5, gzip;q=1.0'
         );
         $this->assertTrue($header->supports('compress'));
@@ -83,6 +89,7 @@ class AcceptHeaderTest extends \PHPUnit_Framework_TestCase
     public function testParsingOfMultiValueCharset()
     {
         $header = new \Onion\Framework\Http\Header\Accept(
+            'accept-charset',
             'iso-8895-5, unicode-1-1;q=0.8'
         );
 

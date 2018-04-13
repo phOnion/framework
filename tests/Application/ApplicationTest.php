@@ -1,85 +1,67 @@
 <?php
 namespace Tests;
 
-use Psr\Http\Server\RequestHandlerInterface as RequestHandlerInterface;
-use Onion\Framework\Application\Application;
-use Prophecy\Argument\Token\AnyValueToken;
+use Psr\Http\Message\UriInterface;
 use Prophecy\Argument\Token\TypeToken;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Prophecy\Argument\Token\AnyValueToken;
+use Onion\Framework\Application\Application;
 use Psr\Http\Message\ServerRequestInterface;
+use Onion\Framework\Router\Interfaces\RouteInterface;
+use Psr\Http\Server\RequestHandlerInterface as RequestHandlerInterface;
+use Onion\Framework\Router\Exceptions\NotFoundException;
+use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
 
 class ApplicationTest extends \PHPUnit_Framework_TestCase
 {
-    protected $stack;
+    protected $route;
+    protected $request;
+
     public function setUp()
     {
-        $this->stack = $this->prophesize(RequestHandlerInterface::class);
+        $this->route = $this->prophesize(RouteInterface::class);
+        $this->route->getParameters()->willReturn([]);
+        $this->route->hasMethod('GET')->willReturn(true);
+        $this->route->getMethods()->willReturn(['GET']);
+
+        $uri = $this->prophesize(UriInterface::class);
+        $uri->getPath()->willReturn('/');
+
+        $this->request = $this->prophesize(ServerRequestInterface::class);
+        $this->request->getUri()->willReturn($uri->reveal());
     }
 
-    public function testApplicationInvocation()
+    public function testApplicationRunNoRoute()
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(NotFoundException::class);
+        $this->request->getMethod()->willReturn('GET');
+
+        $this->route->isMatch('/')->willReturn(false);
+        $app = new Application([$this->route->reveal()]);
+        $app->run($this->request->reveal());
+    }
+
+    public function testApplicationRunBadMethod()
+    {
+        $this->expectException(MethodNotAllowedException::class);
+        $this->request->getMethod()->willReturn('HEAD');
+        $this->route->hasMethod('HEAD')->willReturn(false);
+        $this->route->isMatch('/')->willReturn(true);
+
+        $app = new Application([$this->route->reveal()]);
+        $app->run($this->request->reveal());
+    }
+
+    public function testApplicationRun()
+    {
+        $this->expectException(\ErrorException::class);
         $this->expectExceptionMessage('OK');
+        $this->request->getMethod()->willReturn('GET');
 
-        $this->stack->handle(
-            new TypeToken(ServerRequestInterface::class)
-        )->willThrow(new \RuntimeException('OK'));
-        $app = new Application($this->stack->reveal());
-
-        $app->run($this->prophesize(ServerRequestInterface::class)->reveal());
-    }
-
-    public function testApplicationRunWithoutNextFrame()
-    {
-        $this->stack->handle(
-            new TypeToken(RequestInterface::class),
-            null
-        )->willReturn(
-            $this->prophesize(ResponseInterface::class)->reveal()
-        );
-
-        $app = new Application(
-            $this->stack->reveal()
-        );
-
-        $this->assertInstanceOf(
-            ResponseInterface::class,
-            $app->handle($this->prophesize(ServerRequestInterface::class)->reveal(), null)
-        );
-    }
-
-    public function testExceptionRethrowWhenNoNextDelegateIsAvailable()
-    {
-        $this->stack->handle(new TypeToken(RequestInterface::class), null)
-            ->willThrow(\Exception::class);
-
-        $app = new Application(
-            $this->stack->reveal()
-        );
-
-        $this->expectException(\Throwable::class);
-        $app->handle($this->prophesize(ServerRequestInterface::class)->reveal(), null);
-    }
-
-    public function testApplicationFrameRun()
-    {
-        $request = $this->prophesize(ServerRequestInterface::class);
-        $request->willImplement(ServerRequestInterface::class);
-        $this->stack->handle(
-            new TypeToken(ServerRequestInterface::class),
-            null
-        )->willReturn(
-            $this->prophesize(ResponseInterface::class)->reveal()
-        );
-
-        $app = new Application(
-            $this->stack->reveal()
-        );
-
-        $middleware = $this->prophesize(RequestHandlerInterface::class);
-        $middleware->handle(new TypeToken(ServerRequestInterface::class))->willReturn(null);
-
-        $this->assertInstanceOf(ResponseInterface::class, $app->handle($request->reveal(), $middleware->reveal()));
+        $this->route->isMatch('/')->willReturn(true);
+        $this->route->getRequestHandler()->willThrow(new \ErrorException('OK'));
+        $app = new Application([$this->route->reveal()]);
+        $app->run($this->request->reveal());
     }
 }
