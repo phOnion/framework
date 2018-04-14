@@ -3,7 +3,10 @@ namespace Tests\Http;
 
 use Test\Router;
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\MiddlewareInterface;
+use Prophecy\Argument\Token\AnyValueToken;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Onion\Framework\Http\Middleware\Factory\RequestHandlerFactory;
@@ -19,16 +22,23 @@ class RequestHandlerFactoryTest extends \PHPUnit_Framework_TestCase
 
     public function testProperInit()
     {
+        $middleware = $this->prophesize(MiddlewareInterface::class);
+        $middleware->process(new AnyValueToken(), new AnyValueToken())
+            ->willReturn($this->prophesize(
+                ResponseInterface::class
+            ));
+
         $container = $this->prophesize(ContainerInterface::class);
         $container->has('middleware')->willReturn(true);
         $container->get('middleware')->willReturn(['foo']);
-        $container->get('foo')->willReturn(
-            $this->prophesize(MiddlewareInterface::class)->reveal()
-        );
+        $container->get('foo')->willReturn($middleware->reveal());
 
-        $this->assertInstanceOf(RequestHandlerInterface::class, $this->factory->build(
-            $container->reveal()
-        ));
+        $handler = $this->factory->build($container->reveal());
+        $this->assertInstanceOf(RequestHandlerInterface::class, $handler);
+        $this->assertInstanceOf(
+            ResponseInterface::class,
+            $handler->handle($this->prophesize(ServerRequestInterface::class)->reveal())
+        );
     }
 
     public function testInvalidMiddlewareReturned()
