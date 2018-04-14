@@ -10,7 +10,7 @@ use Onion\Framework\Http\Middleware\RequestHandler;
 
 /**
  * A factory class solely responsible for assembling the Application
- * object that is used as the entrypoint to all application
+ * object that is used as the entry point to all application
  * functionality. It represents the minimal requirements to assemble
  * a fully fledged application be it with or without modules used
  *
