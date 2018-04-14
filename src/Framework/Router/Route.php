@@ -64,6 +64,9 @@ abstract class Route implements RouteInterface
 
     public function withMethods(iterable $methods): RouteInterface
     {
+        if ($methods instanceof \Iterator) {
+            $methods = iterator_to_array($methods, false);
+        }
         $self = clone $this;
         $self->methods = $methods;
 
@@ -80,6 +83,10 @@ abstract class Route implements RouteInterface
 
     public function withHeaders(iterable $headers): RouteInterface
     {
+        if ($headers instanceof \Iterator) {
+            $headers = iterator_to_array($headers, false);
+        }
+
         $self = clone $this;
         $self->headers = $headers;
 
