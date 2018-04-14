@@ -6,7 +6,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Onion\Framework\Router\Interfaces\RouteInterface;
 
-abstract class Route implements RouteInterface, RequestHandlerInterface
+abstract class Route implements RouteInterface
 {
     private $name;
     private $pattern;
@@ -18,11 +18,11 @@ abstract class Route implements RouteInterface, RequestHandlerInterface
 
     public function __construct(string $pattern, string $name = null)
     {
-        $this->pattern = $this->parse($pattern);
+        $this->pattern = $pattern;
         $this->name = $name ?? $pattern;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
@@ -62,7 +62,7 @@ abstract class Route implements RouteInterface, RequestHandlerInterface
         return $this->methods === [] || in_array($method, $this->methods);
     }
 
-    public function withMethods(iterable $methods): self
+    public function withMethods(iterable $methods): RouteInterface
     {
         $self = clone $this;
         $self->methods = $methods;
@@ -70,7 +70,7 @@ abstract class Route implements RouteInterface, RequestHandlerInterface
         return $self;
     }
 
-    public function withRequestHandler(RequestHandlerInterface $requestHandler): self
+    public function withRequestHandler(RequestHandlerInterface $requestHandler): RouteInterface
     {
         $self = clone $this;
         $self->handler = $requestHandler;
@@ -78,7 +78,7 @@ abstract class Route implements RouteInterface, RequestHandlerInterface
         return $self;
     }
 
-    public function withHeaders(iterable $headers): self
+    public function withHeaders(iterable $headers): RouteInterface
     {
         $self = clone $this;
         $self->headers = $headers;

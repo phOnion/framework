@@ -16,7 +16,7 @@ class RegexRoute extends Route
 
     public function isMatch(string $path): bool
     {
-        if (preg_match("~^{$this->getPattern()}$~x", $uri, $this->parameters)) {
+        if (preg_match("~^{$this->parse($this->getPattern())}$~x", $uri, $this->parameters)) {
             return true;
         }
 
