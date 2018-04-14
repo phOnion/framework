@@ -11,12 +11,14 @@ class RegexRoute extends Route
 
     public function getParameters(): iterable
     {
-        return $this->parameters;
+        return array_filter($this->parameters, function ($idx) {
+            return !is_int($idx);
+        }, ARRAY_FILTER_USE_KEY);
     }
 
     public function isMatch(string $path): bool
     {
-        if (preg_match("~^{$this->parse($this->getPattern())}$~x", $uri, $this->parameters)) {
+        if (preg_match("~^{$this->parse($this->getPattern())}$~x", $path, $this->parameters)) {
             return true;
         }
 
