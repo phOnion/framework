@@ -5,7 +5,7 @@ namespace Onion\Framework\Router;
 use Onion\Framework\Router\Interfaces\RouteInterface;
 use Onion\Framework\Http\Middleware\RequestHandler;
 
-class RegexRoute
+class StaticRoute extends Route
 {
     public function isMatch(string $path): bool
     {
