@@ -5,6 +5,9 @@ use Psr\Container\ContainerInterface;
 use Onion\Framework\Http\Factory\ServerRequestFactory;
 use Psr\Http\Message\ServerRequestInterface;
 
+/**
+ * @coversDefaultClass \Onion\Framework\Http\Factory\ServerRequestFactory
+ */
 class ServerRequestFactoryTest extends \PHPUnit_Framework_TestCase
 {
     public function testFactoryInit()
