@@ -13,6 +13,8 @@ class AcceptHeaderTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($header->supports('application/json'));
         $this->assertSame($header->getPriority('application/json'), 1.0);
+        $this->assertSame('Accept', $header->getName());
+        $this->assertSame('Accept: application/json', (string) $header);
     }
 
     public function testWithSingleValueWithWeight()
@@ -25,6 +27,8 @@ class AcceptHeaderTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($header->supports('application/vnd.foobar+html'));
         $this->assertTrue($header->supports('application/json'));
         $this->assertSame($header->getPriority('application/json'), 0.7);
+        $this->assertSame($header->getPriority('application/json+hal'), -1.0);
+        $this->assertSame('Accept', $header->getName());
     }
 
     public function testParsingWithMultipleValues()
@@ -42,6 +46,7 @@ class AcceptHeaderTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($header->getPriority('application/hal+json'), 0.2);
         $this->assertTrue($header->supports('application/xml'));
         $this->assertSame($header->getPriority('application/xml'), 0.1);
+        $this->assertSame('Accept', $header->getName());
     }
 
     public function testParsingOfMultiValueLanguage()
@@ -55,6 +60,7 @@ class AcceptHeaderTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($header->supports('en-gb'));
         $this->assertTrue($header->supports('bg'));
         $this->assertFalse($header->supports('es'));
+        $this->assertSame('Accept-Language', $header->getName());
     }
 
     public function testParsingOfMultiValueAcceptWithMoreThanOneAttribute()
@@ -70,6 +76,7 @@ class AcceptHeaderTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($header->getPriority('application/json'), 0.8);
         $this->assertSame($header->getPriority('text/plain'), 0.2);
         $this->assertSame($header->getPriority('application/*'), 1.0);
+        $this->assertSame('Accept', $header->getName());
     }
 
     public function testParsingOfMultiValueEncoding()
@@ -84,6 +91,7 @@ class AcceptHeaderTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame($header->getPriority('compress'), 0.5);
         $this->assertSame($header->getPriority('gzip'), 1.0);
+        $this->assertSame('Accept-Encoding', $header->getName());
     }
 
     public function testParsingOfMultiValueCharset()
