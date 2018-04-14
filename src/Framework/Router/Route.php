@@ -84,7 +84,7 @@ abstract class Route implements RouteInterface
     public function withHeaders(iterable $headers): RouteInterface
     {
         if ($headers instanceof \Iterator) {
-            $headers = iterator_to_array($headers, false);
+            $headers = iterator_to_array($headers, true);
         }
 
         $self = clone $this;
@@ -98,17 +98,21 @@ abstract class Route implements RouteInterface
         $response = $this->getRequestHandler()->handle($request);
         $methods = $this->getMethods();
         if ($methods !== []) {
-            $response->withAddedHeader('Access-Control-Allow-Methods: ' . strtoupper(implode(', ', $methods)));
+            $response->withAddedHeader(
+                'Access-Control-Allow-Methods',
+                strtoupper(implode(', ', $methods))
+            );
         }
 
         if (!$response->hasHeader('Access-Control-Allow-Origin')) {
             $response = $response->withAddedHeader(
-                'Access-Control-Allow-Origin: ' . $request->getUri()->getAuthority() ?? '*'
+                'Access-Control-Allow-Origin',
+                $request->getUri()->getAuthority() ?: '*'
             );
         }
 
-        $response = $response->withAddedHeader('Access-Control-Allow-Credentials: true');
-        $response = $response->withAddedHeader('Access-Control-Max-Age: 86400');
+        $response = $response->withAddedHeader('Access-Control-Allow-Credentials', 'true');
+        $response = $response->withAddedHeader('Access-Control-Max-Age', '86400');
 
         foreach ($this->getHeaders() as $header => $values) {
             $response = $response->withAddedHeader($header, $values);
