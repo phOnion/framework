@@ -3,8 +3,9 @@ namespace Onion\Framework\Http\Middleware\Factory;
 
 use Onion\Framework\Router\Route;
 use Psr\Container\ContainerInterface;
-use Onion\Framework\Dependency\Interfaces\FactoryInterface;
+use Psr\Http\Server\MiddlewareInterface;
 use Onion\Framework\Http\Middleware\RequestHandler;
+use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 
 class RequestHandlerFactory implements FactoryInterface
 {
