@@ -13,14 +13,14 @@ class DelegateContainer implements ContainerInterface, \Countable
     /** @var ContainerInterface[] */
     public function __construct(array $containers)
     {
-        $this->containers = new \ArrayIterator(array_map(function ($c) {
-            if ($c instanceof AttachableContainer) {
-                $c->attach($this);
+        $this->containers = new \ArrayIterator(array_map(function ($container) {
+            if ($container instanceof AttachableContainer) {
+                $container->attach($this);
             }
 
-            return $c;
-        }, array_filter($containers, function ($c) {
-            return ($c instanceof ContainerInterface);
+            return $container;
+        }, array_filter($containers, function ($container) {
+            return ($container instanceof ContainerInterface);
         })));
     }
 
