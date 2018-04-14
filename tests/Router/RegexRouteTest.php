@@ -20,6 +20,7 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
 
     public function testRouteName()
     {
+        $this->assertTrue($this->route->hasName());
         $this->assertSame('/', $this->route->getName());
     }
 

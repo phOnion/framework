@@ -16,5 +16,6 @@ class StaticRouteTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($this->route->getName(), '/');
         $this->assertSame($this->route->getPattern(), '/');
         $this->assertTrue($this->route->isMatch('/'));
+        $this->assertEmpty($this->route->getParameters());
     }
 }
