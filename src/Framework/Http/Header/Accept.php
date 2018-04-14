@@ -52,7 +52,7 @@ class Accept implements Interfaces\AcceptInterface
      */
     public function supports(string $contentType): bool
     {
-        foreach ($this->types as $pattern => $weight) {
+        foreach (array_keys($this->types) as $pattern) {
             $pattern = str_replace(['*', '.', '/', '+'], ['(.*)', '.', '\/', '\+'], $pattern);
             if (preg_match("#^$pattern$#i", $contentType) > 0) {
                 return true;
