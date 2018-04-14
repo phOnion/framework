@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Test\Router;
+namespace Tests\Router;
 
 use Psr\Http\Message\UriInterface;
 use Onion\Framework\Router\RegexRoute;

@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-namespace Test\Router;
+namespace Tests\Router;
 
 use Onion\Framework\Router\PrefixRoute;
 
