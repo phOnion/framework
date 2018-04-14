@@ -10,11 +10,12 @@ class RequestHandlerFactory implements FactoryInterface
 {
     public function build(ContainerInterface $container)
     {
-        if (!$container->has('middleware')) {
-            throw new \RuntimeException(
+        assert(
+            $container->has('middleware'),
+            new \RuntimeException(
                 'Unable to initialize RequestHandler without defined middleware'
-            );
-        }
+            )
+        );
 
         $middlewareGenerator = function () use ($container) {
             $middleware = $container->get('middleware');
