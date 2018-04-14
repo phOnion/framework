@@ -4,16 +4,11 @@ before_script:
   - echo 'assert.exception=1' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
 php:
   - '7.2'
-  - nightly
-matrix:
-  allow_failures:
-    - php: nightly
 install: composer install -o --no-interaction --prefer-dist
 script:
     - vendor/bin/phpunit --bootstrap vendor/autoload.php --coverage-clover=coverage.xml
     - vendor/bin/phpcs src/ --standard=psr2
 after_success:
-    - bash <(curl -s https://codecov.io/bash)
     - php vendor/bin/codacycoverage clover coverage.xml
 notifications:
   webhooks:
