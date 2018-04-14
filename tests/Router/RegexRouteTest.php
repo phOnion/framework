@@ -30,13 +30,20 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
 
     public function testPatternHandling()
     {
-        $route = new RegexRoute('/[test][/[bar]]');
-        $this->assertSame('/[test][/[bar]]', $route->getName());
-        $this->assertSame('/[test][/[bar]]', $route->getPattern());
+        $route = new RegexRoute('/[test][/[bar]][/[num:\d+]]');
+        $this->assertSame('/[test][/[bar]][/[num:\d+]]', $route->getName());
+        $this->assertSame('/[test][/[bar]][/[num:\d+]]', $route->getPattern());
         $this->assertTrue($route->isMatch('/foo'));
         $this->assertSame(['test' => 'foo'], $route->getParameters());
         $this->assertTrue($route->isMatch('/foo/baz'));
         $this->assertSame(['test' => 'foo', 'bar' => 'baz'], $route->getParameters());
+        $this->assertFalse($route->isMatch('/foo/baz/abc'));
+        $this->assertTrue($route->isMatch('/foo/baz/123'));
+        $this->assertSame([
+            'test' => 'foo',
+            'bar' => 'baz',
+            'num' => '123'
+        ], $route->getParameters());
     }
 
     public function testRouteRequestHandler()
