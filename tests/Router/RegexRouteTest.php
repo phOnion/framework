@@ -57,16 +57,6 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
         $response = $this->prophesize(ResponseInterface::class);
         $response->withAddedHeader('content-type', 'text/plain')
             ->willReturn($response->reveal());
-        $response->withAddedHeader('Access-Control-Allow-Methods', 'GET')
-            ->willReturn($response->reveal());
-        $response->withAddedHeader('Access-Control-Max-Age', '86400')
-            ->willReturn($response->reveal());
-        $response->withAddedHeader('Access-Control-Allow-Origin', '*')
-            ->willReturn($response->reveal());
-        $response->withAddedHeader('Access-Control-Allow-Credentials', 'true')
-            ->willReturn($response->reveal());
-        $response->hasHeader('Access-Control-Allow-Origin')
-            ->willReturn(false);
 
         $uri = $this->prophesize(UriInterface::class);
         $uri->getAuthority()->willReturn('');

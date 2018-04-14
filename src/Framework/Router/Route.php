@@ -96,23 +96,6 @@ abstract class Route implements RouteInterface
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $response = $this->getRequestHandler()->handle($request);
-        $methods = $this->getMethods();
-        if ($methods !== []) {
-            $response->withAddedHeader(
-                'Access-Control-Allow-Methods',
-                strtoupper(implode(', ', $methods))
-            );
-        }
-
-        if (!$response->hasHeader('Access-Control-Allow-Origin')) {
-            $response = $response->withAddedHeader(
-                'Access-Control-Allow-Origin',
-                $request->getUri()->getAuthority() ?: '*'
-            );
-        }
-
-        $response = $response->withAddedHeader('Access-Control-Allow-Credentials', 'true');
-        $response = $response->withAddedHeader('Access-Control-Max-Age', '86400');
 
         foreach ($this->getHeaders() as $header => $values) {
             $response = $response->withAddedHeader($header, $values);
