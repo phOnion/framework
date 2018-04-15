@@ -39,176 +39,99 @@ and setup of the "hello world" project:
     use Onion\Framework;
 
     $container = new Framework\Dependency\Container([
-        Framework\Application\Application::class =>
-            Framework\Application\Factory\ApplicationFactory::class,
+        'factories' => [
+            Framework\Application\Application::class => // Takes care of routing
+                Framework\Application\Factory\ApplicationFactory::class,
+            \Psr\Http\Server\RequestHandlerInterface::class => // Necessary for error handling
+                Framework\Http\Middleware\Factory\RequestHandlerFactory::class
+        ],
+        'invokables' => [
+            // Optional, this is the default behavior,
+            // change if a different response template should be used
+            \Psr\Http\Message\ResponseInterface::class =>
+                \Guzzle\Psr7\Response::class
+        ],
+        'routes' => [ // Application routes
+            [ // A route :D
+                'pattern' => '/',
+                'middleware' => [
+                    // Add your route middleware here
+                ]
+            ]
+        ],
+        'middleware' => [
+            // Application-level middleware should go here
+        ]
     ]);
 
     $app = $container->get(Framework\Application\Application::class);
-    $app->run(GuzzleHttp\Psr7\ServerRequest::fromGlobals());
+    $app->run(GuzzleHttp\Psr7\ServerRequest::fromGlobals()); // Or another request factory
 ```
 
-This is the minimal required code in order to set up the application
-entry point.
+*Note You need to implement your route middleware and define it here otherwise an empty response will be returned*
 
----
-
-## Dependencies
-
-Now if you open the link with your browser, you will see there is an
-exception being thrown, similar to (if no the same as):
-
-> Uncaught Onion\Framework\Dependency\Exception\ContainerErrorException: Unable to find match for type: "Interop\Http\Middleware\DelegateInterface". Consider using a factory
-> ...
-
-What this means is that the container is unable to resolve the
-dependency of `DelegateInterface`, this sucks big time, now before you
-start digging in the code, hold on for a sec and lets see what happens
-in our `index.php` file.
-
-1. `L2-L4` - We declare that we will use strict types, require the
-composer autoloader and localize the namespace (a bit shorter to write)
-
-2. `L6` - We initialize the DI container without any registered
-dependencies (pay attention to the empty array passed as argument),
-which will make the container to use only reflection in order to look-up
-dependencies recursively as deep as it can go, but since we are doing
-things the DbC(Design by Contract) way, it has no way of knowing from
-where to get an implementation of the interface (contract).
-
-3. `L8` - We attempt to retrieve the `Application` class from the
-container (This is where the exception gets thrown)
-
-4. `L9-L11` - We attempt to run the application by passing it the
-current request object, again retrieved from the container
-
-
-The reason behind binding everything to interfaces (whenever possible)
-comes from the DbC (Design by Contract) approach, which makes the
-application as [SOLID](https://en.wikipedia.org/wiki/SOLID_(object-oriented_design)
-as possible. I can't stress enough on how important this is and you
-should adopt and apply that mindset when possible.
+After accessing the app you should be presented with whatever output you expect to see. That is it
 
 ---
 
 ## Middleware
 
-Now if you run the application you will notice that there is an entierly
-different error, about missing `middleware` key.
+There are 2 types of middleware supported atm, application level & route level.
+Currently the handling of application level middleware is achieved in 2 ways
 
-> Uncaught Onion\Framework\Dependency\Exception\UnknownDependency: Unable to resolve "middleware"
+1. If a route is triggered the application middleware is "attached" infront of
+ the route middleware and the execution happens transparently for the route and
+ the prepend logic is located inside the `ApplicationFactory` so if another
+ factory is used to build the route stack, that should be taken in to account.
+2. If there is an exception (which is what happens when no route is found as well
+ as from the application code) a generic `RequestHandler` is built with only
+ the global middleware and the thrown exception is added to the request attributes
+ as `error` and `exception`.
 
-This is because the `GlobalDelegateFactory` expects to see `middleware`
-key inside our container and use it in order to build the necessary call
-stack. Lets add it, but leave it empty. Add `'middleware' => []` after
-the factory definition in the top level array.
-
-> Return value of Onion\Framework\Application\Factory\GlobalDelegateFactory::build() must be an instance of Interop\Http\Middleware\DelegateInterface, null returned
-
-Is pretty self explanatory, but why you ask? Well, the factory needs at
-least one entry inside the `middleware` in order to build a
-`DelegateInterface` with it, just keep in mind it MUST be an instance of
-either `Interop\Http\Middleware\MiddlewareInterface` or
-`Interop\Http\Middleware\ServerMiddlewareInterface` and since we are
-building a server application (not a HTTP client) we will pass in an
-argument that is vital to any HTTP application - a router.
-But to avoid the error steps above, I will directly tell you that you
-have to define those in order to get it going. Update the array to look
-like the following:
-```
-[
-    'invokables' => [
-        Zend\Diactoros\Response\EmitterInterface::class =>
-            Zend\Diactoros\Response\SapiEmitter::class,
-        Framework\Router\Interfaces\ParserInterface::class =>
-            Framework\Router\Parsers\Flat::class,
-        Framework\Router\Interfaces\MatcherInterface::class =>
-            Framework\Router\Matchers\Strict::class
-    ],
-    'factories' => [
-        Interop\Http\Middleware\DelegateInterface::class =>
-            Framework\Application\Factory\GlobalDelegateFactory::class,
-        Framework\Router\Interfaces\RouterInterface::class =>
-            Framework\Router\Factory\RouterFactory::class,
-        Psr\Http\Message\ServerRequestInterface::class =>
-            Framework\Http\Factory\ServerRequestFactory::class
-    ],
-    'middleware' => [
-        Framework\Router\Interfaces\RouterInterface::class
-    ],
-    'routes' => []
-]
-```
-
----
+In an ideal scenario that should not be a huge issue when route error occurs
+ and the common stack is triggered again, although it should be taken in to
+ account for the purposes of request logging, etc. as it may result in duplicate
+ entries for the same request. (But you really should handle your errors :) )
 
 ## Routing
 
-Since our router implements the `ServerMiddlewareInterface` we can pass
-it without any other boilerplate to the middleware section and the
-other 2 dependencies inside the invokables section are for making it
-work.
+The full route structure looks like this:
 
- - `Framework\Router\Interfaces\ParserInterface` is responsible for
- translating the route definitions to mathcer understandable string
-
- - `Framework\Router\Interfaces\MatcherInterface` is the one performing
- the matching in order to see if the current request URI matches a route
-
-In this case we are using the flat matcher, which returns the pattern as
-is and the strict matcher that performs `a === b` kind of checks.
-
----
-
-Now if we refresh the page we will se that there will be an exception:
-
-> Uncaught Onion\Framework\Router\Exceptions\NotFoundException: No route available to handle "/"
-
-Now lets create our first controller, add autoloading for the
-`Application` namespace to composer and inside
-`src/Controllers/DummyController.php` paste the following:
-```
-<?php
-declare(strict_types=1);
-
-namespace App\Controllers;
-
-use Interop\Http\Middleware\DelegateInterface;
-use Interop\Http\Middleware\ServerMiddlewareInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Zend\Diactoros\Response\TextResponse;
-
-class DummyController implements ServerMiddlewareInterface
-{
-    public function process(ServerRequestInterface $request, DelegateInterface $delegate = null)
-    {
-        return new TextResponse('Hello, World!');
-    }
-}
-```
-
-Now that you are done, lets add the controller to the `routes`:
-```
-// .. other definitions
-'routes' => [
-  [
-    'pattern' => '/',
-    'middleware' => [
-        App\Controllers\DummyMiddleware::class
+```php
+[
+    'name' => 'alias-name', // Optional
+    'pattern' => '/products/[product]', // Required
+    'class' => SomeRoute::class, // Optional
+    'middleware' => [ // Required
+        // list of middleware keys to resolve
+    ],
+    'methods' => [ // Optional
+        // list of HTTP methods
+    ],
+    'headers' => [ // Optional
+        'x-header-name' => ['header-value-for-{product}?page={page:1+1}'] // Definition of a route header
     ]
-  ]
 ]
 ```
- - **FQCN** - *Fully Qualified Class Name*
+
+- `'name'` - An alias for a route useful if resolving pattern to route
+- `'pattern'` - The pattern of the route
+- `'middleware'` - A list of middleware keys that handle the route
+- `'class'` - A class which will handle the route (Defaults to `RegexRoute`)
+- `'methods'` - A list of HTTP methods to restrict the route to. Useful for early termination
+- `'headers'` - A list of headers to add to the generated response. Supports route and query
+ params as well as `+` and `-` expressions like `{numericParam+1}` will increment the value of
+ `numericParam` by 1
+
+ The syntax for header templating is `{<paramName>[:<defaultValue>][(+|-)<number>]}`
+
+- `<paramName>` - is the name of the parameter either from route or query. Pattern `[a-zA-Z0-9_-]+`
+- `:<default>` - is optional and if the parameter is not present the value after the `:` will be used. Pattern `[a-zA-Z0-9_-]+`
+ or `\d+`, depending on the expression
+- `(+|-)<number>` - increment or decrement the value of `<paramName>` by `<number>`. Pattern `\d+`, if `<default>` is provided
+ and it contains a anything else than a number it will not evaluate the expression
 
 
-Now if all went well you should not see any further errors when you
-refresh the page, but rather the text 'Hello, World!' should be
-displayed and the response should be sent with
-`Content-Type: text/plain` header.
-
-
-This is the minimal required setup needed in order to setup an
-application using onion framework and from here you can conquer the
-world! Check other sections from the documentation to get more in-depth
-understanding/knowledge of the routing capabilities, the concept of
-modules and everything else.
+Route headers could be handy when providing `Link` headers for navigation or pointing
+to sub-resources, with the supported expressions pagination links can also be provided
+and possibly other useful cases.
