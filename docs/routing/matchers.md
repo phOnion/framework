@@ -1,3 +1,0 @@
-Matchers are relatively simple object, their point is to take the transformed route pattern and check if it matches the current path or not and return any possible parameters to be used from the router.
-
-There is not much to them really...

@@ -1,4 +1,4 @@
-## Getting started
+# Introduction
 
 In this section we'll get through a simple hello world app to help you
 get a grip around the concepts of the framework as well as how to
@@ -9,11 +9,11 @@ The application consists of middleware, which if you are not familiar
 with you should think of as onion's layers (now you get where the name
 comes from). See:
 
- - [PSR-15 Specification](https://github.com/php-fig/fig-standards/tree/master/proposed/http-middleware)
+- [PSR-15 Specification](https://github.com/php-fig/fig-standards/tree/master/proposed/http-middleware)
 
- - [Why Care About PHP Middleware?](https://philsturgeon.uk/php/2016/05/31/why-care-about-php-middleware/) by *Phil Phil Sturgeon*
+- [Why Care About PHP Middleware?](https://philsturgeon.uk/php/2016/05/31/why-care-about-php-middleware/) by *Phil Phil Sturgeon*
 
-Chosing single pass ensures no funny business will be going inside the
+Choosing single pass ensures no funny business will be going inside the
 middleware you use, and you can be sure that the response you return
 will be consistently handled, and you will not have to keep track of
 the double-pass response object, that may or may not have some specific
@@ -24,28 +24,27 @@ headers set by any of the middleware called before your "controller".
 So with that being said, lets jump right in with the installation
 and setup of the "hello world" project:
 
-1. `composer require onion/framework:1.0.0-beta`
-2. Create the public directory one that will be exposed by the web
-server, referred to as `public` in this example
-3. In it, create a file named `index.php` and inside of it paste the
-code below.
+1. `composer require onion/framework:2.0`
+2. Create the public directory one that will be exposed by the web server, referred to as `public` in this example
+3. In it, create a file named `index.php` and inside of it paste the code below.
 4. To test it after you copied and pasted the code run the following:
  `php -S localhost:12345 -t public/` inside the projects directory,
  that will start the PHP built-in server and will make the application
   code accessible on: [localhost:12345](http://localhost:12345)
 
-```
+```php
     <?php
     declare(strict_types=1);
     require_once __DIR__ . '/../vendor/autoload.php';
     use Onion\Framework;
 
-    $container = new Framework\Dependency\Container([]);
+    $container = new Framework\Dependency\Container([
+        Framework\Application\Application::class =>
+            Framework\Application\Factory\ApplicationFactory::class,
+    ]);
 
     $app = $container->get(Framework\Application\Application::class);
-    $app->run(
-        $container->get(\Psr\Http\Message\ServerRequestInterface::class)
-    );
+    $app->run(GuzzleHttp\Psr7\ServerRequest::fromGlobals());
 ```
 
 This is the minimal required code in order to set up the application
@@ -83,39 +82,11 @@ container (This is where the exception gets thrown)
 current request object, again retrieved from the container
 
 
-In order to learn more about the `DelegateInterface` make sure you read
-the PSR-15 spec. Now in the implementation the Application object
-receives 2 arguments in it's constructor:
-
-  1. `DelegateInterface` - Is a delegate which is to delegate all of
-  the global middleware.
-  2. `EmitterInterface` - Is responsible for emitting our response
-  "on the way out"™..
-
 The reason behind binding everything to interfaces (whenever possible)
 comes from the DbC (Design by Contract) approach, which makes the
 application as [SOLID](https://en.wikipedia.org/wiki/SOLID_(object-oriented_design)
 as possible. I can't stress enough on how important this is and you
 should adopt and apply that mindset when possible.
-
-Now let's update our index to include the `DelegateInterface` and
-`EmitterInterface` in a dependency mapping so that our container knows
-what to return when we need any of those dependencies.
-
-```
-// Replace the empty array argument for container with the following
-
-[
-    'invokables' => [
-        Zend\Diactoros\Response\EmitterInterface::class =>
-            Zend\Diactoros\Response\SapiEmitter::class
-    ],
-    'factories' => [
-        Interop\Http\Middleware\DelegateInterface::class =>
-            Framework\Application\Factory\GlobalDelegateFactory::class
-    ]
-]
-```
 
 ---
 
