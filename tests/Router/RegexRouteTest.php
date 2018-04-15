@@ -50,7 +50,7 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
     public function testRouteRequestHandler()
     {
         $headers = [
-            'content-type' => 'text/plain',
+            'content-type' => ['text/plain'],
         ];
 
 
@@ -63,6 +63,7 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
 
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getUri()->willReturn($uri->reveal());
+        $request->getQueryParams()->willReturn([]);
 
         $handler = $this->prophesize(RequestHandlerInterface::class);
         $handler->handle(new AnyValueToken())->willReturn($response->reveal());

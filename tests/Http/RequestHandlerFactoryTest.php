@@ -29,6 +29,11 @@ class RequestHandlerFactoryTest extends \PHPUnit_Framework_TestCase
             ));
 
         $container = $this->prophesize(ContainerInterface::class);
+        $container->has(RequestHandlerInterface::class)->willReturn(false);
+        $container->has(ResponseInterface::class)->willReturn(true);
+        $container->get(ResponseInterface::class)->willReturn(
+            $this->prophesize(ResponseInterface::class)->reveal()
+        );
         $container->has('middleware')->willReturn(true);
         $container->get('middleware')->willReturn(['foo']);
         $container->get('foo')->willReturn($middleware->reveal());
@@ -44,6 +49,8 @@ class RequestHandlerFactoryTest extends \PHPUnit_Framework_TestCase
     public function testInvalidMiddlewareReturned()
     {
         $container = $this->prophesize(ContainerInterface::class);
+        $container->has(RequestHandlerInterface::class)->willReturn(false);
+        $container->has(ResponseInterface::class)->willReturn(false);
         $container->has('middleware')->willReturn(true);
         $container->get('middleware')->willReturn(['foo']);
         $container->get('foo')->willReturn('blah');
@@ -56,6 +63,7 @@ class RequestHandlerFactoryTest extends \PHPUnit_Framework_TestCase
     public function testExceptionOnMissingMiddlewareKey()
     {
         $container = $this->prophesize(ContainerInterface::class);
+        $container->has(RequestHandlerInterface::class)->willReturn(false);
         $container->has('middleware')->willReturn(false);
 
         $this->expectException(\RuntimeException::class);

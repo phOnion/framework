@@ -23,7 +23,7 @@ class ApplicationFactoryTest extends \PHPUnit_Framework_TestCase
                 ]
             ]
         ]);
-        $container->has('middleware')->willReturn(false);
+        $container->has(RequestHandlerInterface::class)->willReturn(false);
         $container->get('test')->willReturn(new MiddlewareStub());
 
         $factory = new ApplicationFactory();
