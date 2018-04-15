@@ -118,7 +118,8 @@ abstract class Route implements RouteInterface
         if (strpos($pattern, '{') !== false) {
             $params = array_merge($this->getParameters(), $extra);
             preg_match_all(
-                '~((?P<left>[a-zA-Z0-9_]+)(\:(?P<default>[a-zA-Z0-9_]+)?(?P<sign>[\-\+])?(?P<right>\d+)?))~',
+                '~(\{(?P<left>[a-zA-Z0-9_-]+)(?:(?:\:(?P<default>\d+))(?P<sign>[\-\+])(?P<right>\d+)?|' .
+                    '(?:\:(?P<default>[a-zA-Z0-9_+-]+(?:[^\d+]))))?\})~J',
                 $pattern,
                 $matches,
                 PREG_SET_ORDER
@@ -144,7 +145,7 @@ abstract class Route implements RouteInterface
                     }
                 }
 
-                $pattern = str_replace("{{$match[0]}}", $value, $pattern);
+                $pattern = str_replace("{$match[0]}", $value, $pattern);
             }
         }
 
