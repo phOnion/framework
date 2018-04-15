@@ -121,13 +121,18 @@ abstract class Route implements RouteInterface
     {
         if (strpos($pattern, '{') !== false) {
             $params = array_merge($this->getParameters(), $extra);
-            preg_match_all('~((?P<left>[a-z]+)(?P<sign>[\-\+])?(?P<right>\d+)?)~', $pattern, $matches, PREG_SET_ORDER);
+            preg_match_all(
+                '~((?P<left>[a-zA-Z0-9_]+)(\:(?P<default>[a-zA-Z0-9_]+)?(?P<sign>[\-\+])?(?P<right>\d+)?))~',
+                $pattern,
+                $matches,
+                PREG_SET_ORDER
+            );
 
             foreach ($matches as $match) {
-                if (!isset($params[$match['left']]) && !strpos($match[0], '+') && !strpos($match[0], '-')) {
+                if (!isset($params[$match['left']]) && !isset($match['default'])) {
                     continue;
                 }
-                $value = $params[$match['left']] ?? 0;
+                $value = $params[$match['left']] ?? $match['default'];
                 if (is_numeric($value) && $match['right']) {
                     switch ($match['sign']) {
                         case '+':
@@ -138,7 +143,7 @@ abstract class Route implements RouteInterface
                             break;
                     }
 
-                    if ($value < 0) {
+                    if ($value <= 0) {
                         throw new \LogicException(
                             'Negative indexes do not make sense'
                         );
