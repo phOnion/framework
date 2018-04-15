@@ -22,14 +22,18 @@ class Application implements ApplicationInterface
      */
     protected $routes = [];
 
+    /** @var RequestHandlerInterface */
+    private $requestHandler;
+
     /**
      * Application constructor.
      *
      * @param RouteInterface[] $routes Array of routes that are supported
      */
-    public function __construct(iterable $routes)
+    public function __construct(iterable $routes, RequestHandlerInterface $rootHandler = null)
     {
         $this->routes = $routes;
+        $this->requestHandler = $rootHandler;
     }
 
     /**
@@ -43,26 +47,36 @@ class Application implements ApplicationInterface
      */
     public function run(ServerRequestInterface $request): void
     {
-        /** @var ResponseInterface $response */
-        $response = $this->handle($request);
+        try {
+            /** @var ResponseInterface $response */
+            $response = $this->handle($request);
+        } catch (\Throwable $exception) {
+            if ($this->requestHandler === null) {
+                throw $exception;
+            }
 
-        if (!$this->hasPreviousOutput()) {
-            $status = $response->getStatusCode();
-            $reasonPhrase = $response->getReasonPhrase();
-            header(
-                "HTTP/{$response->getProtocolVersion()} {$status} {$reasonPhrase}",
-                true,
-                $status
+            $response = $this->request->handle(
+                $request->withAttribute('exception', $exception)
             );
+        } finally {
+            if (isset($response) && !$this->hasPreviousOutput()) {
+                $status = $response->getStatusCode();
+                $reasonPhrase = $response->getReasonPhrase();
+                header(
+                    "HTTP/{$response->getProtocolVersion()} {$status} {$reasonPhrase}",
+                    true,
+                    $status
+                );
 
-            foreach ($response->getHeaders() as $header => $values) {
-                foreach ($values as $index => $value) {
-                    header("{$header}: {$value}", $index === 0);
+                foreach ($response->getHeaders() as $header => $values) {
+                    foreach ($values as $index => $value) {
+                        header("{$header}: {$value}", $index === 0);
+                    }
                 }
+
+                file_put_contents('php://output', $response->getBody());
             }
         }
-
-        file_put_contents('php://output', $response->getBody());
     }
 
     /**
