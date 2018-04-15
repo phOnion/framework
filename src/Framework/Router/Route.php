@@ -124,10 +124,10 @@ abstract class Route implements RouteInterface
             preg_match_all('~((?P<left>[a-z]+)(?P<sign>[\-\+])?(?P<right>\d+)?)~', $pattern, $matches, PREG_SET_ORDER);
 
             foreach ($matches as $match) {
-                if (!isset($params[$match['left']])) {
+                if (!isset($params[$match['left']]) && !strpos($match[0], '+') && !strpos($match[0], '-')) {
                     continue;
                 }
-                $value = $params[$match['left']];
+                $value = $params[$match['left']] ?? 0;
                 if (is_numeric($value) && $match['right']) {
                     switch ($match['sign']) {
                         case '+':
