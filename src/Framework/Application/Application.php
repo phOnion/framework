@@ -71,6 +71,10 @@ class Application implements ApplicationInterface
 
                 foreach ($response->getHeaders() as $header => $values) {
                     foreach ($values as $index => $value) {
+                        if ($value === '') {
+                            continue;
+                        }
+
                         header("{$header}: {$value}", $index === 0);
                     }
                 }
