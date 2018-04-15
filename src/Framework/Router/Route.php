@@ -98,6 +98,10 @@ abstract class Route implements RouteInterface
         $response = $this->getRequestHandler()->handle($request);
 
         foreach ($this->getHeaders() as $header => $values) {
+            assert(is_array($values), new \InvalidArgumentException(
+                'Header\'s value must be an array of strings'
+            ));
+
             foreach ($values as $value) {
                 try {
                     $response = $response->withAddedHeader(
