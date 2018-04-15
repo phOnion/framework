@@ -3,12 +3,12 @@ declare(strict_types=1);
 namespace Onion\Framework\Controller;
 
 use GuzzleHttp\Psr7\Stream;
-use Psr\Http\Message\StreamInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 use Onion\Framework\Rest\Interfaces\EntityInterface as Entity;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 abstract class RestController implements MiddlewareInterface
 {

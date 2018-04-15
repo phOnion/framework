@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 namespace Onion\Framework\Dependency;
 
-use Psr\Container\ContainerInterface;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
 use Onion\Framework\Dependency\Interfaces\AttachableContainer;
+use Psr\Container\ContainerInterface;
 
 class DelegateContainer implements ContainerInterface, \Countable
 {

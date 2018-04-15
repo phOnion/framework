@@ -2,13 +2,13 @@
 namespace Onion\Framework\Application;
 
 use GuzzleHttp\Psr7\StreamWrapper;
+use Onion\Framework\Application\Interfaces\ApplicationInterface;
+use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
+use Onion\Framework\Router\Exceptions\NotFoundException;
+use Onion\Framework\Router\Interfaces\RouteInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Onion\Framework\Router\Interfaces\RouteInterface;
-use Onion\Framework\Application\Interfaces\ApplicationInterface;
-use Onion\Framework\Router\Exceptions\NotFoundException;
-use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
 
 /**
  * Class Application

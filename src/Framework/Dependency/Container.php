@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 namespace Onion\Framework\Dependency;
 
+use Onion\Framework\Dependency\Exception\ContainerErrorException;
+use Onion\Framework\Dependency\Exception\UnknownDependency;
+use Onion\Framework\Dependency\Interfaces\AttachableContainer;
+use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use Onion\Framework\Dependency\Exception\ContainerErrorException;
-use Onion\Framework\Dependency\Exception\UnknownDependency;
-use Onion\Framework\Dependency\Interfaces\FactoryInterface;
-use Onion\Framework\Dependency\Interfaces\AttachableContainer;
 
 /**
  * Class Container

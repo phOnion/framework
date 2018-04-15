@@ -2,8 +2,8 @@
 declare(strict_types=1);
 namespace Onion\Framework\Router;
 
-use Onion\Framework\Router\Interfaces\RouteInterface;
 use Onion\Framework\Http\Middleware\RequestHandler;
+use Onion\Framework\Router\Interfaces\RouteInterface;
 
 class RegexRoute extends Route
 {
