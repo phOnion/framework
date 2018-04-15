@@ -39,7 +39,11 @@ final class ApplicationFactory implements FactoryInterface
                 }
 
                 $middlewareGenerator = function () use ($route, $container) {
-                    foreach ($route['middleware'] as $middleware) {
+                    $stack = array_merge(
+                        ($container->has('middleware') ? $container->get('middleware') : []),
+                        $route['middleware']
+                    );
+                    foreach ($stack as $middleware) {
                         yield $container->get($middleware);
                     }
                 };
