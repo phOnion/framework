@@ -55,8 +55,9 @@ class Application implements ApplicationInterface
                 throw $exception;
             }
 
-            $response = $this->request->handle(
+            $response = $this->requestHandler->handle(
                 $request->withAttribute('exception', $exception)
+                    ->withAttribute('error', $exception)
             );
         } finally {
             if (isset($response) && !$this->hasPreviousOutput()) {
