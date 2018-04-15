@@ -56,6 +56,10 @@ final class ApplicationFactory implements FactoryInterface
             }
         };
 
-        return new Application($routeGenerator());
+        return new Application(
+            $routeGenerator(),
+            $container->has(RequestHandlerInterface::class) ?
+                $container->get(RequestHandlerInterface::class) : null
+        );
     }
 }
