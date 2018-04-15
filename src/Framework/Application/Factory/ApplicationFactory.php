@@ -7,7 +7,9 @@ use Onion\Framework\Http\Middleware\RequestHandler;
 use Onion\Framework\Router\RegexRoute;
 use Onion\Framework\Router\Route;
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use GuzzleHttp\Psr7\Response;
 
 /**
  * A factory class solely responsible for assembling the Application
@@ -52,7 +54,12 @@ final class ApplicationFactory implements FactoryInterface
                         yield $container->get($middleware);
                     }
                 };
-                yield $r->withRequestHandler(new RequestHandler($middlewareGenerator()));
+
+                yield $r->withRequestHandler(new RequestHandler(
+                    $middlewareGenerator(),
+                    $container->has(ResponseInterface::class) ?
+                        $container->get(ResponseInterface::class) : new Response()
+                ));
             }
         };
 
