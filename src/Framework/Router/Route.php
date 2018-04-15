@@ -139,7 +139,7 @@ abstract class Route implements RouteInterface
                             break;
                     }
 
-                    if ($value <= 0) {
+                    if ($value <= 0 && $match['default'] != 0) {
                         return '';
                     }
                 }
