@@ -103,14 +103,10 @@ abstract class Route implements RouteInterface
             ));
 
             foreach ($values as $value) {
-                try {
-                    $response = $response->withAddedHeader(
-                        $header,
-                        $this->substituteValues($value, $request->getQueryParams())
-                    );
-                } catch (\LogicException $ex) {
-                    continue;
-                }
+                $response = $response->withAddedHeader(
+                    $header,
+                    $this->substituteValues($value, $request->getQueryParams())
+                );
             }
         }
 
@@ -144,9 +140,7 @@ abstract class Route implements RouteInterface
                     }
 
                     if ($value <= 0) {
-                        throw new \LogicException(
-                            'Negative indexes do not make sense'
-                        );
+                        return '';
                     }
                 }
 
