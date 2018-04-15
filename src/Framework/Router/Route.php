@@ -98,9 +98,53 @@ abstract class Route implements RouteInterface
         $response = $this->getRequestHandler()->handle($request);
 
         foreach ($this->getHeaders() as $header => $values) {
-            $response = $response->withAddedHeader($header, $values);
+            foreach ($values as $value) {
+                try {
+                    $response = $response->withAddedHeader(
+                        $header,
+                        $this->substituteValues($value, $request->getQueryParams())
+                    );
+                } catch (\LogicException $ex) {
+                    continue;
+                }
+            }
         }
 
         return $response;
+    }
+
+    private function substituteValues(string $pattern, $extra): string
+    {
+        if (strpos($pattern, '{') !== false) {
+            $params = array_merge($this->getParameters(), $extra);
+            preg_match_all('~((?P<left>[a-z]+)(?P<sign>[\-\+])?(?P<right>\d+)?)~', $pattern, $matches, PREG_SET_ORDER);
+
+            foreach ($matches as $match) {
+                if (!isset($params[$match['left']])) {
+                    continue;
+                }
+                $value = $params[$match['left']];
+                if (is_numeric($value) && $match['right']) {
+                    switch ($match['sign']) {
+                        case '+':
+                            $value = (int) $value + (int) $match['right'];
+                            break;
+                        case '-':
+                            $value = (int) $value - (int) $match['right'];
+                            break;
+                    }
+
+                    if ($value < 0) {
+                        throw new \LogicException(
+                            'Negative indexes do not make sense'
+                        );
+                    }
+                }
+
+                $pattern = str_replace("{{$match[0]}}", $value, $pattern);
+            }
+        }
+
+        return $pattern;
     }
 }
