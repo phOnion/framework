@@ -11,7 +11,7 @@ abstract class Route implements RouteInterface
     private $name;
     private $pattern;
     private $handler;
-    private $methods;
+    private $methods = [];
     private $headers = [];
 
     private $parameters = [];
