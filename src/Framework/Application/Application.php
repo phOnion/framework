@@ -62,10 +62,7 @@ class Application implements ApplicationInterface
             }
         }
 
-        stream_copy_to_stream(
-            StreamWrapper::getResource($response->getBody()),
-            fopen('php://output', 'wb')
-        );
+        file_put_contents('php://output', $response->getBody());
     }
 
     /**
