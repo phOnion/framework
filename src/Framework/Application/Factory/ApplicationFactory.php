@@ -1,12 +1,13 @@
 <?php declare(strict_types=1);
 namespace Onion\Framework\Application\Factory;
 
-use Psr\Container\ContainerInterface;
 use Onion\Framework\Application\Application;
-use Psr\Http\Server\RequestHandlerInterface;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
-use Onion\Framework\Router\RegexRoute;
 use Onion\Framework\Http\Middleware\RequestHandler;
+use Onion\Framework\Router\RegexRoute;
+use Onion\Framework\Router\Route;
+use Psr\Container\ContainerInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * A factory class solely responsible for assembling the Application
@@ -36,6 +37,10 @@ final class ApplicationFactory implements FactoryInterface
                 $r = new $className($route['pattern'], $route['name'] ?? null);
                 if (isset($route['methods'])) {
                     $r = $r->withMethods(array_map('strtoupper', $route['methods']));
+                }
+
+                if ($r instanceof Route && isset($route['headers'])) {
+                    $r = $r->withHeaders($route['headers']);
                 }
 
                 $middlewareGenerator = function () use ($route, $container) {
