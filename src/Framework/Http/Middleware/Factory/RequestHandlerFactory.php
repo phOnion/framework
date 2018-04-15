@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Onion\Framework\Http\Middleware\Factory;
 
+use GuzzleHttp\Psr7\Response;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Onion\Framework\Http\Middleware\RequestHandler;
 use Onion\Framework\Router\Route;
@@ -36,4 +37,3 @@ class RequestHandlerFactory implements FactoryInterface
         );
     }
 }
-
