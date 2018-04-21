@@ -3,6 +3,8 @@ namespace Onion\Framework\Http\Header;
 
 class Accept implements Interfaces\AcceptInterface
 {
+    private $name;
+    private $value;
     private $types = [];
 
     /**
@@ -10,8 +12,11 @@ class Accept implements Interfaces\AcceptInterface
      *
      * @param string $headerValue result of RequestInterface::getHeaderLine
      */
-    public function __construct(string $headerValue)
+    public function __construct(string $name, string $headerValue)
     {
+        $this->name = $name;
+        $this->value = $headerValue;
+
         $contentTypes=explode(',', $headerValue);
 
         foreach ($contentTypes as $pair) {
@@ -26,6 +31,16 @@ class Accept implements Interfaces\AcceptInterface
         }
     }
 
+    public function getName(): string
+    {
+        return ucwords($this->name, '-');
+    }
+
+    public function getRawValue(): string
+    {
+        return $this->value;
+    }
+
     /**
      * Check whether or not the current content-type
      * is supported by the client. Not that this
@@ -37,7 +52,13 @@ class Accept implements Interfaces\AcceptInterface
      */
     public function supports(string $contentType): bool
     {
-        return isset($this->types[strtolower($contentType)]);
+        foreach (array_keys($this->types) as $pattern) {
+            $pattern = str_replace(['*', '.', '/', '+'], ['(.*)', '.', '\/', '\+'], $pattern);
+            if (preg_match("#^$pattern$#i", $contentType) > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -48,7 +69,18 @@ class Accept implements Interfaces\AcceptInterface
      */
     public function getPriority(string $contentType): float
     {
-        return $this->supports($contentType) ?
-            $this->types[strtolower($contentType)] : -1.0;
+        foreach ($this->types as $pattern => $weight) {
+            $pattern = str_replace(['*', '.', '/', '+'], ['(.*)', '.', '\/', '\+'], $pattern);
+            if (preg_match("#^$pattern$#i", $contentType) > 0) {
+                return $weight;
+            }
+        }
+
+        return -1.0;
+    }
+
+    public function __toString(): string
+    {
+        return "{$this->getName()}: {$this->getRawValue()}";
     }
 }

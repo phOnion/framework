@@ -1,11 +1,14 @@
 <?php declare(strict_types=1);
 namespace Onion\Framework\Application;
 
-use Interop\Http\ServerMiddleware\DelegateInterface;
+use GuzzleHttp\Psr7\StreamWrapper;
 use Onion\Framework\Application\Interfaces\ApplicationInterface;
+use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
+use Onion\Framework\Router\Exceptions\NotFoundException;
+use Onion\Framework\Router\Interfaces\RouteInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Zend\Diactoros\Response\EmitterInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * Class Application
@@ -15,43 +18,74 @@ use Zend\Diactoros\Response\EmitterInterface;
 class Application implements ApplicationInterface
 {
     /**
-     * @var DelegateInterface
+     * @var RouteInterface[]
      */
-    protected $delegate;
+    protected $routes = [];
 
-    /**
-     * @var EmitterInterface
-     */
-    protected $emitter;
+    /** @var RequestHandlerInterface */
+    private $requestHandler;
 
     /**
      * Application constructor.
      *
-     * @param DelegateInterface $delegate The delegate with the global middleware
-     * @param EmitterInterface $emitter The emitter that processes and sends the response to the client
+     * @param RouteInterface[] $routes Array of routes that are supported
      */
-    public function __construct(DelegateInterface $delegate, EmitterInterface $emitter)
+    public function __construct(iterable $routes, RequestHandlerInterface $rootHandler = null)
     {
-        $this->delegate = $delegate;
-        $this->emitter = $emitter;
+        $this->routes = $routes;
+        $this->requestHandler = $rootHandler;
     }
 
     /**
-     * "Run" the application. Triggers the delegate
-     * provided and when a repsonse is returned it
+     * "Run" the application. Triggers the requestHandler
+     * provided and when a response is returned it
      * passes it to the emitter for final processing
      * before sending it to the client
      *
      * @param ServerRequestInterface $request
-     * @return null
+     * @return void
      */
-    public function run(ServerRequestInterface $request)
+    public function run(ServerRequestInterface $request): void
     {
-        return $this->emitter->emit($this->process($request));
+        try {
+            /** @var ResponseInterface $response */
+            $response = $this->handle($request);
+        } catch (\Throwable $exception) {
+            if ($this->requestHandler === null) {
+                throw $exception;
+            }
+
+            $response = $this->requestHandler->handle(
+                $request->withAttribute('exception', $exception)
+                    ->withAttribute('error', $exception)
+            );
+        } finally {
+            if (isset($response) && !$this->hasPreviousOutput()) {
+                $status = $response->getStatusCode();
+                $reasonPhrase = $response->getReasonPhrase();
+                header(
+                    "HTTP/{$response->getProtocolVersion()} {$status} {$reasonPhrase}",
+                    true,
+                    $status
+                );
+
+                foreach ($response->getHeaders() as $header => $values) {
+                    foreach ($values as $index => $value) {
+                        if ($value === '') {
+                            continue;
+                        }
+
+                        header("{$header}: {$value}", $index === 0);
+                    }
+                }
+
+                file_put_contents('php://output', $response->getBody());
+            }
+        }
     }
 
     /**
-     * Triggers processing of the provided delegate,
+     * Triggers processing of the provided requestHandler,
      * without emitting the response. Useful in the
      * context of the application running as a module
      *
@@ -59,8 +93,34 @@ class Application implements ApplicationInterface
      *
      * @return ResponseInterface
      */
-    public function process(ServerRequestInterface $request): ResponseInterface
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        return $this->delegate->process($request);
+        foreach ($this->routes as $route) {
+            if ($route->isMatch($request->getUri()->getPath())) {
+                if (!$route->hasMethod($request->getMethod())) {
+                    throw new MethodNotAllowedException($route->getMethods());
+                }
+
+                foreach ($route->getParameters() as $attr => $value) {
+                    $request = $request->withAttribute($attr, $value);
+                }
+
+                return $route->handle($request);
+            }
+        }
+
+        throw new NotFoundException(
+            "No route available to handle '{$request->getUri()->getPath()}'"
+        );
+    }
+
+    /**
+     * Helper to check if output has been sent to the client
+     *
+     * @return bool
+     */
+    private function hasPreviousOutput(): bool
+    {
+        return !headers_sent() && (ob_get_level() === 0 && ob_get_length() === 0);
     }
 }

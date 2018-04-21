@@ -1,9 +1,8 @@
 <?php
 namespace Tests\Http;
 
-use Interop\Http\ServerMiddleware\DelegateInterface;
-use Interop\Http\ServerMiddleware\MiddlewareInterface;
-use Onion\Framework\Http\Middleware\Delegate;
+use Psr\Http\Server\MiddlewareInterface;
+use Onion\Framework\Http\Middleware\RequestHandler as Delegate;
 use Prophecy\Argument;
 use Prophecy\Argument\Token\AnyValueToken;
 use Psr\Http\Message\ResponseInterface;
@@ -16,7 +15,10 @@ class DelegateTest extends \PHPUnit_Framework_TestCase
     {
         $this->expectException(\TypeError::class);
 
-        new Delegate('foobar');
+        $handler = new Delegate(['foobar']);
+        $request = $this->prophesize(ServerRequestInterface::class);
+
+        $handler->handle($request->reveal());
     }
 
     public function testInvocationOfProperFrameWithoutNext()
@@ -39,7 +41,7 @@ class DelegateTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame(
             $response->reveal(),
-            $frame->process($request->reveal())
+            $frame->handle($request->reveal())
         );
     }
 
@@ -56,7 +58,7 @@ class DelegateTest extends \PHPUnit_Framework_TestCase
         $frame = new Delegate([$middleware->reveal()]);
 
         $this->expectException(\TypeError::class);
-        $frame->process($request->reveal());
+        $frame->handle($request->reveal());
     }
 
     public function testInvokationWhenMiddlewareArrayIsInvalid()
@@ -72,13 +74,13 @@ class DelegateTest extends \PHPUnit_Framework_TestCase
         $this->expectException(\TypeError::class);
         $request = $this->prophesize(ServerRequestInterface::class);
         $delegate = new Delegate(['bad-middleware']);
-        $delegate->process($request->reveal());
+        $delegate->handle($request->reveal());
     }
 
     public function testDelegateErrorWhenNoResponseTemplateInjected()
     {
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('No response template provided');
+        $this->expectExceptionMessage('No base response provided');
         $request = $this->prophesize(ServerRequestInterface::class);
         $middleware = $this->prophesize(MiddlewareInterface::class);
         $middleware->process(
@@ -86,8 +88,8 @@ class DelegateTest extends \PHPUnit_Framework_TestCase
             new AnyValueToken()
         )->willReturn($this->prophesize(ResponseInterface::class)->reveal());
         $delegate = new Delegate([$middleware->reveal()]);
-        $delegate->process($request->reveal());
-        $delegate->process($request->reveal());
+        $delegate->handle($request->reveal());
+        $delegate->handle($request->reveal());
     }
 
     public function testDelegateReturningResponse()
@@ -95,6 +97,6 @@ class DelegateTest extends \PHPUnit_Framework_TestCase
         $request = $this->prophesize(ServerRequestInterface::class);
         $delegate = new Delegate([], $this->prophesize(ResponseInterface::class)->reveal());
 
-        $this->assertInstanceOf(ResponseInterface::class, $delegate->process($request->reveal()));
+        $this->assertInstanceOf(ResponseInterface::class, $delegate->handle($request->reveal()));
     }
 }

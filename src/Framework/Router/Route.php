@@ -1,126 +1,109 @@
 <?php declare(strict_types=1);
 namespace Onion\Framework\Router;
 
-use Interop\Http\ServerMiddleware\DelegateInterface;
-use Onion\Framework\Hydrator\MethodHydrator;
 use Onion\Framework\Router\Interfaces\RouteInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Onion\Framework\Router\Exceptions\MissingHeaderException;
 
-/**
- * Class Route
- *
- * @package Onion\Framework\Router
- * @codeCoverageIgnore
- */
-class Route implements RouteInterface
+abstract class Route implements RouteInterface
 {
-    use MethodHydrator;
-
-    /**
-     * @var string
-     */
     private $name;
-
-    /**
-     * @var array
-     */
-    private $methods = [];
-
-    /**
-     * @var string
-     */
     private $pattern;
+    private $handler;
+    private $methods = [];
+    private $headers = [];
 
-    /**
-     * @var DelegateInterface
-     */
-    private $delegate;
+    private $parameters = [];
 
-    /**
-     * @var array
-     */
-    private $parameters;
-
-    /**
-     * @return string
-     */
-    public function getName(): string
+    public function __construct(string $pattern, string $name = null)
     {
-        return $this->name ?? spl_object_hash($this);
+        $this->pattern = $pattern;
+        $this->name = $name ?? $pattern;
     }
 
-    /**
-     * @return array
-     */
-    public function getMethods(): array
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getMethods(): iterable
     {
         return $this->methods;
     }
 
-    /**
-     * @return string
-     */
     public function getPattern(): string
     {
         return $this->pattern;
     }
 
-    /**
-     * @return DelegateInterface
-     */
-    public function getDelegate(): DelegateInterface
+    public function getRequestHandler(): RequestHandlerInterface
     {
-        return $this->delegate;
+        return $this->handler;
     }
 
-    /**
-     * @return array
-     */
-    public function getParameters(): array
+    public function getParameters(): iterable
     {
         return $this->parameters;
     }
 
-    /**
-     * @param mixed $name
-     */
-    public function setName($name)
+    public function getHeaders(): iterable
     {
-        $this->name = $name;
+        return $this->headers;
     }
 
-    /**
-     * @param mixed $methods
-     */
-    public function setMethods(array $methods)
+    public function hasName(): bool
     {
-        array_walk($methods, function (&$value) {
-            $value = strtoupper($value);
-        });
-
-        $this->methods = $methods;
+        return $this->name !== null;
     }
 
-    /**
-     * @param mixed $pattern
-     */
-    public function setPattern($pattern)
+    public function hasMethod(string $method): bool
     {
-        $this->pattern = $pattern;
+        return $this->methods === [] || in_array($method, $this->methods);
     }
 
-    /**
-     * @param mixed $delegate
-     */
-    public function setDelegate($delegate)
+    public function withMethods(iterable $methods): RouteInterface
     {
-        $this->delegate = $delegate;
+        if ($methods instanceof \Iterator) {
+            $methods = iterator_to_array($methods, false);
+        }
+        $self = clone $this;
+        $self->methods = $methods;
+
+        return $self;
     }
 
-    /**
-     * @param array $parameters
-     */
-    public function setParameters(array $parameters)
+    public function withRequestHandler(RequestHandlerInterface $requestHandler): RouteInterface
     {
-        $this->parameters = $parameters;
+        $self = clone $this;
+        $self->handler = $requestHandler;
+
+        return $self;
+    }
+
+    public function withHeaders(iterable $headers): RouteInterface
+    {
+        if ($headers instanceof \Iterator) {
+            $headers = iterator_to_array($headers, true);
+        }
+
+        $self = clone $this;
+        $self->headers = $headers;
+
+        return $self;
+    }
+
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        $response = $this->getRequestHandler()->handle($request);
+
+        foreach ($this->getHeaders() as $header => $required) {
+            if ((bool) $required && !$response->hasHeader($header)) {
+                throw new MissingHeaderException($header);
+            }
+        }
+
+        return $response;
     }
 }

@@ -1,20 +1,35 @@
-<?php declare(strict_types=1);
-namespace Onion\Framework\Router\Parsers;
+<?php
+declare(strict_types=1);
+namespace Onion\Framework\Router;
 
-use Onion\Framework\Router\Interfaces\ParserInterface;
+use Onion\Framework\Http\Middleware\RequestHandler;
+use Onion\Framework\Router\Interfaces\RouteInterface;
 
-/**
- * Class Regex
- *
- * @package Onion\Framework\Router\Parsers
- */
-class Regex implements ParserInterface
+class RegexRoute extends Route
 {
+    private $parameters = [];
+
+    public function getParameters(): iterable
+    {
+        return array_filter($this->parameters, function ($idx) {
+            return !is_int($idx);
+        }, ARRAY_FILTER_USE_KEY);
+    }
+
+    public function isMatch(string $path): bool
+    {
+        if (preg_match("~^{$this->parse($this->getPattern())}$~x", $path, $this->parameters)) {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * @param string $path
      * @return string
      */
-    public function parse(string $path): string
+    private function parse(string $path): string
     {
         $path = str_replace(
             [':*', ':?', '*'],
@@ -36,7 +51,7 @@ class Regex implements ParserInterface
      * @param string $string
      * @return string
      */
-    protected function convertOptionalGroupsToNonCapturable(string $string): string
+    private function convertOptionalGroupsToNonCapturable(string $string): string
     {
         return preg_replace(
             '~\[(?:/)?([^\[\]]+|(?R))\]~uU',
@@ -46,7 +61,7 @@ class Regex implements ParserInterface
     }
 
     /**
-     * Perofrm widening of capture groups, since \w+ will capture
+     * Preform widening of capture groups, since \w+ will capture
      * only what the RegEx engine sees as a word character,
      * which is not necessarily correct in some cases, since some
      * special characters can also appear but they will not be
@@ -56,31 +71,12 @@ class Regex implements ParserInterface
      * @param string $string
      * @return string
      */
-    protected function convertToCaptureBoundGroups(string $string): string
+    private function convertToCaptureBoundGroups(string $string): string
     {
         return preg_replace(
             ['~\[(\w+)\]+~iuU', '~\[(\w+)\:(.*)\]+~iuU'],
             ['(?P<$1>{{\p{L}\p{C}\p{N}\p{Pd}\p{Ps}\p{Pe}\p{Pi}\p{Pf}\p{Pc}\p{S}%*,;&\'}}+)', '(?P<$1>$2)'],
             $string
         );
-    }
-
-    /**
-     * @param string $pattern
-     * @param string $uri
-     * @return array
-     */
-    public function match(string $pattern, string $uri): array
-    {
-        $matches = [];
-        $path = $uri;
-
-        $result = preg_match($pattern, $path, $matches);
-
-        if ($result > 0) {
-            return $matches;
-        }
-
-        return [false];
     }
 }
