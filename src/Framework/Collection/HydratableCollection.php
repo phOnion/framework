@@ -3,31 +3,29 @@ namespace Onion\Framework\Collection;
 
 use Onion\Framework\Hydrator\Interfaces\HydratableInterface;
 
-class HydratableCollection implements \IteratorAggregate
+class HydratableCollection extends CallbackCollection
 {
     private $items;
     private $entityClass;
 
     public function __construct(iterable $items, string $entity)
     {
-        $this->items = $items;
-        if (!in_array(HydratableInterface::class, class_implements($entity), true)) {
+        if (!class_exists($entity)) {
             throw new \InvalidArgumentException(
-                "Provided '{$entity}' does not exist or does not implement: " .
-                    HydratableInterface::class
+                "Provided entity '{$entity}' does not exist"
+            );
+        }
+        $reflection = new \ReflectionClass($this->entityClass);
+        if (!$reflection->implementsInterface(HydratableInterface::class)) {
+            throw new \InvalidArgumentException(
+                "Provided '{$entity}' does not implement: " . HydratableInterface::class
             );
         }
 
-        $this->entityClass = $entity;
-    }
-
-    public function getIterator()
-    {
-        $entity = (new \ReflectionClass($this->entityClass))->newInstance();
-
-        return new CallbackCollection($this->items, function ($item, $key) use ($entity) {
-            /** @var HydratableInterface $entity */
-            return $entity->hydrate($item);
+        $prototype = $reflection->newInstance();
+        parent::__construct($items, function ($item, $key) use ($prototype) {
+            /** @var HydratableInterface $prototype */
+            return $prototype->hydrate($item);
         });
     }
 }
