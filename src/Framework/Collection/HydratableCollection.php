@@ -7,7 +7,7 @@ class HydratableCollection extends Collection
 {
     public function __construct(iterable $items, HydratableInterface $prototype)
     {
-        $items = new CallbackCollection($items, function ($item, $key) use ($prototype) {
+        $items = new CallbackCollection($items, function ($item) use ($prototype) {
             /** @var HydratableInterface $prototype */
             return $prototype->hydrate($item);
         });

@@ -48,14 +48,19 @@ function merge(array $array1, array $array2): array
         if (array_key_exists($key, $array1)) {
             if (is_int($key)) {
                 $array1[] = $value;
-            } elseif (is_array($value) && is_array($array1[$key])) {
-                $array1[$key] = array_merge_distinct($array1[$key], $value);
-            } else {
-                $array1[$key] = $value;
+                continue;
             }
-        } else {
+
+            if (is_array($value) && is_array($array1[$key])) {
+                $array1[$key] = array_merge_distinct($array1[$key], $value);
+                continue;
+            }
+
             $array1[$key] = $value;
+            continue;
         }
+
+        $array1[$key] = $value;
     }
     return $array1;
 }

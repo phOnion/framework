@@ -14,7 +14,7 @@ class ErrorResponseMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         try {
-            $response = $handler->handle($request);
+            return $handler->handle($request);
         } catch (NotFoundException $ex) {
             return new Response(404);
         } catch (MethodNotAllowedException $ex) {
