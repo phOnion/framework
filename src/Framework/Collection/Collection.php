@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 namespace Onion\Framework\Collection;
 
-abstract class Collection implements \Iterator
+class Collection implements \Iterator
 {
     /** @var \Iterator */
     private $items;
