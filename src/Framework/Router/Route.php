@@ -5,6 +5,7 @@ use Onion\Framework\Router\Interfaces\RouteInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Onion\Framework\Router\Exceptions\MissingHeaderException;
 
 abstract class Route implements RouteInterface
 {
@@ -99,9 +100,7 @@ abstract class Route implements RouteInterface
 
         foreach ($this->getHeaders() as $header => $required) {
             if ((bool) $required && !$response->hasHeader($header)) {
-                throw new \RuntimeException(
-                    "Required header '{$header}' was not provided"
-                );
+                throw new MissingHeaderException($header);
             }
         }
 
