@@ -15,6 +15,6 @@ class PrefixRouteTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertSame($this->route->getName(), '/foo/*');
         $this->assertSame($this->route->getPattern(), '/foo/*');
-        $this->assertTrue($this->route->isMatch('/foo/test'));
+        $this->assertTrue($this->route->isMatch('/foo/test/some'));
     }
 }
