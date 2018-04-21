@@ -97,58 +97,14 @@ abstract class Route implements RouteInterface
     {
         $response = $this->getRequestHandler()->handle($request);
 
-        foreach ($this->getHeaders() as $header => $values) {
-            assert(is_array($values), new \InvalidArgumentException(
-                'Header\'s value must be an array of strings'
-            ));
-
-            foreach ($values as $value) {
-                $response = $response->withAddedHeader(
-                    $header,
-                    $this->substituteValues($value, $request->getQueryParams())
+        foreach ($this->getHeaders() as $header => $required) {
+            if ((bool) $required && !$response->hasHeader($header)) {
+                throw new \RuntimeException(
+                    "Required header '{$header}' was not provided"
                 );
             }
         }
 
         return $response;
-    }
-
-    private function substituteValues(string $pattern, $extra): string
-    {
-        if (strpos($pattern, '{') !== false) {
-            $params = array_merge($this->getParameters(), $extra);
-            preg_match_all(
-                '~(\{(?P<left>[a-zA-Z0-9_-]+)(?:(?:\:(?P<default>\d+))(?P<sign>[\-\+])(?P<right>\d+)?|' .
-                    '(?:\:(?P<default>[a-zA-Z0-9_+-]+(?:[^\d+]))))?\})~J',
-                $pattern,
-                $matches,
-                PREG_SET_ORDER
-            );
-
-            foreach ($matches as $match) {
-                if (!isset($params[$match['left']]) && !isset($match['default'])) {
-                    continue;
-                }
-                $value = $params[$match['left']] ?? $match['default'];
-                if (is_numeric($value) && $match['right']) {
-                    switch ($match['sign']) {
-                        case '+':
-                            $value = (int) $value + (int) $match['right'];
-                            break;
-                        case '-':
-                            $value = (int) $value - (int) $match['right'];
-                            break;
-                    }
-
-                    if ($value <= 0 && $match['default'] != 0) {
-                        return '';
-                    }
-                }
-
-                $pattern = str_replace("{$match[0]}", $value, $pattern);
-            }
-        }
-
-        return $pattern;
     }
 }
