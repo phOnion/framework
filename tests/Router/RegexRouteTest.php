@@ -8,6 +8,7 @@ use Psr\Http\Message\ResponseInterface;
 use Prophecy\Argument\Token\AnyValueToken;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Onion\Framework\Router\Exceptions\MissingHeaderException;
 
 class RegexRouteTest extends \PHPUnit_Framework_TestCase
 {
@@ -50,20 +51,18 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
     public function testRouteRequestHandler()
     {
         $headers = [
-            'content-type' => ['text/plain'],
+            'content-type' => true,
         ];
 
 
         $response = $this->prophesize(ResponseInterface::class);
-        $response->withAddedHeader('content-type', 'text/plain')
-            ->willReturn($response->reveal());
+        $response->hasHeader('content-type')
+            ->willReturn(true);
 
         $uri = $this->prophesize(UriInterface::class);
-        $uri->getAuthority()->willReturn('');
 
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getUri()->willReturn($uri->reveal());
-        $request->getQueryParams()->willReturn([]);
 
         $handler = $this->prophesize(RequestHandlerInterface::class);
         $handler->handle(new AnyValueToken())->willReturn($response->reveal());
@@ -77,6 +76,33 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
             ResponseInterface::class,
             $route->handle($request->reveal())
         );
+    }
+
+    public function testExceptionWhenMissingRequiredHeader()
+    {
+        $headers = [
+            'content-type' => true,
+        ];
+
+        $response = $this->prophesize(ResponseInterface::class);
+        $response->hasHeader('content-type')
+            ->willReturn(false);
+
+        $uri = $this->prophesize(UriInterface::class);
+
+        $request = $this->prophesize(ServerRequestInterface::class);
+        $request->getUri()->willReturn($uri->reveal());
+
+        $handler = $this->prophesize(RequestHandlerInterface::class);
+        $handler->handle(new AnyValueToken())->willReturn($response->reveal());
+
+        $route = $this->route->withRequestHandler($handler->reveal())
+            ->withHeaders(new \ArrayIterator($headers))
+            ->withMethods(['GET']);
+        $this->assertNotSame($this->route, $route);
+
+        $this->expectException(MissingHeaderException::class);
+        $route->handle($request->reveal());
     }
 
     public function testRouteMethods()
