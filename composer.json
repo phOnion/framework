@@ -28,6 +28,9 @@
         "psr-4": {
             "Onion\\": "src/",
             "Tests\\": "tests/"
-        }
+        },
+        "files": [
+            "src/Framework/functions.php"
+        ]
     }
 }
