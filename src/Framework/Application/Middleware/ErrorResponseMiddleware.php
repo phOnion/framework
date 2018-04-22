@@ -8,6 +8,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Onion\Framework\Router\Exceptions\NotFoundException;
 use GuzzleHttp\Psr7\Response;
 use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
+use Onion\Framework\Router\Exceptions\MissingHeaderException;
 
 class ErrorResponseMiddleware implements MiddlewareInterface
 {
@@ -15,6 +16,8 @@ class ErrorResponseMiddleware implements MiddlewareInterface
     {
         try {
             return $handler->handle($request);
+        } catch (MissingHeaderException $ex) {
+            return new Response(400);
         } catch (NotFoundException $ex) {
             return new Response(404);
         } catch (MethodNotAllowedException $ex) {
