@@ -7,12 +7,12 @@ pages:
     - Invokables: dependency/invokables.md
     - Factories: dependency/factories.md
     - Caching: dependency/caching.md
+    - Delegation: dependency/delegation.md
   - Routing:
     - Introduction: routing/index.md
-    - Parsers: routing/parsers.md
-    - Matchers: routing/matchers.md
-    - Pipes: routing/pipes.md
   - Hydration: hydratable.md
+  - Collections: collections.md
+  - Rest: rest/index.md
   - "Advanced":
     - "Modules": modules.md
 theme: readthedocs
