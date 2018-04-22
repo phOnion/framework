@@ -3,12 +3,12 @@
 This is a minimalistic core framework that complies with, supports and uses various
 PSRs:
 
- - PSR-2 (Coding Standard)
- - PSR-4 (Autoloading)
- - PSR-7 (HTTP Message)
- - PSR-11 (Container Interface)
- - PSR-15 (HTTP Middleware)
- - PSR-16 (Simple Caching) - *container wrapper only*
+- PSR-2 (Coding Standard)
+- PSR-4 (Autoloading)
+- PSR-7 (HTTP Message)
+- PSR-11 (Container Interface)
+- PSR-15 (HTTP Middleware)
+- PSR-16 (Simple Caching) - *container wrapper only*
 
 While it can be used to power a full-blown application framework as of now
 it is mainly oriented towards the core tools needed for building an API.
@@ -25,22 +25,7 @@ In the latest release a lot of changes have been made, to note a few major ones
 - Route's now can be initialized using a custom classes instead of the old approach with matchers/parsers
 - Modularity is now possible through combination of appropriate PrefixRoutes and Application (no more delegate classes)
 
-
 Content Negotiation is something that is planned but since it is not so trivial task, it is postponed for future minor release
-
-*NOTICE*
-There is no and there will not be an ORM, Template Engine or anything along those lines.
-There are plenty of those already available, there is no need to reinvent the wheel.
-
-- ORM:
-  - Doctrine (1 and 2)
-  - Eloquent
-  - Propel
-- Template Engine:
-  - Smarty
-  - Twig
-  - Blade
-  - Plates
 
 ## Requirements
 

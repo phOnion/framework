@@ -14,8 +14,8 @@ For example:
 ```php
 //...
     'invokables' => [
-         \Psr\Http\Message\ResponseInterface::class => Zend\Diactoros\Response::class,
-         \Zend\Diactoros\Response\EmitterInterface::class => \Zend\Diactoros\Response\SapiEmitter::class,
+         \Psr\Http\Message\ResponseInterface::class =>
+                \Guzzle\Psr7\Response::class
     ]
 //...
 ```

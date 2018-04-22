@@ -74,6 +74,11 @@ After accessing the app you should be presented with whatever output you expect 
 
 ---
 
+## Routing
+
+Please refer to the routes section for more information about the specifics
+of a route.
+
 ## Middleware
 
 There are 2 types of middleware supported atm, application level & route level.
@@ -92,46 +97,3 @@ In an ideal scenario that should not be a huge issue when route error occurs
  and the common stack is triggered again, although it should be taken in to
  account for the purposes of request logging, etc. as it may result in duplicate
  entries for the same request. (But you really should handle your errors :) )
-
-## Routing
-
-The full route structure looks like this:
-
-```php
-[
-    'name' => 'alias-name', // Optional
-    'pattern' => '/products/[product]', // Required
-    'class' => SomeRoute::class, // Optional
-    'middleware' => [ // Required
-        // list of middleware keys to resolve
-    ],
-    'methods' => [ // Optional
-        // list of HTTP methods
-    ],
-    'headers' => [ // Optional
-        'x-header-name' => ['header-value-for-{product}?page={page:1+1}'] // Definition of a route header
-    ]
-]
-```
-
-- `'name'` - An alias for a route useful if resolving pattern to route
-- `'pattern'` - The pattern of the route
-- `'middleware'` - A list of middleware keys that handle the route
-- `'class'` - A class which will handle the route (Defaults to `RegexRoute`)
-- `'methods'` - A list of HTTP methods to restrict the route to. Useful for early termination
-- `'headers'` - A list of headers to add to the generated response. Supports route and query
- params as well as `+` and `-` expressions like `{numericParam+1}` will increment the value of
- `numericParam` by 1
-
- The syntax for header templating is `{<paramName>[:<defaultValue>][(+|-)<number>]}`
-
-- `<paramName>` - is the name of the parameter either from route or query. Pattern `[a-zA-Z0-9_-]+`
-- `:<default>` - is optional and if the parameter is not present the value after the `:` will be used. Pattern `[a-zA-Z0-9_-]+`
- or `\d+`, depending on the expression
-- `(+|-)<number>` - increment or decrement the value of `<paramName>` by `<number>`. Pattern `\d+`, if `<default>` is provided
- and it contains a anything else than a number it will not evaluate the expression
-
-
-Route headers could be handy when providing `Link` headers for navigation or pointing
-to sub-resources, with the supported expressions pagination links can also be provided
-and possibly other useful cases.
