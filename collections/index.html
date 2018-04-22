@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>Hydration - Onion - Framework</title>
+  <title>Collections - Onion - Framework</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -17,9 +17,9 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "Hydration";
-    var mkdocs_page_input_path = "hydratable.md";
-    var mkdocs_page_url = "/hydratable/";
+    var mkdocs_page_name = "Collections";
+    var mkdocs_page_input_path = "collections.md";
+    var mkdocs_page_url = "/collections/";
   </script>
   
   <script src="../js/jquery-2.1.1.min.js"></script>
@@ -95,17 +95,30 @@
     </ul>
 	    </li>
           
-            <li class="toctree-l1 current">
-		
-    <a class="current" href="./">Hydration</a>
-    <ul class="subnav">
-            
-    </ul>
-	    </li>
-          
             <li class="toctree-l1">
 		
-    <a class="" href="../collections/">Collections</a>
+    <a class="" href="../hydratable/">Hydration</a>
+	    </li>
+          
+            <li class="toctree-l1 current">
+		
+    <a class="current" href="./">Collections</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l2"><a href="#introduction">Introduction</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l3" href="#collection">Collection</a></li>
+        
+            <li><a class="toctree-l3" href="#callbackcollection">CallbackCollection</a></li>
+        
+            <li><a class="toctree-l3" href="#hydratablecollection">HydratableCollection</a></li>
+        
+        </ul>
+    
+
+    </ul>
 	    </li>
           
             <li class="toctree-l1">
@@ -146,7 +159,7 @@
     
       
     
-    <li>Hydration</li>
+    <li>Collections</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -156,14 +169,32 @@
           <div role="main">
             <div class="section">
               
-                <p>The hydratables are traits which provide you the ability to "inject" data within objects that are initialized, but please note that those preserve the class' immutability and as such return new instance on every hydration. While there is an interface defining the <code>hydrate</code> and <code>extract</code> methods, there are 2 traits providing the 2 most common strategies for hydration:</p>
-<ul>
-<li><code>Method</code> - uses getters/setters</li>
-<li><code>Property</code> - uses public properties</li>
-</ul>
-<p>Both hydration strategies perform transformation on the keys provided, so the keys 
-of the array get translated from <code>snake_case</code> to <code>cammelCase</code>, so if you provide an array like <code>['username' =&gt; 'foo', 'first_name' =&gt; 'John']</code> the Method strategy will attempt to use <code>setUsername</code> and <code>setFirstName</code> in order to hydrate the object; if the Property strategy is used it will look for <code>username</code> and <code>firstName</code> public properties on the object.</p>
-<p>Both will preserve immutability of the hydrated object so you should keep that in mind</p>
+                <h1 id="introduction">Introduction</h1>
+<p>There are 3 pretty generic collection classes that should provide at
+least some benefit in a few scenarios.</p>
+<h2 id="collection">Collection</h2>
+<p>The base collection class is just an iterator and exposes 1 additional
+method <code>addFilter</code> which accepts a callback and passing it <code>$value</code> and <code>$key</code>
+in this order, under the hood it uses the built-in PHP <code>CallbackFilterIterator</code> to
+perform the filtering.</p>
+<h2 id="callbackcollection">CallbackCollection</h2>
+<p>This one is aimed at applying a callback to each element in the array
+much like <code>array_map</code> does, but instead of applying it instantly it is
+lazy and the callback is applied only when an item is retrieved
+from the iterator. The goal of that is to have as lazy as possible
+collection. Which when working with large datasets will manipulate them
+on the fly rather than in a single go.</p>
+<p>It extends <code>Collection</code> so the filtering is still there, just note that
+the callback is applied after the filtering so the filter function has
+to use the raw data.</p>
+<h2 id="hydratablecollection">HydratableCollection</h2>
+<p>This one a thin wrapper around <code>CallbackCollection</code> to provide a simplified
+API to generate object specific collections. It takes a prototype instance
+that implements <code>HydratableInterface</code> as it's 2nd argument in the constructor.</p>
+<p>Just note that the filtering will be applied <em>after</em> the hydration since
+the objects might have their own validation procedures in place and thus
+the filtering could be <code>$item-&gt;isVallid()</code> instead of duplicating the logic
+every you have to validate/filter the collection.</p>
               
             </div>
           </div>
@@ -171,10 +202,10 @@ of the array get translated from <code>snake_case</code> to <code>cammelCase</co
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../collections/" class="btn btn-neutral float-right" title="Collections">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../rest/" class="btn btn-neutral float-right" title="Rest">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="../routing/" class="btn btn-neutral" title="Introduction"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../hydratable/" class="btn btn-neutral" title="Hydration"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -200,10 +231,10 @@ of the array get translated from <code>snake_case</code> to <code>cammelCase</co
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="../routing/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="../hydratable/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="../collections/" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="../rest/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

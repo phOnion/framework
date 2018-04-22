@@ -45,127 +45,93 @@
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
 	<ul class="current">
+	  
           
-            <li>
-    <li class="toctree-l1 current">
-        <a class="current" href=".">Intro</a>
-        
-            <ul>
-            
-                <li class="toctree-l3"><a href="#about">About</a></li>
-                
-            
-                <li class="toctree-l3"><a href="#requirements">Requirements</a></li>
-                
-            
-                <li class="toctree-l3"><a href="#configuration">Configuration</a></li>
-                
-            
-            </ul>
-        
-    </li>
-<li>
-          
-            <li>
-    <li class="toctree-l1 ">
-        <a class="" href="setup/">Tutorial</a>
-        
-    </li>
-<li>
-          
-            <li>
+            <li class="toctree-l1 current">
+		
+    <a class="current" href=".">Intro</a>
     <ul class="subnav">
-    <li><span>Dependency</span></li>
-
-        
             
-    <li class="toctree-l1 ">
-        <a class="" href="dependency/">Introduction</a>
-        
-    </li>
+    <li class="toctree-l2"><a href="#about">About</a></li>
+    
 
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="dependency/invokables/">Invokables</a>
-        
-    </li>
+    <li class="toctree-l2"><a href="#requirements">Requirements</a></li>
+    
 
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="dependency/factories/">Factories</a>
-        
-    </li>
+    <li class="toctree-l2"><a href="#configuration">Configuration</a></li>
+    
 
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="dependency/caching/">Caching</a>
-        
-    </li>
-
-        
     </ul>
-<li>
+	    </li>
           
-            <li>
+            <li class="toctree-l1">
+		
+    <a class="" href="setup/">Tutorial</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Dependency</span>
     <ul class="subnav">
-    <li><span>Routing</span></li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="routing/">Introduction</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="routing/parsers/">Parsers</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="routing/matchers/">Matchers</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="routing/pipes/">Pipes</a>
-        
-    </li>
-
-        
+                <li class="">
+                    
+    <a class="" href="dependency/">Introduction</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="dependency/invokables/">Invokables</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="dependency/factories/">Factories</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="dependency/caching/">Caching</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="dependency/delegation/">Delegation</a>
+                </li>
     </ul>
-<li>
+	    </li>
           
-            <li>
-    <li class="toctree-l1 ">
-        <a class="" href="hydratable/">Hydration</a>
-        
-    </li>
-<li>
-          
-            <li>
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Routing</span>
     <ul class="subnav">
-    <li><span>Advanced</span></li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="modules/">Modules</a>
-        
-    </li>
-
-        
+                <li class="">
+                    
+    <a class="" href="routing/">Introduction</a>
+                </li>
     </ul>
-<li>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="hydratable/">Hydration</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="collections/">Collections</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="rest/">Rest</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Advanced</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="modules/">Modules</a>
+                </li>
+    </ul>
+	    </li>
           
         </ul>
       </div>
@@ -200,7 +166,7 @@
             <div class="section">
               
                 <h2 id="about">About</h2>
-<p>This is a minimalistic core framework that complies with, supports and uses various 
+<p>This is a minimalistic core framework that complies with, supports and uses various
 PSRs:</p>
 <ul>
 <li>PSR-2 (Coding Standard)</li>
@@ -212,57 +178,38 @@ PSRs:</p>
 </ul>
 <p>While it can be used to power a full-blown application framework as of now
 it is mainly oriented towards the core tools needed for building an API.
-Regardless of the fact that it does not come with any transformers/serializers/etc.
-for doing so there is a complimentary package <code>onion/rest</code> which provides the ability
-to build APIs that return multiple RESTful responses. It is built only with depending
-on <code>zendframework/zend-diactoros</code> (PSR-7 implementation) so there are no wrappers
-around any external frameworks/components/bundles/etc. so the developer(s) have absolute
-control over what they want to use.</p>
-<p>The components included are: DI Container, Middleware Dispatcher, Router and Hydrator traits.
-nothing more, nothing less. There are complementary packages, that are aimed to add
-some additional features which are more nice-to-have, but not necessarily needed or always 
-needed by everyone, so they will be implemented as separate optional packages and some could
-be included in the if they prove to be useful for a majority of users and stable enough.</p>
-<p><em>NOTICE</em>
-There is no and there will not be an ORM, Template Engine or any-high-level-feature. There are
-pleanty of those already available, there is no need to reinvent the wheel.</p>
+Being maily API oriented, now there is a package <code>onion/rest</code> that provides
+a few classes that should simplify the generation of API-standard responses
+as well as <code>onion/interfaces</code>'s <code>Onion\Framework\Rest</code> namespace has a couple
+of interfaces aimed specifically at that.</p>
+<p>In the latest release a lot of changes have been made, to note a few major ones</p>
 <ul>
-<li>ORM:<ul>
-<li>Doctrine (1 and 2)</li>
-<li>Eloquent</li>
-<li>Propel</li>
+<li>PHP &gt;= 7.2 is the minimal version required</li>
+<li>Many components that might increase the loading times have been made 'lazy' with the help of generators</li>
+<li>There is no router! Everything is oriented towards true middleware architecture, so middleware and request handlers are used heavily</li>
+<li>Route's now can be initialized using a custom classes instead of the old approach with matchers/parsers</li>
+<li>Modularity is now possible through combination of appropriate PrefixRoutes and Application (no more delegate classes)</li>
 </ul>
-</li>
-<li>Template Engine:<ul>
-<li>Smarty</li>
-<li>Twig</li>
-<li>Blade</li>
-<li>Plates</li>
-</ul>
-</li>
-</ul>
-<p>One of the main goals for this project was to have a minimal core, without dependencies, 
-compliant with PSRs and allow every oen using it, use what they are familiar with in terms
-of additional packages without having to create wrappers/adapters framework.</p>
+<p>Content Negotiation is something that is planned but since it is not so trivial task, it is postponed for future minor release</p>
 <h2 id="requirements">Requirements</h2>
 <ol>
-<li>PHP 7.0+</li>
+<li>PHP 7.2+</li>
 <li>php.ini (Optional but recommended while development)<ul>
 <li><code>zend.assertions=1</code></li>
 <li><code>assert.exceptions=1</code></li>
 </ul>
 </li>
 </ol>
-<p>The php.ini configuration is suggested only while development, so that some errors, which 
+<p>The php.ini configuration is suggested only while development, so that some errors, which
 could happen only while developing (misspelled array key, invalid configuration, etc.) are
-not checked all the time while running on production environment - squeezing as much 
+not checked all the time while running on production environment - squeezing as much
 performance as possible.</p>
-<p>For a quick start you can clone <a href="https://github.com/phOnion/bootstrap"><code>onion/bootstrap</code></a> and 
+<p>For a quick start you can clone <a href="https://github.com/phOnion/bootstrap"><code>onion/bootstrap</code></a> and
 see how the basic setup looks like and play around to test the features available.</p>
 <h2 id="configuration">Configuration</h2>
 <p>The approach taken for setting up the framework is more configuration over convention
-because everyone has different code-style and different tastes, there is no point in 
-enforcing a specific way to code something so that it works, without providing any 
+because everyone has different code-style and different tastes, there is no point in
+enforcing a specific way to code something so that it works, without providing any
 other way. So there are some configurations for some components and they are explained
 in their respectful sections of this documentation.</p>
               
@@ -287,12 +234,12 @@ in their respectful sections of this documentation.</p>
 
   Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
 </footer>
-	  
+      
         </div>
       </div>
 
     </section>
-    
+
   </div>
 
   <div class="rst-versions" role="note" style="cursor: pointer">
@@ -304,12 +251,15 @@ in their respectful sections of this documentation.</p>
       
     </span>
 </div>
+    <script>var base_url = '.';</script>
     <script src="./js/theme.js"></script>
+      <script src="./search/require.js"></script>
+      <script src="./search/search.js"></script>
 
 </body>
 </html>
 
 <!--
-MkDocs version : 0.16.1
-Build Date UTC : 2017-03-25 19:44:22
+MkDocs version : 0.17.3
+Build Date UTC : 2018-04-22 12:48:44
 -->

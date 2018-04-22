@@ -18,7 +18,7 @@
   <script>
     // Current page data
     var mkdocs_page_name = "Invokables";
-    var mkdocs_page_input_path = "dependency/invokables.md";
+    var mkdocs_page_input_path = "dependency\\invokables.md";
     var mkdocs_page_url = "/dependency/invokables/";
   </script>
   
@@ -45,118 +45,84 @@
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
 	<ul class="current">
+	  
           
-            <li>
-    <li class="toctree-l1 ">
-        <a class="" href="../..">Intro</a>
-        
-    </li>
-<li>
+            <li class="toctree-l1">
+		
+    <a class="" href="../..">Intro</a>
+	    </li>
           
-            <li>
-    <li class="toctree-l1 ">
-        <a class="" href="../../setup/">Tutorial</a>
-        
-    </li>
-<li>
+            <li class="toctree-l1">
+		
+    <a class="" href="../../setup/">Tutorial</a>
+	    </li>
           
-            <li>
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Dependency</span>
     <ul class="subnav">
-    <li><span>Dependency</span></li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../">Introduction</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 current">
-        <a class="current" href="./">Invokables</a>
-        
-            <ul>
-            
-            </ul>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../factories/">Factories</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../caching/">Caching</a>
-        
-    </li>
-
-        
-    </ul>
-<li>
-          
-            <li>
+                <li class="">
+                    
+    <a class="" href="../">Introduction</a>
+                </li>
+                <li class=" current">
+                    
+    <a class="current" href="./">Invokables</a>
     <ul class="subnav">
-    <li><span>Routing</span></li>
-
-        
             
-    <li class="toctree-l1 ">
-        <a class="" href="../../routing/">Introduction</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../../routing/parsers/">Parsers</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../../routing/matchers/">Matchers</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../../routing/pipes/">Pipes</a>
-        
-    </li>
-
-        
     </ul>
-<li>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../factories/">Factories</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../caching/">Caching</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../delegation/">Delegation</a>
+                </li>
+    </ul>
+	    </li>
           
-            <li>
-    <li class="toctree-l1 ">
-        <a class="" href="../../hydratable/">Hydration</a>
-        
-    </li>
-<li>
-          
-            <li>
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Routing</span>
     <ul class="subnav">
-    <li><span>Advanced</span></li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../../modules/">Modules</a>
-        
-    </li>
-
-        
+                <li class="">
+                    
+    <a class="" href="../../routing/">Introduction</a>
+                </li>
     </ul>
-<li>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../../hydratable/">Hydration</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../../collections/">Collections</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../../rest/">Rest</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Advanced</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="../../modules/">Modules</a>
+                </li>
+    </ul>
+	    </li>
           
         </ul>
       </div>
@@ -200,25 +166,25 @@
  so it is expected those to be instances without a constructor or with a constructor that
  does not need any arguments. Consider it as a mapping between <code>interface =&gt; implementation</code></p>
 <p>A good practise is to use <code>\Acme\App\SomeClass::class</code> instead of <code>'someclass'</code> as keys so
-it allows for auto-wiring and makes the code more obvious, more readable and decoupled from 
+it allows for auto-wiring and makes the code more obvious, more readable and decoupled from
 the configuration.</p>
 <p>For example:</p>
 <pre><code class="php">//...
     'invokables' =&gt; [
-         \Psr\Http\Message\ResponseInterface::class =&gt; Zend\Diactoros\Response::class,
-         \Zend\Diactoros\Response\EmitterInterface::class =&gt; \Zend\Diactoros\Response\SapiEmitter::class,
+         \Psr\Http\Message\ResponseInterface::class =&gt;
+                \Guzzle\Psr7\Response::class
     ]
 //...
 </code></pre>
 
-<p>Creates a mapping that whenever an object requires <code>ResponseInterface</code> the container will return 
+<p>Creates a mapping that whenever an object requires <code>ResponseInterface</code> the container will return
 <code>new Response()</code> and the same goes for the <code>EmitterInterface</code>, this is useful when you have only
 type-hint against an interface instead of a specific implementation, this will trigger the container
 to perform a lookup on the dependencies of the defined class in an attempt to return a fully setup
 instance. And while invokables are available it is not necessary to define each and every class in this mapping,
-but rather only those which bind to interface, for those that are type-hinted to a concrete 
-implementation the container will attempt to do it's best to resolve it automatically from the available 
-types and other definitions passed. </p>
+but rather only those which bind to interface, for those that are type-hinted to a concrete
+implementation the container will attempt to do it's best to resolve it automatically from the available
+types and other definitions passed.</p>
 <p>But in scenarios where you need a specific configuration that the container cannot resolve
 you can turn to the next keyword</p>
               
@@ -245,12 +211,12 @@ you can turn to the next keyword</p>
 
   Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
 </footer>
-	  
+      
         </div>
       </div>
 
     </section>
-    
+
   </div>
 
   <div class="rst-versions" role="note" style="cursor: pointer">
@@ -264,7 +230,10 @@ you can turn to the next keyword</p>
       
     </span>
 </div>
+    <script>var base_url = '../..';</script>
     <script src="../../js/theme.js"></script>
+      <script src="../../search/require.js"></script>
+      <script src="../../search/search.js"></script>
 
 </body>
 </html>

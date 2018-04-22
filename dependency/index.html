@@ -18,7 +18,7 @@
   <script>
     // Current page data
     var mkdocs_page_name = "Introduction";
-    var mkdocs_page_input_path = "dependency/index.md";
+    var mkdocs_page_input_path = "dependency\\index.md";
     var mkdocs_page_url = "/dependency/";
   </script>
   
@@ -45,118 +45,84 @@
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
 	<ul class="current">
+	  
           
-            <li>
-    <li class="toctree-l1 ">
-        <a class="" href="..">Intro</a>
-        
-    </li>
-<li>
+            <li class="toctree-l1">
+		
+    <a class="" href="..">Intro</a>
+	    </li>
           
-            <li>
-    <li class="toctree-l1 ">
-        <a class="" href="../setup/">Tutorial</a>
-        
-    </li>
-<li>
+            <li class="toctree-l1">
+		
+    <a class="" href="../setup/">Tutorial</a>
+	    </li>
           
-            <li>
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Dependency</span>
     <ul class="subnav">
-    <li><span>Dependency</span></li>
-
-        
-            
-    <li class="toctree-l1 current">
-        <a class="current" href="./">Introduction</a>
-        
-            <ul>
-            
-            </ul>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="invokables/">Invokables</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="factories/">Factories</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="caching/">Caching</a>
-        
-    </li>
-
-        
-    </ul>
-<li>
-          
-            <li>
+                <li class=" current">
+                    
+    <a class="current" href="./">Introduction</a>
     <ul class="subnav">
-    <li><span>Routing</span></li>
-
-        
             
-    <li class="toctree-l1 ">
-        <a class="" href="../routing/">Introduction</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../routing/parsers/">Parsers</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../routing/matchers/">Matchers</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../routing/pipes/">Pipes</a>
-        
-    </li>
-
-        
     </ul>
-<li>
+                </li>
+                <li class="">
+                    
+    <a class="" href="invokables/">Invokables</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="factories/">Factories</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="caching/">Caching</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="delegation/">Delegation</a>
+                </li>
+    </ul>
+	    </li>
           
-            <li>
-    <li class="toctree-l1 ">
-        <a class="" href="../hydratable/">Hydration</a>
-        
-    </li>
-<li>
-          
-            <li>
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Routing</span>
     <ul class="subnav">
-    <li><span>Advanced</span></li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../modules/">Modules</a>
-        
-    </li>
-
-        
+                <li class="">
+                    
+    <a class="" href="../routing/">Introduction</a>
+                </li>
     </ul>
-<li>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../hydratable/">Hydration</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../collections/">Collections</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../rest/">Rest</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Advanced</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="../modules/">Modules</a>
+                </li>
+    </ul>
+	    </li>
           
         </ul>
       </div>
@@ -196,12 +162,12 @@
               
                 <p>The app comes with a very capable DI container, that provides the essential
 functionality to get an app running with as little issues as possible. It is
-pretty similar to the one provided from ZF, but with some features omitted. 
-The container's dependencies are passed as an array in it's constructor and 
+pretty similar to the one provided from ZF, but with some features omitted.
+The container's dependencies are passed as an array in it's constructor and
 have 3 special keys: <code>invokables</code>, <code>factories</code> and <code>shared</code></p>
-<p>Everything outside of these 3 keys is treated just as a value and can be retrieved by calling 
-<code>Container::get('someKey)</code> and that will return the value of 'someKey' as-is, without performing
-any operations on it. Also if you need to access a specific key which is located in a nested 
+<p>Everything outside of these 3 keys is treated just as a value and can be retrieved by calling
+<code>Container::get('someKey')</code> and that will return the value of 'someKey' as-is, without performing
+any operations on it. Also if you need to access a specific key which is located in a nested
 array you can use a dot notation, which the container will interpret as indication for a level
 of the array. Say for example, you have an array:</p>
 <pre><code class="php">[
@@ -219,9 +185,9 @@ of the array. Say for example, you have an array:</p>
 <p>In order to access <code>'dbname</code>, you might have to do at least 2 ifs (to ensure the key is there)
 and definitely will have to make something like: <code>Container::get('doctrine')['connection']['dbname']</code>,
 not the prettiest... This is where this could come in to play, instead of doing that you can just du
-<code>Container::get('doctrine.connection.dbname'); // Returns 'foo'</code> and you are all set, and it looks 
+<code>Container::get('doctrine.connection.dbname'); // Returns 'foo'</code> and you are all set, and it looks
 clearer too + on thje bonus side if you are writing a distributable module, you can be sure that the
-container will throw the appropriate error if any key is not defined and notify the user, no more 
+container will throw the appropriate error if any key is not defined and notify the user, no more
 piles of <code>if</code>s in your factories :)</p>
               
             </div>
@@ -247,12 +213,12 @@ piles of <code>if</code>s in your factories :)</p>
 
   Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
 </footer>
-	  
+      
         </div>
       </div>
 
     </section>
-    
+
   </div>
 
   <div class="rst-versions" role="note" style="cursor: pointer">
@@ -266,7 +232,10 @@ piles of <code>if</code>s in your factories :)</p>
       
     </span>
 </div>
+    <script>var base_url = '..';</script>
     <script src="../js/theme.js"></script>
+      <script src="../search/require.js"></script>
+      <script src="../search/search.js"></script>
 
 </body>
 </html>

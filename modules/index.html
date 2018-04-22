@@ -45,130 +45,93 @@
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
 	<ul class="current">
+	  
           
-            <li>
-    <li class="toctree-l1 ">
-        <a class="" href="..">Intro</a>
-        
-    </li>
-<li>
+            <li class="toctree-l1">
+		
+    <a class="" href="..">Intro</a>
+	    </li>
           
-            <li>
-    <li class="toctree-l1 ">
-        <a class="" href="../setup/">Tutorial</a>
-        
-    </li>
-<li>
+            <li class="toctree-l1">
+		
+    <a class="" href="../setup/">Tutorial</a>
+	    </li>
           
-            <li>
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Dependency</span>
     <ul class="subnav">
-    <li><span>Dependency</span></li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../dependency/">Introduction</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../dependency/invokables/">Invokables</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../dependency/factories/">Factories</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../dependency/caching/">Caching</a>
-        
-    </li>
-
-        
+                <li class="">
+                    
+    <a class="" href="../dependency/">Introduction</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dependency/invokables/">Invokables</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dependency/factories/">Factories</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dependency/caching/">Caching</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dependency/delegation/">Delegation</a>
+                </li>
     </ul>
-<li>
+	    </li>
           
-            <li>
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Routing</span>
     <ul class="subnav">
-    <li><span>Routing</span></li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../routing/">Introduction</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../routing/parsers/">Parsers</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../routing/matchers/">Matchers</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../routing/pipes/">Pipes</a>
-        
-    </li>
-
-        
+                <li class="">
+                    
+    <a class="" href="../routing/">Introduction</a>
+                </li>
     </ul>
-<li>
+	    </li>
           
-            <li>
-    <li class="toctree-l1 ">
-        <a class="" href="../hydratable/">Hydration</a>
-        
-    </li>
-<li>
+            <li class="toctree-l1">
+		
+    <a class="" href="../hydratable/">Hydration</a>
+	    </li>
           
-            <li>
+            <li class="toctree-l1">
+		
+    <a class="" href="../collections/">Collections</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../rest/">Rest</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Advanced</span>
     <ul class="subnav">
-    <li><span>Advanced</span></li>
+                <li class=" current">
+                    
+    <a class="current" href="./">Modules</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#introduction">Introduction</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#setup">Setup</a></li>
+        
+        </ul>
+    
 
-        
-            
-    <li class="toctree-l1 current">
-        <a class="current" href="./">Modules</a>
-        
-            <ul>
-            
-                <li class="toctree-l3"><a href="#introduction">Introduction</a></li>
-                
-            
-                <li class="toctree-l3"><a href="#setup">Setup</a></li>
-                
-            
-                <li class="toctree-l3"><a href="#configuration">Configuration</a></li>
-                
-            
-                <li class="toctree-l3"><a href="#recommendations">Recommendations</a></li>
-                
-            
-            </ul>
-        
-    </li>
-
-        
     </ul>
-<li>
+                </li>
+    </ul>
+	    </li>
           
         </ul>
       </div>
@@ -206,159 +169,71 @@
           <div role="main">
             <div class="section">
               
-                <h2 id="introduction">Introduction</h2>
-<p>Modules are not a new concept in the development world, nor they re new
-to the PHP frameworks/applications. The implementation used here is not
-too different from what has already been implemented in other frameworks
-but the intent is clear and is aimed at enforcing the separation of
-applications in logical parts, rather than having module provide
-helper functionality (although they can also be used in that way, but
-might fee less intuitive)</p>
+                <h1 id="introduction">Introduction</h1>
+<p>Modules are a way to separate the application in order to preserve separation
+of code components and avoid your application to grow in to a monolith that
+is going to kill a kitten, destroy the world, make you insane and/or send
+you to hell. So to allow this, the modules are designed to be separated
+based on a route prefix. In order to achieve that.</p>
+<p>In order to achieve that, You will probably need a localized routes defs
+that will be loaded throughout the module and utilize the DelegateContainer
+to resolve the remaining dependencies.</p>
 <h2 id="setup">Setup</h2>
-<p>A module must be as self-contained as possible. It is up to the module
-developer to determine what configuration is comming from where, but
-mandatory (such as internal dependency mapping) should be defined and
-might even be appropriate to have it hardcoded, but optional things,
-such as database connection settings, etc. should be retrieved from the
-main application container via an acceptable method explained inside
-module's <code>readme</code> on <code>installation</code> files.</p>
-<p>A module should have it's logic as self-contained as possible, except
-for configurations, since that will change from application to
-application.</p>
-<p>The only requirement in order to ensure consistency (as of now it is not
-enforced) is for the module to serve as a factory that MUST return
-instance of <code>Application</code>, since application is a middleware it does not
-introduce a very specific behaviour, except maybe for having a separate
-middleware delegate defined and a separate router for the module itself.</p>
-<p>Internally the <code>ModuleDelegateFactory</code> is building a router with every
-instance <code>Application</code> assigned it's own prefix inside a <code>module</code> key.</p>
-<h2 id="configuration">Configuration</h2>
-<p>The minimal configuration to the container is:</p>
-<pre><code>return [
-    // .. other configuration
-    'middleware' =&gt; [
-        'modules'
-    ],
-    'modules' =&gt; [
-        '/path/prefix' =&gt; MyApp\API\Module::class
+<p>In this example we would assume you want to have a module that is handling
+the <code>/integrations</code> prefix in your app. So first we will go through adding
+the definition for a route to the global application:</p>
+<pre><code class="php">return [
+    [
+        'name' =&gt; 'integrations',
+        'pattern' =&gt; '/integrations',
+        'request_handler' =&gt; 'IntegrationsModule',
+        'class' =&gt; \Onion\Framework\Router\PrefixRoute::class,
+        'headers' =&gt; [
+            'Authorization' =&gt; true,
+        ]
     ]
-]
+];
 </code></pre>
 
-<p>An example module class:</p>
-<pre><code>namespace MyApp\API;
+<p><em>Note we've omitted the <code>middleware</code> key.</em></p>
+<p>This will ensure that whenever we receive a request that starts with
+<code>/integrations</code> it will be sent to that request handler while also requiring
+the client to provide an <code>authorization</code> header for access, and register it
+in the container as <code>IntegrationsModule</code>. From there for the executed routes
+the request will come as if there was never a prefix as it will get stripped
+to allow the applications to not have coupling to the routing they have.
+For example, every route you define in the <em>module</em> must not contain the
+prefix or the routing will match only <code>/integrations/integrations/...</code>
+and we don't want to do that, right?</p>
+<p>With that being said a factory for our imaginary module would look more
+or less like this:</p>
+<pre><code class="php">&lt;?php
+namespace App\Module\Integration;
 
-use Interop\Container\ContainerInterface;
-use Onion\Framework\Application\Application;
-use Onion\Framework\Application\Interfaces\ModuleInterface;
+// imports...
 
-class Module implements ModuleInterface
+class IntegrationModuleFactory implements FactoryInterface
 {
-    // Optional, but makes things clearer
-    private function getConfigurations(): array
+    private getLocalContainer(): ContainerInterface
     {
-        return [
-            'routes' =&gt; [
-                [
-                    'pattern' =&gt; '/api/users',
-                    'middleware' =&gt; [
-                        UsersApiController::class
-                    ]
-                ]
-            ]
-        ];
+        return new Container(compileConfigFiles(__DIR__ . '/../../config'));
     }
 
-    public function build(ContainerInterface $container): Application
+    public function build($delegateContainer)
     {
-        return new Application
-            // Retrieve everything from a contextual container
-            $this-&gt;getOwnContainer()-&gt;get(\Interop\Middleware\DelegateInterface),
-            $container-&gt;get(EmitterInterface::class)
-        );
+        // Note here we need to retrieve the main application
+        return $this-&gt;getLocalContainer()-&gt;get(Application::class);
     }
 }
 </code></pre>
 
-<p>It is recommended for a module class to fetch the <code>EmitterInterface</code>
-from the main container, instead of defining it's own since it will
-avoid issues with custom emitter implementations if applicable. Also
-note that the route must have the prefix defined by default in order to
-avoid this duplication (if that is your thing, but do keep in mind that
-the intent behind this kind of modules is that a module can and should
-be able to function as it's own application and not only as a module of
-another). Once the initial testing has been performed a CLI application
-will be developed allowing for the generation of module classes from
-existing applications, which will empower use-cases such as minimal blog
-to be embedded inside another application at a prefix; as well as
-install/uninstall steps, but that is TBD as of now so don't rely
-completely on that, but do keep in mind that the reasoning behind the
-modules is here to stay.</p>
-<h2 id="recommendations">Recommendations</h2>
-<p><em>Majority of the following points are intended to serve only as
-guide lines, and developers are free to ignore them, but complying
-will ensure consistency between module structure and workflow, hence
-improving experience</em></p>
-<ul>
-<li>
-<p>A module is a component of an application or website that provides visitor
- access to specific part of the website, a module should not only provide
- libraries and/or frameworks (for that part please stick with composer, see
- <a href="https://getcomposer.org/doc/02-libraries.md#publishing-to-a-vcs">composer documentation for information on how to use VCS for package distribution</a>).</p>
-</li>
-<li>
-<p>A module should provide contact information to allow users to report issues
- make/discuss feature requests and/or disclose security vulnerabilities.</p>
-</li>
-<li>
-<p>Another highly recommended thing to do is follow the PHP standards (PSR) to
- ensure compatibility with other libraries/modules/frameworks, that the
- user might be using within their application, out of the box.</p>
-</li>
-<li>
-<p>Following the HTTP standards is also a good thing to do, since that will
- increase the flexibility of user implementations in a magnitude. Example:
- if you provide <code>Last-Modified</code> header and check for <code>If-Modified-Since</code>
- the application may become more performant, since no data should be
- transfered.</p>
-</li>
-<li>
-<p>As a developer you should try to keep the dependencies for your module
- as minimal as possible so users do not get bloated with dependencies,
- also as a added benefit you lower the risk of your module breaking, because
- of external changes.</p>
-</li>
-<li>
-<p>A module, should not provide/enforce specific view components, since it
- may break application/website functionality/appearance, rather a API backend
- should be previded with information/tutorials/examples on how to communicate
- with said backend in a consistent way. *Design your modules for front ends
- built using modern frameworks like, ReactJS and Angular2 or other similar ones.</p>
-</li>
-<li>
-<p>A module should be kept as small and self-contained as possible. For example
- if a module is intended to provide blogging functionality it should (where applicable)
- be split in separate compoenets for <code>posts</code>, <code>comments</code>, <code>editing</code>. That way users
- would have the opportunity to mix and match compoents that are compatible or directly
- write a custom one to fit their needs or bridge gaps between different modules.</p>
-</li>
-<li>
-<p>A module may communicate with existing services, but it is recommended to provide
- information with which services/3rd parties information is exchanged and for what
- purposes.</p>
-</li>
-<li>
-<p>A module should not intend to modify files inside or outside of itself, when such
- configuration is required it should provide detailed information what, where and why
- should be changed for the user to configure (or optionally a script can be provided,
- but not automatically executed)</p>
-</li>
-<li>
-<p>Optionally your module may provide a UI, but it should be implemented in such a way
- that it's styling should be easily changeable since, different people have different
- tastes.</p>
-</li>
-</ul>
+<p>And from here on the routing takes care of it and when the route matches
+in the parent application it will hand over the execution to the module
+and we are done. The middleware will stack between the application and
+module. Just when you are intentionally building a module, you might want
+to exclude an error handler in the modules in order to allow the application
+itself to handle the error handling, although that will depend entirely on
+your design and components the possibilities are more or less limitless.</p>
               
             </div>
           </div>
@@ -367,7 +242,7 @@ improving experience</em></p>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
       
-        <a href="../hydratable/" class="btn btn-neutral" title="Hydration"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../rest/" class="btn btn-neutral" title="Rest"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -381,24 +256,27 @@ improving experience</em></p>
 
   Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
 </footer>
-	  
+      
         </div>
       </div>
 
     </section>
-    
+
   </div>
 
   <div class="rst-versions" role="note" style="cursor: pointer">
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="../hydratable/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="../rest/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
     </span>
 </div>
+    <script>var base_url = '..';</script>
     <script src="../js/theme.js"></script>
+      <script src="../search/require.js"></script>
+      <script src="../search/search.js"></script>
 
 </body>
 </html>

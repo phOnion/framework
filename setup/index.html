@@ -45,133 +45,97 @@
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
 	<ul class="current">
+	  
           
-            <li>
-    <li class="toctree-l1 ">
-        <a class="" href="..">Intro</a>
-        
-    </li>
-<li>
+            <li class="toctree-l1">
+		
+    <a class="" href="..">Intro</a>
+	    </li>
           
-            <li>
-    <li class="toctree-l1 current">
-        <a class="current" href="./">Tutorial</a>
-        
-            <ul>
-            
-                <li class="toctree-l3"><a href="#getting-started">Getting started</a></li>
-                
-            
-                <li class="toctree-l3"><a href="#installation">Installation</a></li>
-                
-            
-                <li class="toctree-l3"><a href="#dependencies">Dependencies</a></li>
-                
-            
-                <li class="toctree-l3"><a href="#middleware">Middleware</a></li>
-                
-            
-                <li class="toctree-l3"><a href="#routing">Routing</a></li>
-                
-            
-            </ul>
-        
-    </li>
-<li>
-          
-            <li>
+            <li class="toctree-l1 current">
+		
+    <a class="current" href="./">Tutorial</a>
     <ul class="subnav">
-    <li><span>Dependency</span></li>
-
-        
             
-    <li class="toctree-l1 ">
-        <a class="" href="../dependency/">Introduction</a>
+    <li class="toctree-l2"><a href="#introduction">Introduction</a></li>
+    
+        <ul>
         
-    </li>
+            <li><a class="toctree-l3" href="#installation">Installation</a></li>
+        
+            <li><a class="toctree-l3" href="#routing">Routing</a></li>
+        
+            <li><a class="toctree-l3" href="#middleware">Middleware</a></li>
+        
+        </ul>
+    
 
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../dependency/invokables/">Invokables</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../dependency/factories/">Factories</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../dependency/caching/">Caching</a>
-        
-    </li>
-
-        
     </ul>
-<li>
+	    </li>
           
-            <li>
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Dependency</span>
     <ul class="subnav">
-    <li><span>Routing</span></li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../routing/">Introduction</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../routing/parsers/">Parsers</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../routing/matchers/">Matchers</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../routing/pipes/">Pipes</a>
-        
-    </li>
-
-        
+                <li class="">
+                    
+    <a class="" href="../dependency/">Introduction</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dependency/invokables/">Invokables</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dependency/factories/">Factories</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dependency/caching/">Caching</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dependency/delegation/">Delegation</a>
+                </li>
     </ul>
-<li>
+	    </li>
           
-            <li>
-    <li class="toctree-l1 ">
-        <a class="" href="../hydratable/">Hydration</a>
-        
-    </li>
-<li>
-          
-            <li>
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Routing</span>
     <ul class="subnav">
-    <li><span>Advanced</span></li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../modules/">Modules</a>
-        
-    </li>
-
-        
+                <li class="">
+                    
+    <a class="" href="../routing/">Introduction</a>
+                </li>
     </ul>
-<li>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../hydratable/">Hydration</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../collections/">Collections</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../rest/">Rest</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Advanced</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="../modules/">Modules</a>
+                </li>
+    </ul>
+	    </li>
           
         </ul>
       </div>
@@ -205,7 +169,7 @@
           <div role="main">
             <div class="section">
               
-                <h2 id="getting-started">Getting started</h2>
+                <h1 id="introduction">Introduction</h1>
 <p>In this section we'll get through a simple hello world app to help you
 get a grip around the concepts of the framework as well as how to
 set it up and work on it.</p>
@@ -221,7 +185,7 @@ comes from). See:</p>
 <p><a href="https://philsturgeon.uk/php/2016/05/31/why-care-about-php-middleware/">Why Care About PHP Middleware?</a> by <em>Phil Phil Sturgeon</em></p>
 </li>
 </ul>
-<p>Chosing single pass ensures no funny business will be going inside the
+<p>Choosing single pass ensures no funny business will be going inside the
 middleware you use, and you can be sure that the response you return
 will be consistently handled, and you will not have to keep track of
 the double-pass response object, that may or may not have some specific
@@ -230,213 +194,72 @@ headers set by any of the middleware called before your "controller".</p>
 <p>So with that being said, lets jump right in with the installation
 and setup of the "hello world" project:</p>
 <ol>
-<li><code>composer require onion/framework:1.0.0-beta</code></li>
-<li>Create the public directory one that will be exposed by the web
-server, referred to as <code>public</code> in this example</li>
-<li>In it, create a file named <code>index.php</code> and inside of it paste the
-code below.</li>
+<li><code>composer require onion/framework:2.0</code></li>
+<li>Create the public directory one that will be exposed by the web server, referred to as <code>public</code> in this example</li>
+<li>In it, create a file named <code>index.php</code> and inside of it paste the code below.</li>
 <li>To test it after you copied and pasted the code run the following:
  <code>php -S localhost:12345 -t public/</code> inside the projects directory,
  that will start the PHP built-in server and will make the application
   code accessible on: <a href="http://localhost:12345">localhost:12345</a></li>
 </ol>
-<pre><code>    &lt;?php
+<pre><code class="php">    &lt;?php
     declare(strict_types=1);
     require_once __DIR__ . '/../vendor/autoload.php';
     use Onion\Framework;
 
-    $container = new Framework\Dependency\Container([]);
+    $container = new Framework\Dependency\Container([
+        'factories' =&gt; [
+            Framework\Application\Application::class =&gt; // Takes care of routing
+                Framework\Application\Factory\ApplicationFactory::class,
+            \Psr\Http\Server\RequestHandlerInterface::class =&gt; // Necessary for error handling
+                Framework\Http\Middleware\Factory\RequestHandlerFactory::class
+        ],
+        'invokables' =&gt; [
+            // Optional, this is the default behavior,
+            // change if a different response template should be used
+            \Psr\Http\Message\ResponseInterface::class =&gt;
+                \Guzzle\Psr7\Response::class
+        ],
+        'routes' =&gt; [ // Application routes
+            [ // A route :D
+                'pattern' =&gt; '/',
+                'middleware' =&gt; [
+                    // Add your route middleware here
+                ]
+            ]
+        ],
+        'middleware' =&gt; [
+            // Application-level middleware should go here
+        ]
+    ]);
 
     $app = $container-&gt;get(Framework\Application\Application::class);
-    $app-&gt;run(
-        $container-&gt;get(\Psr\Http\Message\ServerRequestInterface::class)
-    );
+    $app-&gt;run(GuzzleHttp\Psr7\ServerRequest::fromGlobals()); // Or another request factory
 </code></pre>
 
-<p>This is the minimal required code in order to set up the application
-entry point.</p>
-<hr />
-<h2 id="dependencies">Dependencies</h2>
-<p>Now if you open the link with your browser, you will see there is an
-exception being thrown, similar to (if no the same as):</p>
-<blockquote>
-<p>Uncaught Onion\Framework\Dependency\Exception\ContainerErrorException: Unable to find match for type: "Interop\Http\Middleware\DelegateInterface". Consider using a factory
-...</p>
-</blockquote>
-<p>What this means is that the container is unable to resolve the
-dependency of <code>DelegateInterface</code>, this sucks big time, now before you
-start digging in the code, hold on for a sec and lets see what happens
-in our <code>index.php</code> file.</p>
-<ol>
-<li>
-<p><code>L2-L4</code> - We declare that we will use strict types, require the
-composer autoloader and localize the namespace (a bit shorter to write)</p>
-</li>
-<li>
-<p><code>L6</code> - We initialize the DI container without any registered
-dependencies (pay attention to the empty array passed as argument),
-which will make the container to use only reflection in order to look-up
-dependencies recursively as deep as it can go, but since we are doing
-things the DbC(Design by Contract) way, it has no way of knowing from
-where to get an implementation of the interface (contract).</p>
-</li>
-<li>
-<p><code>L8</code> - We attempt to retrieve the <code>Application</code> class from the
-container (This is where the exception gets thrown)</p>
-</li>
-<li>
-<p><code>L9-L11</code> - We attempt to run the application by passing it the
-current request object, again retrieved from the container</p>
-</li>
-</ol>
-<p>In order to learn more about the <code>DelegateInterface</code> make sure you read
-the PSR-15 spec. Now in the implementation the Application object
-receives 2 arguments in it's constructor:</p>
-<ol>
-<li><code>DelegateInterface</code> - Is a delegate which is to delegate all of
-  the global middleware.</li>
-<li><code>EmitterInterface</code> - Is responsible for emitting our response
-  "on the way out"™..</li>
-</ol>
-<p>The reason behind binding everything to interfaces (whenever possible)
-comes from the DbC (Design by Contract) approach, which makes the
-application as [SOLID](https://en.wikipedia.org/wiki/SOLID_(object-oriented_design)
-as possible. I can't stress enough on how important this is and you
-should adopt and apply that mindset when possible.</p>
-<p>Now let's update our index to include the <code>DelegateInterface</code> and
-<code>EmitterInterface</code> in a dependency mapping so that our container knows
-what to return when we need any of those dependencies.</p>
-<pre><code>// Replace the empty array argument for container with the following
-
-[
-    'invokables' =&gt; [
-        Zend\Diactoros\Response\EmitterInterface::class =&gt;
-            Zend\Diactoros\Response\SapiEmitter::class
-    ],
-    'factories' =&gt; [
-        Interop\Http\Middleware\DelegateInterface::class =&gt;
-            Framework\Application\Factory\GlobalDelegateFactory::class
-    ]
-]
-</code></pre>
-
-<hr />
-<h2 id="middleware">Middleware</h2>
-<p>Now if you run the application you will notice that there is an entierly
-different error, about missing <code>middleware</code> key.</p>
-<blockquote>
-<p>Uncaught Onion\Framework\Dependency\Exception\UnknownDependency: Unable to resolve "middleware"</p>
-</blockquote>
-<p>This is because the <code>GlobalDelegateFactory</code> expects to see <code>middleware</code>
-key inside our container and use it in order to build the necessary call
-stack. Lets add it, but leave it empty. Add <code>'middleware' =&gt; []</code> after
-the factory definition in the top level array.</p>
-<blockquote>
-<p>Return value of Onion\Framework\Application\Factory\GlobalDelegateFactory::build() must be an instance of Interop\Http\Middleware\DelegateInterface, null returned</p>
-</blockquote>
-<p>Is pretty self explanatory, but why you ask? Well, the factory needs at
-least one entry inside the <code>middleware</code> in order to build a
-<code>DelegateInterface</code> with it, just keep in mind it MUST be an instance of
-either <code>Interop\Http\Middleware\MiddlewareInterface</code> or
-<code>Interop\Http\Middleware\ServerMiddlewareInterface</code> and since we are
-building a server application (not a HTTP client) we will pass in an
-argument that is vital to any HTTP application - a router.
-But to avoid the error steps above, I will directly tell you that you
-have to define those in order to get it going. Update the array to look
-like the following:</p>
-<pre><code>[
-    'invokables' =&gt; [
-        Zend\Diactoros\Response\EmitterInterface::class =&gt;
-            Zend\Diactoros\Response\SapiEmitter::class,
-        Framework\Router\Interfaces\ParserInterface::class =&gt;
-            Framework\Router\Parsers\Flat::class,
-        Framework\Router\Interfaces\MatcherInterface::class =&gt;
-            Framework\Router\Matchers\Strict::class
-    ],
-    'factories' =&gt; [
-        Interop\Http\Middleware\DelegateInterface::class =&gt;
-            Framework\Application\Factory\GlobalDelegateFactory::class,
-        Framework\Router\Interfaces\RouterInterface::class =&gt;
-            Framework\Router\Factory\RouterFactory::class,
-        Psr\Http\Message\ServerRequestInterface::class =&gt;
-            Framework\Http\Factory\ServerRequestFactory::class
-    ],
-    'middleware' =&gt; [
-        Framework\Router\Interfaces\RouterInterface::class
-    ],
-    'routes' =&gt; []
-]
-</code></pre>
-
+<p><em>Note You need to implement your route middleware and define it here otherwise an empty response will be returned</em></p>
+<p>After accessing the app you should be presented with whatever output you expect to see. That is it</p>
 <hr />
 <h2 id="routing">Routing</h2>
-<p>Since our router implements the <code>ServerMiddlewareInterface</code> we can pass
-it without any other boilerplate to the middleware section and the
-other 2 dependencies inside the invokables section are for making it
-work.</p>
-<ul>
-<li>
-<p><code>Framework\Router\Interfaces\ParserInterface</code> is responsible for
- translating the route definitions to mathcer understandable string</p>
-</li>
-<li>
-<p><code>Framework\Router\Interfaces\MatcherInterface</code> is the one performing
- the matching in order to see if the current request URI matches a route</p>
-</li>
-</ul>
-<p>In this case we are using the flat matcher, which returns the pattern as
-is and the strict matcher that performs <code>a === b</code> kind of checks.</p>
-<hr />
-<p>Now if we refresh the page we will se that there will be an exception:</p>
-<blockquote>
-<p>Uncaught Onion\Framework\Router\Exceptions\NotFoundException: No route available to handle "/"</p>
-</blockquote>
-<p>Now lets create our first controller, add autoloading for the
-<code>Application</code> namespace to composer and inside
-<code>src/Controllers/DummyController.php</code> paste the following:</p>
-<pre><code>&lt;?php
-declare(strict_types=1);
-
-namespace App\Controllers;
-
-use Interop\Http\Middleware\DelegateInterface;
-use Interop\Http\Middleware\ServerMiddlewareInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Zend\Diactoros\Response\TextResponse;
-
-class DummyController implements ServerMiddlewareInterface
-{
-    public function process(ServerRequestInterface $request, DelegateInterface $delegate = null)
-    {
-        return new TextResponse('Hello, World!');
-    }
-}
-</code></pre>
-
-<p>Now that you are done, lets add the controller to the <code>routes</code>:</p>
-<pre><code>// .. other definitions
-'routes' =&gt; [
-  [
-    'pattern' =&gt; '/',
-    'middleware' =&gt; [
-        App\Controllers\DummyMiddleware::class
-    ]
-  ]
-]
-</code></pre>
-
-<ul>
-<li><strong>FQCN</strong> - <em>Fully Qualified Class Name</em></li>
-</ul>
-<p>Now if all went well you should not see any further errors when you
-refresh the page, but rather the text 'Hello, World!' should be
-displayed and the response should be sent with
-<code>Content-Type: text/plain</code> header.</p>
-<p>This is the minimal required setup needed in order to setup an
-application using onion framework and from here you can conquer the
-world! Check other sections from the documentation to get more in-depth
-understanding/knowledge of the routing capabilities, the concept of
-modules and everything else.</p>
+<p>Please refer to the routes section for more information about the specifics
+of a route.</p>
+<h2 id="middleware">Middleware</h2>
+<p>There are 2 types of middleware supported atm, application level &amp; route level.
+Currently the handling of application level middleware is achieved in 2 ways</p>
+<ol>
+<li>If a route is triggered the application middleware is "attached" infront of
+ the route middleware and the execution happens transparently for the route and
+ the prepend logic is located inside the <code>ApplicationFactory</code> so if another
+ factory is used to build the route stack, that should be taken in to account.</li>
+<li>If there is an exception (which is what happens when no route is found as well
+ as from the application code) a generic <code>RequestHandler</code> is built with only
+ the global middleware and the thrown exception is added to the request attributes
+ as <code>error</code> and <code>exception</code>.</li>
+</ol>
+<p>In an ideal scenario that should not be a huge issue when route error occurs
+ and the common stack is triggered again, although it should be taken in to
+ account for the purposes of request logging, etc. as it may result in duplicate
+ entries for the same request. (But you really should handle your errors :) )</p>
               
             </div>
           </div>
@@ -461,12 +284,12 @@ modules and everything else.</p>
 
   Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
 </footer>
-	  
+      
         </div>
       </div>
 
     </section>
-    
+
   </div>
 
   <div class="rst-versions" role="note" style="cursor: pointer">
@@ -480,7 +303,10 @@ modules and everything else.</p>
       
     </span>
 </div>
+    <script>var base_url = '..';</script>
     <script src="../js/theme.js"></script>
+      <script src="../search/require.js"></script>
+      <script src="../search/search.js"></script>
 
 </body>
 </html>

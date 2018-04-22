@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>Hydration - Onion - Framework</title>
+  <title>Rest - Onion - Framework</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -17,9 +17,9 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "Hydration";
-    var mkdocs_page_input_path = "hydratable.md";
-    var mkdocs_page_url = "/hydratable/";
+    var mkdocs_page_name = "Rest";
+    var mkdocs_page_input_path = "rest\\index.md";
+    var mkdocs_page_url = "/rest/";
   </script>
   
   <script src="../js/jquery-2.1.1.min.js"></script>
@@ -95,12 +95,9 @@
     </ul>
 	    </li>
           
-            <li class="toctree-l1 current">
+            <li class="toctree-l1">
 		
-    <a class="current" href="./">Hydration</a>
-    <ul class="subnav">
-            
-    </ul>
+    <a class="" href="../hydratable/">Hydration</a>
 	    </li>
           
             <li class="toctree-l1">
@@ -108,9 +105,15 @@
     <a class="" href="../collections/">Collections</a>
 	    </li>
           
-            <li class="toctree-l1">
+            <li class="toctree-l1 current">
 		
-    <a class="" href="../rest/">Rest</a>
+    <a class="current" href="./">Rest</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l2"><a href="#introduction">Introduction</a></li>
+    
+
+    </ul>
 	    </li>
           
             <li class="toctree-l1">
@@ -146,7 +149,7 @@
     
       
     
-    <li>Hydration</li>
+    <li>Rest</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -156,14 +159,17 @@
           <div role="main">
             <div class="section">
               
-                <p>The hydratables are traits which provide you the ability to "inject" data within objects that are initialized, but please note that those preserve the class' immutability and as such return new instance on every hydration. While there is an interface defining the <code>hydrate</code> and <code>extract</code> methods, there are 2 traits providing the 2 most common strategies for hydration:</p>
-<ul>
-<li><code>Method</code> - uses getters/setters</li>
-<li><code>Property</code> - uses public properties</li>
-</ul>
-<p>Both hydration strategies perform transformation on the keys provided, so the keys 
-of the array get translated from <code>snake_case</code> to <code>cammelCase</code>, so if you provide an array like <code>['username' =&gt; 'foo', 'first_name' =&gt; 'John']</code> the Method strategy will attempt to use <code>setUsername</code> and <code>setFirstName</code> in order to hydrate the object; if the Property strategy is used it will look for <code>username</code> and <code>firstName</code> public properties on the object.</p>
-<p>Both will preserve immutability of the hydrated object so you should keep that in mind</p>
+                <h1 id="introduction">Introduction</h1>
+<p>Although there is nothing REST-specific in the core package, there
+is <code>onion/rest</code> that aims to allow more or less transparent conversion
+from entity to appropriate REST representation according to a given standard.</p>
+<p>But in order to simplify the development and bring something along the
+lines of 'Controller' as in MVC-pattern there is the abstract class:
+<code>Onion\Framework\Controller\Controller</code> it is a small pass through wrapper
+around your code that will do (request method) to (code method) translation
+and do some small handling to conform with the request methods. Like invoking
+<code>get</code> for <code>HEAD</code> requests if no designated method is present and remove the
+response body.</p>
               
             </div>
           </div>
@@ -171,10 +177,10 @@ of the array get translated from <code>snake_case</code> to <code>cammelCase</co
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../collections/" class="btn btn-neutral float-right" title="Collections">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../modules/" class="btn btn-neutral float-right" title="Modules">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="../routing/" class="btn btn-neutral" title="Introduction"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../collections/" class="btn btn-neutral" title="Collections"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -200,10 +206,10 @@ of the array get translated from <code>snake_case</code> to <code>cammelCase</co
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="../routing/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="../collections/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="../collections/" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="../modules/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
