@@ -24,7 +24,7 @@ class ErrorResponseMiddleware implements MiddlewareInterface
             return (new Response(405))
                 ->withHeader('Allowed', $ex->getAllowedMethods());
         } catch (\Throwable $ex) {
-            return (new Response(500));
+            return (new Response(in_array($request->getMethod(), ['get', 'head']) ? 503 : 501));
         }
     }
 }
