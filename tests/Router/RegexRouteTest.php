@@ -56,12 +56,11 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
 
 
         $response = $this->prophesize(ResponseInterface::class);
-        $response->hasHeader('content-type')
-            ->willReturn(true);
 
         $uri = $this->prophesize(UriInterface::class);
 
         $request = $this->prophesize(ServerRequestInterface::class);
+        $request->hasHeader('content-type')->willReturn(true);
         $request->getUri()->willReturn($uri->reveal());
 
         $handler = $this->prophesize(RequestHandlerInterface::class);
@@ -85,12 +84,11 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
         ];
 
         $response = $this->prophesize(ResponseInterface::class);
-        $response->hasHeader('content-type')
-            ->willReturn(false);
 
         $uri = $this->prophesize(UriInterface::class);
 
         $request = $this->prophesize(ServerRequestInterface::class);
+        $request->hasHeader('content-type')->willReturn(false);
         $request->getUri()->willReturn($uri->reveal());
 
         $handler = $this->prophesize(RequestHandlerInterface::class);
