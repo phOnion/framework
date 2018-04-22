@@ -95,8 +95,9 @@ class Application implements ApplicationInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
+        $path = $request->getUri()->getPath();
         foreach ($this->routes as $route) {
-            if ($route->isMatch($request->getUri()->getPath())) {
+            if ($route->isMatch($path)) {
                 if (!$route->hasMethod($request->getMethod())) {
                     throw new MethodNotAllowedException($route->getMethods());
                 }

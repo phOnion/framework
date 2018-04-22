@@ -96,13 +96,13 @@ abstract class Route implements RouteInterface
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $response = $this->getRequestHandler()->handle($request);
-
         foreach ($this->getHeaders() as $header => $required) {
-            if ((bool) $required && !$response->hasHeader($header)) {
+            if ((bool) $required && !$request->hasHeader($header)) {
                 throw new MissingHeaderException($header);
             }
         }
+
+        $response = $this->getRequestHandler()->handle($request);
 
         return $response;
     }

@@ -45,6 +45,11 @@ final class ApplicationFactory implements FactoryInterface
                     $r = $r->withHeaders($route['headers']);
                 }
 
+                if (isset($route['request_handler'])) {
+                    yield $r->withRequestHandler($container->get($route['request_handler']));
+                    continue;
+                }
+
                 $middlewareGenerator = function () use ($route, $container) {
                     $stack = array_merge(
                         ($container->has('middleware') ? $container->get('middleware') : []),
