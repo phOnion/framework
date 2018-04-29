@@ -31,5 +31,8 @@
         "files": [
             "src/Framework/functions.php"
         ]
+    },
+    "suggest": {
+        "onion\rest": "A small library to return REST-compliant responses"
     }
 }
