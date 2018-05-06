@@ -61,7 +61,7 @@ abstract class Route implements RouteInterface
 
     public function hasMethod(string $method): bool
     {
-        return $this->methods === [] || in_array($method, $this->methods);
+        return $this->methods === [] || in_array(strtolower($method), $this->methods);
     }
 
     public function withMethods(iterable $methods): RouteInterface
@@ -70,7 +70,7 @@ abstract class Route implements RouteInterface
             $methods = iterator_to_array($methods, false);
         }
         $self = clone $this;
-        $self->methods = $methods;
+        $self->methods = array_map('strtolower', $methods);
 
         return $self;
     }

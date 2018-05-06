@@ -9,6 +9,7 @@ use Prophecy\Argument\Token\AnyValueToken;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Onion\Framework\Router\Exceptions\MissingHeaderException;
+use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
 
 class RegexRouteTest extends \PHPUnit_Framework_TestCase
 {
@@ -62,6 +63,7 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->hasHeader('content-type')->willReturn(true);
         $request->getUri()->willReturn($uri->reveal());
+        $request->getMethod()->willReturn('get');
 
         $handler = $this->prophesize(RequestHandlerInterface::class);
         $handler->handle(new AnyValueToken())->willReturn($response->reveal());
@@ -103,6 +105,22 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
         $route->handle($request->reveal());
     }
 
+    public function testExceptionWhenMethodNotSupported()
+    {
+        $uri = $this->prophesize(UriInterface::class);
+
+        $request = $this->prophesize(ServerRequestInterface::class);
+        $request->getMethod()->willReturn('POST');
+        $request->hasHeader('content-type')->willReturn(false);
+        $request->getUri()->willReturn($uri->reveal());
+
+        $route = $this->route->withMethods(['GET']);
+        $this->assertNotSame($this->route, $route);
+
+        $this->expectException(MethodNotAllowedException::class);
+        $route->handle($request->reveal());
+    }
+
     public function testRouteMethods()
     {
         $route = $this->route->withMethods(new \ArrayIterator(['GET', 'HEAD']));
@@ -110,6 +128,6 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($route->hasMethod('GET'));
         $this->assertTrue($route->hasMethod('HEAD'));
         $this->assertFalse($route->hasMethod('POST'));
-        $this->assertSame(['GET', 'HEAD'], $route->getMethods());
+        $this->assertSame(['get', 'head'], $route->getMethods());
     }
 }
