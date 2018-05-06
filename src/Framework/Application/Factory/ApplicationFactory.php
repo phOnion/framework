@@ -29,44 +29,40 @@ final class ApplicationFactory implements FactoryInterface
      */
     public function build(ContainerInterface $container): object
     {
-        $routeCallback = function () use ($container) {
-            $routes = $container->get('routes');
-            foreach ($routes as $route) {
-                $className = RegexRoute::class;
-                if (isset($route['class'])) {
-                    $className = $route['class'];
-                }
-
-                $r = new $className($route['pattern'], $route['name'] ?? null);
-                if (isset($route['methods'])) {
-                    $r = $r->withMethods(array_map('strtoupper', $route['methods']));
-                }
-
-                if ($r instanceof Route && isset($route['headers'])) {
-                    $r = $r->withHeaders($route['headers']);
-                }
-
-                if (isset($route['request_handler'])) {
-                    return $r->withRequestHandler($container->get($route['request_handler']));
-                    continue;
-                }
-
-                $middlewareGenerator = function () use ($route, $container) {
-                    $stack = array_merge(
-                        ($container->has('middleware') ? $container->get('middleware') : []),
-                        $route['middleware']
-                    );
-                    foreach ($stack as $middleware) {
-                        yield $container->get($middleware);
-                    }
-                };
-
-                return $r->withRequestHandler(new RequestHandler(
-                    $middlewareGenerator(),
-                    $container->has(ResponseInterface::class) ?
-                        $container->get(ResponseInterface::class) : new Response()
-                ));
+        $routeCallback = function ($route) use ($container) {
+            $className = RegexRoute::class;
+            if (isset($route['class'])) {
+                $className = $route['class'];
             }
+
+            $r = new $className($route['pattern'], $route['name'] ?? null);
+            if (isset($route['methods'])) {
+                $r = $r->withMethods(array_map('strtoupper', $route['methods']));
+            }
+
+            if ($r instanceof Route && isset($route['headers'])) {
+                $r = $r->withHeaders($route['headers']);
+            }
+
+            if (isset($route['request_handler'])) {
+                return $r->withRequestHandler($container->get($route['request_handler']));
+            }
+
+            $middlewareGenerator = function () use ($route, $container) {
+                $stack = array_merge(
+                    ($container->has('middleware') ? $container->get('middleware') : []),
+                    $route['middleware']
+                );
+                foreach ($stack as $middleware) {
+                    yield $container->get($middleware);
+                }
+            };
+
+            return $r->withRequestHandler(new RequestHandler(
+                $middlewareGenerator(),
+                $container->has(ResponseInterface::class) ?
+                    $container->get(ResponseInterface::class) : new Response()
+            ));
         };
 
         $routes = new CallbackCollection($container->get('routes'), $routeCallback);
