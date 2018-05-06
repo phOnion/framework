@@ -1,11 +1,12 @@
 <?php declare(strict_types=1);
 namespace Onion\Framework\Router;
 
+use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
+use Onion\Framework\Router\Exceptions\MissingHeaderException;
 use Onion\Framework\Router\Interfaces\RouteInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Onion\Framework\Router\Exceptions\MissingHeaderException;
 
 abstract class Route implements RouteInterface
 {
@@ -100,6 +101,10 @@ abstract class Route implements RouteInterface
             if ((bool) $required && !$request->hasHeader($header)) {
                 throw new MissingHeaderException($header);
             }
+        }
+
+        if (!$this->hasMethod($request->getMethod())) {
+            throw new MethodNotAllowedException($this->getMethods());
         }
 
         $response = $this->getRequestHandler()->handle($request);
