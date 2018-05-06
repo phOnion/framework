@@ -12,6 +12,17 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 abstract class RestController implements MiddlewareInterface
 {
+    private const HTTP_METHODS = [
+        'get',
+        'head',
+        'post',
+        'put',
+        'patch',
+        'options',
+        'connect',
+        'delete',
+    ];
+
     private function getEmptyStream(string $mode = 'r'): StreamInterface
     {
         return new Stream(fopen('php://memory', $mode));
@@ -28,11 +39,19 @@ abstract class RestController implements MiddlewareInterface
             throw new \BadMethodCallException('method not implemented');
         }
 
-        /** @var ResponseInterface $entity */
+        /** @var ResponseInterface $response */
         $response = $this->{$httpMethod}($request, $handler);
 
         if ($httpMethod === 'head') {
             $response = $response->withBody($this->getEmptyStream());
+        }
+
+        if ($httpMethod === 'options') {
+            $ref = new \ReflectionObject($this);
+            $response = $response->withAddedHeader('allow', array_intersect(
+                self::HTTP_METHODS,
+                $ref->getMethods(\ReflectionMethod::IS_PUBLIC)
+            ));
         }
 
         return $response;
