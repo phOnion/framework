@@ -98,10 +98,6 @@ class Application implements ApplicationInterface
         $path = $request->getUri()->getPath();
         foreach ($this->routes as $route) {
             if ($route->isMatch($path)) {
-                if (!$route->hasMethod($request->getMethod())) {
-                    throw new MethodNotAllowedException($route->getMethods());
-                }
-
                 foreach ($route->getParameters() as $attr => $value) {
                     $request = $request->withAttribute($attr, $value);
                 }
