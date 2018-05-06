@@ -10,6 +10,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use GuzzleHttp\Psr7\Response;
+use Onion\Framework\Collection\CallbackCollection;
 
 /**
  * A factory class solely responsible for assembling the Application
@@ -28,7 +29,7 @@ final class ApplicationFactory implements FactoryInterface
      */
     public function build(ContainerInterface $container): object
     {
-        $routeGenerator = function () use ($container) {
+        $routeCallback = function () use ($container) {
             $routes = $container->get('routes');
             foreach ($routes as $route) {
                 $className = RegexRoute::class;
@@ -46,7 +47,7 @@ final class ApplicationFactory implements FactoryInterface
                 }
 
                 if (isset($route['request_handler'])) {
-                    yield $r->withRequestHandler($container->get($route['request_handler']));
+                    return $r->withRequestHandler($container->get($route['request_handler']));
                     continue;
                 }
 
@@ -60,7 +61,7 @@ final class ApplicationFactory implements FactoryInterface
                     }
                 };
 
-                yield $r->withRequestHandler(new RequestHandler(
+                return $r->withRequestHandler(new RequestHandler(
                     $middlewareGenerator(),
                     $container->has(ResponseInterface::class) ?
                         $container->get(ResponseInterface::class) : new Response()
@@ -68,8 +69,9 @@ final class ApplicationFactory implements FactoryInterface
             }
         };
 
+        $routes = new CallbackCollection($container->get('routes'), $routeCallback);
         return new Application(
-            $routeGenerator(),
+            $routes,
             $container->has(RequestHandlerInterface::class) ?
                 $container->get(RequestHandlerInterface::class) : null
         );
