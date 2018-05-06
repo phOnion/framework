@@ -42,17 +42,6 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         $app->run($this->request->reveal());
     }
 
-    public function testApplicationRunBadMethod()
-    {
-        $this->expectException(MethodNotAllowedException::class);
-        $this->request->getMethod()->willReturn('HEAD');
-        $this->route->hasMethod('HEAD')->willReturn(false);
-        $this->route->isMatch('/')->willReturn(true);
-
-        $app = new Application([$this->route->reveal()]);
-        $app->run($this->request->reveal());
-    }
-
     public function testApplicationRun()
     {
         $this->expectException(\ErrorException::class);
