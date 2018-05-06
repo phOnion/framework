@@ -96,6 +96,7 @@ class Application implements ApplicationInterface
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $path = $request->getUri()->getPath();
+        reset($this->routes);
         foreach ($this->routes as $route) {
             if ($route->isMatch($path)) {
                 foreach ($route->getParameters() as $attr => $value) {
