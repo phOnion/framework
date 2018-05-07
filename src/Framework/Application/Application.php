@@ -1,9 +1,11 @@
 <?php declare(strict_types=1);
 namespace Onion\Framework\Application;
 
+use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\StreamWrapper;
 use Onion\Framework\Application\Interfaces\ApplicationInterface;
 use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
+use Onion\Framework\Router\Exceptions\MissingHeaderException;
 use Onion\Framework\Router\Exceptions\NotFoundException;
 use Onion\Framework\Router\Interfaces\RouteInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -25,15 +27,27 @@ class Application implements ApplicationInterface
     /** @var RequestHandlerInterface */
     private $requestHandler;
 
+    /** @var string */
+    private $baseAuthorization;
+
+    /** @var string */
+    private $proxyAuthorization;
+
     /**
      * Application constructor.
      *
      * @param RouteInterface[] $routes Array of routes that are supported
      */
-    public function __construct(iterable $routes, RequestHandlerInterface $rootHandler = null)
-    {
+    public function __construct(
+        iterable $routes,
+        RequestHandlerInterface $rootHandler = null,
+        $baseAuthorizationType = 'bearer',
+        $proxyAuthorizationType = 'digest'
+    ) {
         $this->routes = $routes;
         $this->requestHandler = $rootHandler;
+        $this->baseAuthorization = ucfirst($baseAuthorizationType);
+        $this->proxyAuthorization = ucfirst($proxyAuthorizationType);
     }
 
     /**
@@ -95,21 +109,55 @@ class Application implements ApplicationInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $path = $request->getUri()->getPath();
-        reset($this->routes);
-        foreach ($this->routes as $route) {
-            if ($route->isMatch($path)) {
-                foreach ($route->getParameters() as $attr => $value) {
-                    $request = $request->withAttribute($attr, $value);
+        try {
+            $path = $request->getUri()->getPath();
+            reset($this->routes);
+            foreach ($this->routes as $route) {
+                if ($route->isMatch($path)) {
+                    foreach ($route->getParameters() as $attr => $value) {
+                        $request = $request->withAttribute($attr, $value);
+                    }
+
+                    return $route->handle($request);
                 }
-
-                return $route->handle($request);
             }
-        }
 
-        throw new NotFoundException(
-            "No route available to handle '{$request->getUri()->getPath()}'"
-        );
+            throw new NotFoundException(
+                "No route available to handle '{$request->getUri()->getPath()}'"
+            );
+        } catch (MissingHeaderException $ex) {
+            $headers = [];
+            switch (strtolower($ex->getMessage())) {
+                case 'authorization':
+                    $status = 401;
+                    $headers['WWW-Authenticate'] =
+                        "{$this->baseAuthorization} realm=\"{$request->getUri()->getHost()}\" charset=\"UTF-8\"";
+                    break;
+                case 'proxy-authorization':
+                    $status = 407;
+                    $headers['Proxy-Authenticate'] =
+                        "{$this->proxyAuthorization} realm=\"{$request->getUri()->getHost()}\" charset=\"UTF-8\"";
+                    break;
+                case 'if-match':
+                case 'if-none-match':
+                case 'if-modified-since':
+                case 'if-unmodified-since':
+                case 'if-range':
+                    $status = 428;
+                    break;
+                default:
+                    $status = 400;
+                    break;
+            }
+            return new Response($status, $headers);
+        } catch (NotFoundException $ex) {
+            return new Response(404);
+        } catch (MethodNotAllowedException $ex) {
+            return (new Response(405))
+                ->withHeader('Allowed', $ex->getAllowedMethods());
+        } catch (\Throwable $ex) {
+            return (new Response(in_array($request->getMethod(), ['get', 'head']) ? 503 : 501));
+        }
     }
 
     /**
