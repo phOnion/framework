@@ -127,22 +127,6 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $container->get('foo');
     }
 
-    public function testExceptionWhenIdNotAString()
-    {
-        if (ini_get('zend.assertions') === '-1') {
-            $this->markTestSkipped('In production mode assertions probably are disabled and this test will fail');
-        }
-
-        if (ini_get('assert.exception') === '0') {
-            $this->markTestSkipped('The "assert.exception" should be set to "1" to throw the exception');
-        }
-
-        $container = new Container([]);
-        $this->expectException(\InvalidArgumentException::class);
-
-        $container->get(new \stdClass());
-    }
-
     public function testExceptionWhenFactoryDoesNotImplementFactoryInterface()
     {
         if (ini_get('zend.assertions') === '-1') {
