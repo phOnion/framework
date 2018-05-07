@@ -68,10 +68,7 @@ final class Container implements AttachableContainer
      */
     public function get($key)
     {
-        assert(is_string($key), new \InvalidArgumentException(sprintf(
-            'Dependency identifier must be a string, "%s" given',
-            gettype($key)
-        )));
+        $key = (string) $key;
 
         if (array_key_exists($key, $this->dependencies)) {
             return $this->dependencies[$key];
@@ -91,9 +88,9 @@ final class Container implements AttachableContainer
             }
 
             if (is_string($key)) {
-                if (strpos($this->convertVariableName($key), '.') !== false) {
-                    $key=$this->convertVariableName($key);
+                $key = $this->convertVariableName($key);
 
+                if (strpos($key, '.') !== false) {
                     return $this->retrieveFromDotString($key);
                 }
             }
@@ -114,6 +111,7 @@ final class Container implements AttachableContainer
      */
     public function has($key): bool
     {
+        $key = (string) $key;
         $exists = (
             array_key_exists($key, $this->dependencies) ||
             isset($this->dependencies['invokables'][$key]) ||
@@ -122,7 +120,8 @@ final class Container implements AttachableContainer
         );
 
         if (!$exists) {
-            if (strpos(($namePath = $this->convertVariableName($key)), '.') !== false) {
+            $namePath = $this->convertVariableName($key);
+            if (strpos($namePath, '.') !== false) {
                 $keys = explode('.', $namePath);
                 $ref = &$this->dependencies;
                 while ($keys !== []) {
@@ -199,12 +198,12 @@ final class Container implements AttachableContainer
                 ));
             }
 
-            if ($this->has((string)$parameter->getType())) {
-                $parameters[$parameter->getPosition()] = $this->get((string)$parameter->getType());
+            if ($parameter->hasType() && !$parameter->getType()->isBuiltin() && $this->has($parameter->getType())) {
+                $parameters[$parameter->getPosition()] = $this->get($parameter->getType());
                 continue;
             }
 
-            if ($parameter->getType() !== null && $parameter->getType()->isBuiltin() && !$parameter->isOptional()) {
+            if ($parameter->hasType() && !$parameter->isOptional()) {
                 $parameters[$parameter->getPosition()] = $this->get($parameter->getName());
                 continue;
             }
@@ -217,7 +216,7 @@ final class Container implements AttachableContainer
 
             throw new ContainerErrorException(sprintf(
                 'Unable to find match for type: "%s". Consider using a factory',
-                $parameter->getType()
+                $parameter->getType() ?? $parameter->getName()
             ));
         }
 
@@ -296,7 +295,7 @@ final class Container implements AttachableContainer
      */
     private function convertVariableName(string $name): string
     {
-        return str_replace('_', '.', strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $name)));
+        return strtolower(preg_replace('/(?<!^)[A-Z]/', '.$0', $name));
     }
 
     /**
@@ -309,7 +308,7 @@ final class Container implements AttachableContainer
      * @return mixed
      * @throws ContainerErrorException
      */
-    private function enforceReturnType($identifier, $result)
+    private function enforceReturnType(string $identifier, $result)
     {
         if (is_string($identifier)) {
             if (class_exists($identifier) || interface_exists($identifier) ||
