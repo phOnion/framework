@@ -216,7 +216,7 @@ final class Container implements AttachableContainer
 
             throw new ContainerErrorException(sprintf(
                 'Unable to find match for type: "%s". Consider using a factory',
-                $parameter->getType() ?? $name
+                $parameter->getType() ?? $parameter->getName()
             ));
         }
 
