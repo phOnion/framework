@@ -41,13 +41,13 @@ class Application implements ApplicationInterface
     public function __construct(
         iterable $routes,
         RequestHandlerInterface $rootHandler = null,
-        $baseAuthorizationType = 'bearer',
-        $proxyAuthorizationType = 'digest'
+        $baseAuthType = 'bearer',
+        $proxyAuthType = 'digest'
     ) {
         $this->routes = $routes;
         $this->requestHandler = $rootHandler;
-        $this->baseAuthorization = ucfirst($baseAuthorizationType);
-        $this->proxyAuthorization = ucfirst($proxyAuthorizationType);
+        $this->baseAuthorization = ucfirst($baseAuthType);
+        $this->proxyAuthorization = ucfirst($proxyAuthType);
     }
 
     /**

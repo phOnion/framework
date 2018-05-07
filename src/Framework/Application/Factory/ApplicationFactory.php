@@ -35,17 +35,17 @@ final class ApplicationFactory implements FactoryInterface
                 $className = $route['class'];
             }
 
-            $r = new $className($route['pattern'], $route['name'] ?? null);
+            $routeObject = new $className($route['pattern'], $route['name'] ?? null);
             if (isset($route['methods'])) {
-                $r = $r->withMethods(array_map('strtoupper', $route['methods']));
+                $routeObject = $routeObject->withMethods(array_map('strtoupper', $route['methods']));
             }
 
-            if ($r instanceof Route && isset($route['headers'])) {
-                $r = $r->withHeaders($route['headers']);
+            if ($routeObject instanceof Route && isset($route['headers'])) {
+                $routeObject = $routeObject->withHeaders($route['headers']);
             }
 
             if (isset($route['request_handler'])) {
-                return $r->withRequestHandler($container->get($route['request_handler']));
+                return $routeObject->withRequestHandler($container->get($route['request_handler']));
             }
 
             $middlewareGenerator = function () use ($route, $container) {
@@ -58,7 +58,7 @@ final class ApplicationFactory implements FactoryInterface
                 }
             };
 
-            return $r->withRequestHandler(new RequestHandler(
+            return $routeObject->withRequestHandler(new RequestHandler(
                 $middlewareGenerator(),
                 $container->has(ResponseInterface::class) ?
                     $container->get(ResponseInterface::class) : new Response()
