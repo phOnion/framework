@@ -69,7 +69,11 @@ final class ApplicationFactory implements FactoryInterface
         return new Application(
             $routes,
             $container->has(RequestHandlerInterface::class) ?
-                $container->get(RequestHandlerInterface::class) : null
+                $container->get(RequestHandlerInterface::class) : null,
+            $container->has('application.authorization.base') ?
+                $container->get('application.authorization.base') : '',
+            $container->has('application.authorization.proxy') ?
+                $container->get('application.authorization.proxy') : ''
         );
     }
 }
