@@ -154,9 +154,11 @@ class Application implements ApplicationInterface
             return new Response(404);
         } catch (MethodNotAllowedException $ex) {
             return (new Response(405))
-                ->withHeader('Allowed', $ex->getAllowedMethods());
-        } catch (\Throwable $ex) {
+                ->withHeader('Allow', $ex->getAllowedMethods());
+        } catch (\BadMethodCallException $ex) {
             return (new Response(in_array($request->getMethod(), ['get', 'head']) ? 503 : 501));
+        } catch (\Throwable $ex) {
+            return new Response(500);
         }
     }
 
