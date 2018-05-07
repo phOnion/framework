@@ -12,6 +12,7 @@ use Onion\Framework\Router\Interfaces\RouteInterface;
 use Psr\Http\Server\RequestHandlerInterface as RequestHandlerInterface;
 use Onion\Framework\Router\Exceptions\NotFoundException;
 use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
+use Onion\Framework\Router\Exceptions\MissingHeaderException;
 
 class ApplicationTest extends \PHPUnit_Framework_TestCase
 {
@@ -27,6 +28,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
 
         $uri = $this->prophesize(UriInterface::class);
         $uri->getPath()->willReturn('/');
+        $uri->getHost()->willReturn('localhost');
 
         $this->request = $this->prophesize(ServerRequestInterface::class);
         $this->request->getUri()->willReturn($uri->reveal());
@@ -34,23 +36,91 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
 
     public function testApplicationRunNoRoute()
     {
-        $this->expectException(NotFoundException::class);
         $this->request->getMethod()->willReturn('GET');
 
         $this->route->isMatch('/')->willReturn(false);
         $app = new Application([$this->route->reveal()]);
-        $app->run($this->request->reveal());
+        $response = $app->handle($this->request->reveal());
+
+        $this->assertSame(404, $response->getStatusCode());
+    }
+
+    public function testMethodNotAllowedException()
+    {
+        $this->request->getMethod()->willReturn('GET');
+        $this->route->handle(new AnyValueToken())->willThrow(
+            new MethodNotAllowedException(['POST'])
+        );
+
+        $this->route->isMatch('/')->willReturn(true);
+        $app = new Application([$this->route->reveal()]);
+        $response = $app->handle($this->request->reveal());
+
+        $this->assertSame(405, $response->getStatusCode());
+        $this->assertTrue($response->hasHeader('allow'));
+    }
+
+    public function testMissingAuthorizationHeaderException()
+    {
+        $this->request->getMethod()->willReturn('GET');
+        $this->route->handle(new AnyValueToken())->willThrow(
+            new MissingHeaderException('authorization')
+        );
+
+        $this->route->isMatch('/')->willReturn(true);
+        $app = new Application([$this->route->reveal()], null, 'basic');
+        $response = $app->handle($this->request->reveal());
+
+        $this->assertSame(401, $response->getStatusCode());
+        $this->assertTrue($response->hasHeader('www-authenticate'));
+        $this->assertSame(
+            'Basic realm="localhost" charset="UTF-8"',
+            $response->getHeaderLine('www-authenticate')
+        );
+    }
+
+    public function testMissingProxyAuthorizationHeaderException()
+    {
+        $this->request->getMethod()->willReturn('GET');
+        $this->route->handle(new AnyValueToken())->willThrow(
+            new MissingHeaderException('proxy-authorization')
+        );
+
+        $this->route->isMatch('/')->willReturn(true);
+        $app = new Application([$this->route->reveal()], null, 'basic', 'bearer');
+        $response = $app->handle($this->request->reveal());
+
+        $this->assertSame(407, $response->getStatusCode());
+        $this->assertTrue($response->hasHeader('proxy-authenticate'));
+        $this->assertSame(
+            'Bearer realm="localhost" charset="UTF-8"',
+            $response->getHeaderLine('proxy-authenticate')
+        );
+    }
+
+    public function testConditionHeaderException()
+    {
+        $this->request->getMethod()->willReturn('GET');
+        $this->route->handle(new AnyValueToken())->willThrow(
+            new MissingHeaderException('if-modified-since')
+        );
+
+        $this->route->isMatch('/')->willReturn(true);
+        $app = new Application([$this->route->reveal()]);
+        $response = $app->handle($this->request->reveal());
+
+        $this->assertSame(428, $response->getStatusCode());
     }
 
     public function testApplicationRun()
     {
-        $this->expectException(\ErrorException::class);
-        $this->expectExceptionMessage('OK');
         $this->request->getMethod()->willReturn('GET');
 
         $this->route->isMatch('/')->willReturn(true);
         $this->route->handle(new AnyValueToken())->willThrow(new \ErrorException('OK'));
         $app = new Application([$this->route->reveal()]);
-        $app->run($this->request->reveal());
+        $response = $app->handle($this->request->reveal());
+
+        $this->assertSame(500, $response->getStatusCode());
     }
 }
