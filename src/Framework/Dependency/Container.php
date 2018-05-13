@@ -295,7 +295,7 @@ final class Container implements AttachableContainer
      */
     private function convertVariableName(string $name): string
     {
-        return strtolower(preg_replace('/(?<!^)[A-Z]/', '.$0', $name));
+        return str_replace('\\', '', strtolower(preg_replace('/(?<!^)[A-Z]/', '.$0', $name)));
     }
 
     /**
