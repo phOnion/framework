@@ -89,7 +89,7 @@ class CacheAwareContainer implements ContainerInterface
      */
     public function get($key)
     {
-        if (!in_array($key, $this->blacklist, true) && $this->cache->has($key)) {
+        if ($this->cache->has($key)) {
             return $this->cache->get($key);
         }
 
