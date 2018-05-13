@@ -77,20 +77,6 @@ class CacheAwareContainerTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($cacheContainer->get('bar'), 'baz');
     }
 
-    public function testExceptionWhenStoringValueInCacheFails()
-    {
-        $this->cache->has('bar')->willReturn(false);
-        $this->cache->set('bar', 'baz')->willReturn(false);
-
-        $cacheContainer = new CacheAwareContainer(
-            $this->factory,
-            $this->cache->reveal()
-        );
-        $this->assertTrue($cacheContainer->has('bar'));
-        $this->expectException(ContainerExceptionInterface::class);
-        $cacheContainer->get('bar');
-    }
-
     public function testHonoringOfBlacklistedKeys()
     {
         $this->cache->set('bar', 'baz')->willThrow(new \LogicException('Should not be called'));
