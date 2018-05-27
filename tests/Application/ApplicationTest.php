@@ -55,6 +55,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
 
         $this->route->isMatch('/')->willReturn(true);
         $app = new Application([$this->route->reveal()]);
+        $app->setLogger(new VoidLogger);
         $response = $app->handle($this->request->reveal());
 
         $this->assertSame(405, $response->getStatusCode());
@@ -70,6 +71,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
 
         $this->route->isMatch('/')->willReturn(true);
         $app = new Application([$this->route->reveal()], null, 'basic');
+        $app->setLogger(new VoidLogger);
         $response = $app->handle($this->request->reveal());
 
         $this->assertSame(401, $response->getStatusCode());
@@ -89,6 +91,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
 
         $this->route->isMatch('/')->willReturn(true);
         $app = new Application([$this->route->reveal()], null, 'basic', 'bearer');
+        $app->setLogger(new VoidLogger);
         $response = $app->handle($this->request->reveal());
 
         $this->assertSame(407, $response->getStatusCode());
@@ -108,6 +111,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
 
         $this->route->isMatch('/')->willReturn(true);
         $app = new Application([$this->route->reveal()]);
+        $app->setLogger(new VoidLogger);
         $response = $app->handle($this->request->reveal());
 
         $this->assertSame(428, $response->getStatusCode());
