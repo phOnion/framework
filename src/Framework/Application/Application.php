@@ -160,18 +160,14 @@ class Application implements ApplicationInterface, LoggerAwareInterface
             return (new Response(405))
                 ->withHeader('Allow', $ex->getAllowedMethods());
         } catch (\BadMethodCallException $ex) {
-            if ($this->logger !== null) {
-                $this->logger->warning($ex->getMessage(), [
-                    'exception' => $ex
-                ]);
-            }
+            $this->logger->warning($ex->getMessage(), [
+                'exception' => $ex
+            ]);
             return (new Response(in_array($request->getMethod(), ['get', 'head']) ? 503 : 501));
         } catch (\Throwable $ex) {
-            if ($this->logger !== null) {
-                $this->logger->critical($ex->getMessage(), [
-                    'exception' => $ex
-                ]);
-            }
+            $this->logger->critical($ex->getMessage(), [
+                'exception' => $ex
+            ]);
 
             return new Response(500);
         }
