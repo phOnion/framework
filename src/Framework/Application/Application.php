@@ -153,10 +153,19 @@ class Application implements ApplicationInterface, LoggerAwareInterface
                     $status = 400;
                     break;
             }
+            $this->logger->debug("Request to {url} does not include required header '{header}'. ", [
+                'url' => $request->getUri()->getPath(),
+                'method' => $ex->getMessage(),
+            ]);
             return new Response($status, $headers);
         } catch (NotFoundException $ex) {
             return new Response(404);
         } catch (MethodNotAllowedException $ex) {
+            $this->logger->debug("Request to {url} does not support '{method}'. Supported: {allowed}", [
+                'url' => $request->getUri()->getPath(),
+                'method' => $request->getMethod(),
+                'allowed' => implode(', ', $ex->getAllowedMethods()),
+            ]);
             return (new Response(405))
                 ->withHeader('Allow', $ex->getAllowedMethods());
         } catch (\BadMethodCallException $ex) {
