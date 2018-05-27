@@ -6,7 +6,7 @@ use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LoggerTrait;
 
-class VoidLogger implements LoggerInterface, LoggerAwareInterface
+class VoidLogger implements LoggerInterface
 {
     use LoggerTrait;
 
