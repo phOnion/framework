@@ -1,16 +1,17 @@
 <?php declare(strict_types=1);
 namespace Onion\Framework\Application\Factory;
 
+use GuzzleHttp\Psr7\Response;
 use Onion\Framework\Application\Application;
+use Onion\Framework\Collection\CallbackCollection;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Onion\Framework\Http\Middleware\RequestHandler;
+use Onion\Framework\Log\VoidLogger;
 use Onion\Framework\Router\RegexRoute;
 use Onion\Framework\Router\Route;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use GuzzleHttp\Psr7\Response;
-use Onion\Framework\Collection\CallbackCollection;
 
 /**
  * A factory class solely responsible for assembling the Application
@@ -66,7 +67,7 @@ final class ApplicationFactory implements FactoryInterface
         };
 
         $routes = new CallbackCollection($container->get('routes'), $routeCallback);
-        return new Application(
+        $app = new Application(
             $routes,
             $container->has(RequestHandlerInterface::class) ?
                 $container->get(RequestHandlerInterface::class) : null,
@@ -75,5 +76,10 @@ final class ApplicationFactory implements FactoryInterface
             $container->has('application.authorization.proxy') ?
                 $container->get('application.authorization.proxy') : ''
         );
+        $logger = $container->has(\Psr\Log\LoggerInterface::class) ?
+            $container->get(\Psr\Log\LoggerInterface::class) : new VoidLogger;
+        $app->setLogger($logger);
+
+        return $app;
     }
 }
