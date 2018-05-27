@@ -11,13 +11,15 @@ use Onion\Framework\Router\Interfaces\RouteInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 
 /**
  * Class Application
  *
  * @package Onion\Framework\Application
  */
-class Application implements ApplicationInterface
+class Application implements ApplicationInterface, LoggerAwareInterface
 {
     /**
      * @var RouteInterface[]
@@ -32,6 +34,8 @@ class Application implements ApplicationInterface
 
     /** @var string */
     private $proxyAuthorization;
+
+    use LoggerAwareTrait;
 
     /**
      * Application constructor.
@@ -156,8 +160,19 @@ class Application implements ApplicationInterface
             return (new Response(405))
                 ->withHeader('Allow', $ex->getAllowedMethods());
         } catch (\BadMethodCallException $ex) {
+            if ($this->logger !== null) {
+                $this->logger->warning($ex->getMessage(), [
+                    'exception' => $ex
+                ]);
+            }
             return (new Response(in_array($request->getMethod(), ['get', 'head']) ? 503 : 501));
         } catch (\Throwable $ex) {
+            if ($this->logger !== null) {
+                $this->logger->critical($ex->getMessage(), [
+                    'exception' => $ex
+                ]);
+            }
+
             return new Response(500);
         }
     }
