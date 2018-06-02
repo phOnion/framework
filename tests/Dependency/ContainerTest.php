@@ -52,10 +52,9 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testRetrievalWhenUsingAFactory()
     {
-        $factory = new FactoryStub(\stdClass::class);
         $container = new Container([
             'factories' => [
-                \stdClass::class => $factory
+                \stdClass::class => FactoryStub::class
             ]
          ]);
 
@@ -69,7 +68,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $container = new Container(
             [
                 'factories' => [
-                    \stdClass::class => new FactoryStub(new \stdClass())
+                    \stdClass::class => FactoryStub::class,
                 ],
                 'shared' => [
                     \stdClass::class
@@ -97,10 +96,10 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $container = new Container(
             [
                 'invokables' => [
-                    \stdClass::class => new \stdClass()
+                    \stdClass::class => \stdClass::class
                 ],
                 'shared' => [
-                    \stdClass::class => \stdClass::class
+                    \stdClass::class
                 ]
             ]
         );
