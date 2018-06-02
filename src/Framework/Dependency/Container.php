@@ -25,11 +25,11 @@ final class Container implements AttachableContainer
     /**
      * Container constructor.
      *
-     * @param array $dependencies
+     * @param object $dependencies
      */
-    public function __construct(array $dependencies)
+    public function __construct(object $dependencies)
     {
-        $this->dependencies = json_decode(json_encode($dependencies), false);
+        $this->dependencies = $dependencies;
 
         if (isset($this->dependencies->shared)) {
             $this->shared = $this->dependencies->shared ?? [];
