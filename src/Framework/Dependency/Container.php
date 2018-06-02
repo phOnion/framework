@@ -178,30 +178,32 @@ final class Container implements AttachableContainer
             return $classReflection->newInstanceWithoutConstructor();
         }
 
-        if ($classReflection->getConstructor() !== null && $classReflection->getConstructor()->getParameters() === []) {
+        if ($classReflection->getConstructor()->getParameters() === []) {
             return $classReflection->newInstance();
         }
 
         $constructorRef = $classReflection->getConstructor();
         $parameters = [];
         foreach ($constructorRef->getParameters() as $parameter) {
-            if (!$parameter->hasType() && !$parameter->isOptional() && !$this->has($parameter->getName())) {
-                throw new ContainerErrorException(sprintf(
+            assert($parameter->hasType() || $parameter->isOptional() || $this->has($parameter->getName()),
+                new ContainerErrorException(sprintf(
                     'Unable to resolve a class parameter "%s" of "%s::%s" without type ',
                     $parameter->getName(),
                     $classReflection->getName(),
                     $constructorRef->getName()
-                ));
-            }
+                ))
+            );
 
-            if ($parameter->hasType() && !$parameter->getType()->isBuiltin() && $this->has($parameter->getType())) {
-                $parameters[$parameter->getPosition()] = $this->get($parameter->getType());
-                continue;
-            }
+            if ($parameter->hasType()) {
+                if (!$parameter->getType()->isBuiltin() && $this->has($parameter->getType())) {
+                    $parameters[$parameter->getPosition()] = $this->get($parameter->getType());
+                    continue;
+                }
 
-            if ($parameter->hasType() && !$parameter->isOptional()) {
-                $parameters[$parameter->getPosition()] = $this->get($parameter->getName());
-                continue;
+                if (!$parameter->isOptional()) {
+                    $parameters[$parameter->getPosition()] = $this->get($parameter->getName());
+                    continue;
+                }
             }
 
             if ($parameter->isOptional()) {
