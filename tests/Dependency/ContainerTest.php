@@ -19,7 +19,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 {
     public function testHasParameterCheck()
     {
-        $container = new Container(['bar' => 'baz']);
+        $container = new Container((object) ['bar' => 'baz']);
         $this->assertFalse($container->has('foo'));
         $this->assertTrue($container->has('bar'));
         $this->assertSame('baz', $container->get('bar'));
@@ -27,8 +27,8 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testRetrievalOfInvokables()
     {
-        $container = new Container([
-            'invokables' => [
+        $container = new Container((object) [
+            'invokables' => (object) [
                 \stdClass::class => \stdClass::class
             ]
         ]);
@@ -40,8 +40,8 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testRetrievalOfInvokablesWithBadMapping()
     {
-        $container = new Container([
-            'invokables' => [
+        $container = new Container((object) [
+            'invokables' => (object) [
                 \stdClass::class => 1
             ]
         ]);
@@ -52,10 +52,9 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testRetrievalWhenUsingAFactory()
     {
-        $factory = new FactoryStub(\stdClass::class);
-        $container = new Container([
-            'factories' => [
-                \stdClass::class => $factory
+        $container = new Container((object) [
+            'factories' => (object) [
+                \stdClass::class => FactoryStub::class
             ]
          ]);
 
@@ -67,9 +66,9 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     public function testRetrievalOfSharedDependenciesFromFactory()
     {
         $container = new Container(
-            [
-                'factories' => [
-                    \stdClass::class => new FactoryStub(new \stdClass())
+            (object) [
+                'factories' => (object) [
+                    \stdClass::class => FactoryStub::class,
                 ],
                 'shared' => [
                     \stdClass::class
@@ -95,12 +94,12 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     public function testRetrievalOfSharedDependenciesFromInvokables()
     {
         $container = new Container(
-            [
-                'invokables' => [
-                    \stdClass::class => new \stdClass()
+            (object) [
+                'invokables' => (object) [
+                    \stdClass::class => \stdClass::class
                 ],
                 'shared' => [
-                    \stdClass::class => \stdClass::class
+                    \stdClass::class
                 ]
             ]
         );
@@ -122,7 +121,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testExceptionOnNonExistingEntry()
     {
-        $container = new Container([]);
+        $container = new Container((object) []);
         $this->expectException(NotFoundExceptionInterface::class);
         $container->get('foo');
     }
@@ -138,8 +137,8 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         }
 
         $this->expectException(ContainerExceptionInterface::class);
-        $container = new Container([
-            'factories' => [
+        $container = new Container((object) [
+            'factories' => (object) [
                 \stdClass::class => function () {
                 }
             ]
@@ -159,8 +158,8 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
         $this->expectException(ContainerExceptionInterface::class);
         $container = new Container(
-            [
-                'factories' => [
+            (object) [
+                'factories' => (object) [
                     \stdClass::class => \stdClass::class
                 ]
             ]
@@ -172,8 +171,8 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     {
         $this->expectException(UnknownDependency::class);
         $container = new Container(
-            [
-                'invokables' => [
+            (object) [
+                'invokables' => (object) [
                     \stdClass::class => 'FooBarDoesNotExistMan'
                 ]
             ]
@@ -193,8 +192,8 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
         $this->expectException(ContainerExceptionInterface::class);
         $container = new Container(
-            [
-                'invokables' => [
+            (object) [
+                'invokables' => (object) [
                     \SplFixedArray::class => \stdClass::class
                 ]
             ]
@@ -212,14 +211,14 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testDependencyResolutionFromReflection()
     {
-        $container = new Container([]);
+        $container = new Container((object) []);
         $this->assertInstanceOf(DependencyD::class, $container->get(DependencyD::class));
     }
 
     public function testDependencyLookupWhenBoundToInterface()
     {
-        $container = new Container([
-            'invokables' => [
+        $container = new Container((object) [
+            'invokables' => (object) [
                 DependencyC::class => DependencyD::class
             ]
         ]);
@@ -229,7 +228,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testDependencyWithParameterOfUnknownType()
     {
-        $container = new Container([]);
+        $container = new Container((object) []);
 
         $this->expectException(ContainerExceptionInterface::class);
         $container->get(DependencyE::class);
@@ -237,7 +236,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testResolutionBasedOnSimpleVariableName()
     {
-        $container = new Container([
+        $container = new Container((object) [
             'name' => 'foo'
         ]);
 
@@ -247,9 +246,9 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testResolutionWithComplexVariableName()
     {
-        $container = new Container([
-            'test' => [
-                'mock' => [
+        $container = new Container((object) [
+            'test' => (object) [
+                'mock' => (object) [
                     'name' => 'foo'
                 ]
             ]
@@ -262,7 +261,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testExceptionWhenComplexResolutionFails()
     {
-        $container = new Container(['foo' => ['bar'=> 'baz']]);
+        $container = new Container((object) ['foo' => (object) ['bar'=> 'baz']]);
         $this->assertFalse($container->has('foo.bar.baz'));
 //        $this->expectException(ContainerExceptionInterface::class);
 //        $this->expectExceptionMessage('Unable to resolve "foo.bar.baz"');
@@ -270,20 +269,20 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testExceptionOnComplexResolutionTypeMismatch()
     {
-        $container = new Container(['test' => ['mock' => ['name' => 5]]]);
+        $container = new Container((object) ['test' => (object) ['mock' => (object) ['name' => 5]]]);
         $this->assertSame('5', $container->get(DependencyG::class)->getName());
     }
 
     public function testUnknownInterfaceResolution()
     {
-        $container = new Container([]);
+        $container = new Container((object) []);
         $this->expectException(ContainerExceptionInterface::class);
         $container->get(DependencyF::class);
     }
 
     public function testExceptionOnConstructorParameterNotAvailable()
     {
-        $container = new Container([]);
+        $container = new Container((object) []);
         $this->expectException(ContainerExceptionInterface::class);
         $this->expectExceptionMessage(
             'Unable to resolve a class parameter "foo" of "Tests\Dependency\Doubles\DependencyH::__construct"'
@@ -293,14 +292,14 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testRetrievalOfEmptyConstructorArgs()
     {
-        $container = new Container([]);
+        $container = new Container((object) []);
         $this->assertInstanceOf(DependencyI::class, $container->get(DependencyI::class));
     }
 
     public function testRetrievalOfDotString()
     {
-        $container = new Container([
-            'foo' => ['bar' => 'baz']
+        $container = new Container((object) [
+            'foo' => (object) ['bar' => 'baz']
         ]);
         $this->assertTrue($container->has('foo.bar'));
         $this->assertSame($container->get('foo.bar'), 'baz');
