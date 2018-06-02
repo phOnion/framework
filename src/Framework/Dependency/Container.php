@@ -185,7 +185,8 @@ final class Container implements AttachableContainer
         $constructorRef = $classReflection->getConstructor();
         $parameters = [];
         foreach ($constructorRef->getParameters() as $parameter) {
-            assert($parameter->hasType() || $parameter->isOptional() || $this->has($parameter->getName()),
+            assert(
+                $parameter->hasType() || $parameter->isOptional() || $this->has($parameter->getName()),
                 new ContainerErrorException(sprintf(
                     'Unable to resolve a class parameter "%s" of "%s::%s" without type ',
                     $parameter->getName(),
