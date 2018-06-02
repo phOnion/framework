@@ -225,13 +225,21 @@ final class Container implements AttachableContainer
      */
     private function retrieveFromFactory(string $className): object
     {
-        $factory = (new \ReflectionClass($this->dependencies->factories->$className))
+        $name = $this->dependencies->factories->$className;
+        assert(
+            is_string($name),
+            new ContainerErrorException(
+                "Registered factory for '{$className}' must be a valid FQCN, " . gettype($className) . ' given'
+            )
+        );
+
+        $factory = (new \ReflectionClass($name))
             ->newInstance();
 
         assert(
             $factory instanceof FactoryInterface,
             new ContainerErrorException(
-                "Factory for '$className' does not implement Dependency\\Interfaces\\FactoryInterface"
+                "Factory for '{$className}' does not implement Dependency\\Interfaces\\FactoryInterface"
             )
         );
 
@@ -307,11 +315,11 @@ final class Container implements AttachableContainer
     {
         if (is_string($identifier)) {
             if (class_exists($identifier) || interface_exists($identifier) ||
-                (function_exists("is_$identifier"))
+                (function_exists("is_{$identifier}"))
             ) {
                 assert(
                     $result instanceof $identifier ||
-                    (function_exists("is_$identifier") && call_user_func("is_$identifier", $result)),
+                    (function_exists("is_{$identifier}") && call_user_func("is_{$identifier}", $result)),
                     new ContainerErrorException(sprintf(
                         'Unable to verify that "%s" is of type "%s"',
                         is_object($result) ? get_class($result) : $result,
