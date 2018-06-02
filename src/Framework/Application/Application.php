@@ -11,13 +11,15 @@ use Onion\Framework\Router\Interfaces\RouteInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 
 /**
  * Class Application
  *
  * @package Onion\Framework\Application
  */
-class Application implements ApplicationInterface
+class Application implements ApplicationInterface, LoggerAwareInterface
 {
     /**
      * @var RouteInterface[]
@@ -32,6 +34,8 @@ class Application implements ApplicationInterface
 
     /** @var string */
     private $proxyAuthorization;
+
+    use LoggerAwareTrait;
 
     /**
      * Application constructor.
@@ -149,15 +153,31 @@ class Application implements ApplicationInterface
                     $status = 400;
                     break;
             }
+            $this->logger->debug("Request to {url} does not include required header '{header}'. ", [
+                'url' => $request->getUri()->getPath(),
+                'method' => $ex->getMessage(),
+            ]);
             return new Response($status, $headers);
         } catch (NotFoundException $ex) {
             return new Response(404);
         } catch (MethodNotAllowedException $ex) {
+            $this->logger->debug("Request to {url} does not support '{method}'. Supported: {allowed}", [
+                'url' => $request->getUri()->getPath(),
+                'method' => $request->getMethod(),
+                'allowed' => implode(', ', $ex->getAllowedMethods()),
+            ]);
             return (new Response(405))
                 ->withHeader('Allow', $ex->getAllowedMethods());
         } catch (\BadMethodCallException $ex) {
+            $this->logger->warning($ex->getMessage(), [
+                'exception' => $ex
+            ]);
             return (new Response(in_array($request->getMethod(), ['get', 'head']) ? 503 : 501));
         } catch (\Throwable $ex) {
+            $this->logger->critical($ex->getMessage(), [
+                'exception' => $ex
+            ]);
+
             return new Response(500);
         }
     }

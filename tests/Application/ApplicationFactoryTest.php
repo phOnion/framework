@@ -26,6 +26,7 @@ class ApplicationFactoryTest extends \PHPUnit_Framework_TestCase
         $container->has(RequestHandlerInterface::class)->willReturn(false);
         $container->has('application.authorization.base')->willReturn(false);
         $container->has('application.authorization.proxy')->willReturn(false);
+        $container->has(\Psr\Log\LoggerInterface::class)->willReturn(false);
         $container->get('test')->willReturn(new MiddlewareStub());
 
         $factory = new ApplicationFactory();

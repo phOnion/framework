@@ -13,6 +13,7 @@ use Psr\Http\Server\RequestHandlerInterface as RequestHandlerInterface;
 use Onion\Framework\Router\Exceptions\NotFoundException;
 use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
 use Onion\Framework\Router\Exceptions\MissingHeaderException;
+use Onion\Framework\Log\VoidLogger;
 
 class ApplicationTest extends \PHPUnit_Framework_TestCase
 {
@@ -54,6 +55,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
 
         $this->route->isMatch('/')->willReturn(true);
         $app = new Application([$this->route->reveal()]);
+        $app->setLogger(new VoidLogger);
         $response = $app->handle($this->request->reveal());
 
         $this->assertSame(405, $response->getStatusCode());
@@ -69,6 +71,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
 
         $this->route->isMatch('/')->willReturn(true);
         $app = new Application([$this->route->reveal()], null, 'basic');
+        $app->setLogger(new VoidLogger);
         $response = $app->handle($this->request->reveal());
 
         $this->assertSame(401, $response->getStatusCode());
@@ -88,6 +91,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
 
         $this->route->isMatch('/')->willReturn(true);
         $app = new Application([$this->route->reveal()], null, 'basic', 'bearer');
+        $app->setLogger(new VoidLogger);
         $response = $app->handle($this->request->reveal());
 
         $this->assertSame(407, $response->getStatusCode());
@@ -107,6 +111,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
 
         $this->route->isMatch('/')->willReturn(true);
         $app = new Application([$this->route->reveal()]);
+        $app->setLogger(new VoidLogger);
         $response = $app->handle($this->request->reveal());
 
         $this->assertSame(428, $response->getStatusCode());
@@ -119,6 +124,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         $this->route->isMatch('/')->willReturn(true);
         $this->route->handle(new AnyValueToken())->willThrow(new \ErrorException('OK'));
         $app = new Application([$this->route->reveal()]);
+        $app->setLogger(new VoidLogger);
         $response = $app->handle($this->request->reveal());
 
         $this->assertSame(500, $response->getStatusCode());
