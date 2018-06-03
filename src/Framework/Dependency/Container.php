@@ -208,7 +208,8 @@ final class Container implements AttachableContainer
                 }
 
                 if (!$parameter->isOptional()) {
-                    $parameters[$parameter->getPosition()] = $this->get($parameter->getName());
+                    $parameters[$parameter->getPosition()] =
+                        $this->get(strtolower(preg_replace('/(?<!^)[A-Z]/', '.$0', $parameter->getName())));
                     continue;
                 }
             }
@@ -279,8 +280,8 @@ final class Container implements AttachableContainer
 
         assert(
             isset($this->dependencies->$lead),
-            new ContainerErrorException(
-                "No definition available for '{$stack}' inside container"
+            new UnknownDependency(
+                "Unable to resolve '{$stack}'"
             )
         );
 
@@ -290,8 +291,8 @@ final class Container implements AttachableContainer
             $stack .= ".$fragment";
             assert(
                 isset($component->$fragment) || isset($component[$fragment]),
-                new ContainerErrorException(
-                    "No definition available for '{$stack}' inside container"
+                new UnknownDependency(
+                    "Unable to resolve '{$stack}' of '{$name}'"
                 )
             );
 
