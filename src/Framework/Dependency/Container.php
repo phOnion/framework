@@ -113,13 +113,13 @@ final class Container implements AttachableContainer
                 $ref = &$this->dependencies;
                 while ($keys !== []) {
                     $component = array_shift($keys);
-                    if (isset($ref->$component)) {
+                    if (is_object($ref) && isset($ref->$component)) {
                         $exists=true;
                         $ref= &$ref->$component;
                         continue;
                     }
 
-                    if (isset($ref[$component])) {
+                    if (is_array($ref) && isset($ref[$component])) {
                         $exists=true;
                         $ref= &$ref[$component];
                         continue;
