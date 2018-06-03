@@ -107,27 +107,22 @@ final class Container implements AttachableContainer
         );
 
         if (!$exists) {
-            $namePath = $this->convertVariableName($key);
-            if (strpos($namePath, '.') !== false) {
-                $keys = explode('.', $namePath);
-                $ref = &$this->dependencies;
-                while ($keys !== []) {
-                    $component = array_shift($keys);
-                    if (is_object($ref) && isset($ref->$component)) {
-                        $exists=true;
-                        $ref= &$ref->$component;
-                        continue;
-                    }
+            $fragments = explode('.', $this->convertVariableName($key));
+            $component = &$this->dependencies;
+            foreach ($fragments as $fragment) {
+                $exists = true;
 
-                    if (is_array($ref) && isset($ref[$component])) {
-                        $exists=true;
-                        $ref= &$ref[$component];
-                        continue;
-                    }
-
-                    $exists = false;
-                    break;
+                if (is_array($component) && isset($component[$fragment])) {
+                    $component = &$component[$fragment];
+                    continue;
                 }
+
+                if (is_object($component) && isset($component->$fragment)) {
+                    $component = &$component->$fragment;
+                    continue;
+                }
+
+                return false;
             }
         }
 
@@ -275,29 +270,22 @@ final class Container implements AttachableContainer
     private function retrieveFromDotString(string $name)
     {
         $fragments = explode('.', $name);
-        $lead = array_shift($fragments);
-        $stack = "$lead";
-
-        assert(
-            isset($this->dependencies->$lead),
-            new UnknownDependency(
-                "Unable to resolve '{$stack}'"
-            )
-        );
-
-        $component = $this->dependencies->$lead;
+        $component = &$this->dependencies;
 
         foreach ($fragments as $fragment) {
-            $stack .= ".$fragment";
-            assert(
-                isset($component->$fragment) || isset($component[$fragment]),
-                new UnknownDependency(
-                    "Unable to resolve '{$stack}' of '{$name}'"
-                )
-            );
+            if (is_array($component) && isset($component[$fragment])) {
+                $component = &$component[$fragment];
+                continue;
+            }
 
-            $component = is_array($component) ?
-                $component[$fragment] : $component->$fragment;
+            if (is_object($component) && isset($component->$fragment)) {
+                $component = &$component->$fragment;
+                continue;
+            }
+
+            new UnknownDependency(
+                "Unable to resolve '{$fragment}' of '{$name}'"
+            );
         }
 
         return $component;
