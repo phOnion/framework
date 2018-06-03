@@ -38,14 +38,14 @@ and setup of the "hello world" project:
     require_once __DIR__ . '/../vendor/autoload.php';
     use Onion\Framework;
 
-    $container = new Framework\Dependency\Container([
-        'factories' => [
+    $container = new Framework\Dependency\Container((object) [
+        'factories' => (object) [
             Framework\Application\Application::class => // Takes care of routing
                 Framework\Application\Factory\ApplicationFactory::class,
             \Psr\Http\Server\RequestHandlerInterface::class => // Necessary for error handling
                 Framework\Http\Middleware\Factory\RequestHandlerFactory::class
         ],
-        'invokables' => [
+        'invokables' => (object) [
             // Optional, this is the default behavior,
             // change if a different response template should be used
             \Psr\Http\Message\ResponseInterface::class =>
