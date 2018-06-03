@@ -119,6 +119,12 @@ final class Container implements AttachableContainer
                         continue;
                     }
 
+                    if (isset($ref[$component])) {
+                        $exists=true;
+                        $ref= &$ref[$component];
+                        continue;
+                    }
+
                     $exists = false;
                     break;
                 }
@@ -283,13 +289,14 @@ final class Container implements AttachableContainer
         foreach ($fragments as $fragment) {
             $stack .= ".$fragment";
             assert(
-                isset($component->$fragment),
+                isset($component->$fragment) || isset($component[$fragment]),
                 new ContainerErrorException(
                     "No definition available for '{$stack}' inside container"
                 )
             );
 
-            $component = $component->$fragment;
+            $component = is_array($component) ?
+                $component[$fragment] : $component->$fragment;
         }
 
         return $component;
