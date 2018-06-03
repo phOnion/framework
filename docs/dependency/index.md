@@ -11,22 +11,33 @@ array you can use a dot notation, which the container will interpret as indicati
 of the array. Say for example, you have an array:
 
 ```php
-[
-    // ...
+return (object) [
+    'doctrine' => (object) [
+        'connection' => (object) [
+            'dbname' => 'foo',
+        ],
+    ],
+]
+```
+
+OR
+
+```php
+return [
     'doctrine' => [
         'connection' => [
             'dbname' => 'foo',
             // ...
         ]
     ]
-    // ...
 ]
 ```
 
-In order to access `'dbname`, you might have to do at least 2 ifs (to ensure the key is there)
-and definitely will have to make something like: `Container::get('doctrine')['connection']['dbname']`,
-not the prettiest... This is where this could come in to play, instead of doing that you can just du
-`Container::get('doctrine.connection.dbname'); // Returns 'foo'` and you are all set, and it looks
+In order to access `'dbname'`, you might have to do at least 2 ifs (to ensure the key is there) or
+definitely will have to make something like: `Container::get('doctrine')['connection']['dbname'] ?? false`
+and then check if the key is equal to null, but that definetely is not the prettiest... This is where
+this could come in to play, instead of doing that you can just do `Container::get('doctrine.connection.dbname');`
+which will return `'foo'` or throw `UnknownDependency` if nothing is found and you are all set, and it looks
 clearer too + on thje bonus side if you are writing a distributable module, you can be sure that the
 container will throw the appropriate error if any key is not defined and notify the user, no more
 piles of `if`s in your factories :)

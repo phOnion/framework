@@ -5,12 +5,12 @@ to build the dependency.
 For example:
 
 ```php
-// ...
-    'factories' => [
+return (object) [
+    'factories' => (object) [
          Framework\Application\Application::class =>
                 Framework\Application\Factory\ApplicationFactory::class,
     ]
-//...
+];
 ```
 
 This tells the container, whenever `RouterInterface` is requested, to invoke the `RouterFactory`
