@@ -107,21 +107,22 @@ final class Container implements AttachableContainer
         );
 
         if (!$exists) {
-            $namePath = $this->convertVariableName($key);
-            if (strpos($namePath, '.') !== false) {
-                $keys = explode('.', $namePath);
-                $ref = &$this->dependencies;
-                while ($keys !== []) {
-                    $component = array_shift($keys);
-                    if (isset($ref->$component)) {
-                        $exists=true;
-                        $ref= &$ref->$component;
-                        continue;
-                    }
+            $fragments = explode('.', $this->convertVariableName($key));
+            $component = &$this->dependencies;
+            foreach ($fragments as $fragment) {
+                $exists = true;
 
-                    $exists = false;
-                    break;
+                if (is_array($component) && isset($component[$fragment])) {
+                    $component = &$component[$fragment];
+                    continue;
                 }
+
+                if (is_object($component) && isset($component->$fragment)) {
+                    $component = &$component->$fragment;
+                    continue;
+                }
+
+                return false;
             }
         }
 
@@ -202,7 +203,8 @@ final class Container implements AttachableContainer
                 }
 
                 if (!$parameter->isOptional()) {
-                    $parameters[$parameter->getPosition()] = $this->get($parameter->getName());
+                    $parameters[$parameter->getPosition()] =
+                        $this->get(strtolower(preg_replace('/(?<!^)[A-Z]/', '.$0', $parameter->getName())));
                     continue;
                 }
             }
@@ -268,28 +270,22 @@ final class Container implements AttachableContainer
     private function retrieveFromDotString(string $name)
     {
         $fragments = explode('.', $name);
-        $lead = array_shift($fragments);
-        $stack = "$lead";
-
-        assert(
-            isset($this->dependencies->$lead),
-            new ContainerErrorException(
-                "No definition available for '{$stack}' inside container"
-            )
-        );
-
-        $component = $this->dependencies->$lead;
+        $component = &$this->dependencies;
 
         foreach ($fragments as $fragment) {
-            $stack .= ".$fragment";
-            assert(
-                isset($component->$fragment),
-                new ContainerErrorException(
-                    "No definition available for '{$stack}' inside container"
-                )
-            );
+            if (is_array($component) && isset($component[$fragment])) {
+                $component = &$component[$fragment];
+                continue;
+            }
 
-            $component = $component->$fragment;
+            if (is_object($component) && isset($component->$fragment)) {
+                $component = &$component->$fragment;
+                continue;
+            }
+
+            new UnknownDependency(
+                "Unable to resolve '{$fragment}' of '{$name}'"
+            );
         }
 
         return $component;

@@ -6,7 +6,8 @@ pages:
     - Introduction: dependency/index.md
     - Invokables: dependency/invokables.md
     - Factories: dependency/factories.md
-    - Caching: dependency/caching.md
+    - "In-memory Caching": dependency/shared.md
+    - "Persistent Caching": dependency/caching.md
     - Delegation: dependency/delegation.md
   - Routing:
     - Introduction: routing/index.md
