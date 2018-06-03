@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../../img/favicon.ico">
-  <title>Persistent Caching - Onion - Framework</title>
+  <title>In-memory Caching - Onion - Framework</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../../css/theme.css" type="text/css" />
@@ -17,9 +17,9 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "Persistent Caching";
-    var mkdocs_page_input_path = "dependency\\caching.md";
-    var mkdocs_page_url = "/dependency/caching/";
+    var mkdocs_page_name = "In-memory Caching";
+    var mkdocs_page_input_path = "dependency\\shared.md";
+    var mkdocs_page_url = "/dependency/shared/";
   </script>
   
   <script src="../../js/jquery-2.1.1.min.js"></script>
@@ -73,16 +73,16 @@
                     
     <a class="" href="../factories/">Factories</a>
                 </li>
-                <li class="">
-                    
-    <a class="" href="../shared/">In-memory Caching</a>
-                </li>
                 <li class=" current">
                     
-    <a class="current" href="./">Persistent Caching</a>
+    <a class="current" href="./">In-memory Caching</a>
     <ul class="subnav">
             
     </ul>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../caching/">Persistent Caching</a>
                 </li>
                 <li class="">
                     
@@ -154,7 +154,7 @@
         
       
     
-    <li>Persistent Caching</li>
+    <li>In-memory Caching</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -164,21 +164,34 @@
           <div role="main">
             <div class="section">
               
-                <p>When applications are running on production it is safe to assume that DI containers
-can make relatively heavy use of caching so they can squeeze the maximum
-performance. This is should not be any different. And to make this possible
-it is not necessary to come up with your own solution. A caching (delegate)container
-comes bundled inside the framework - <code>Onion\Framework\Dependency\CacheAwareContainer</code>.
-In order to utilize it you just have to define a container factory (a class
-implementing the <code>FactoryInterface</code>) and pass it as the first argument to the
-cache-aware container, pass an instance of <code>Psr\SimpleCache\CacheInterface</code>
-as the second one and you are ready to go.</p>
-<p>By default that container will cache every dependency that it retrieves, but
-if you have a factory that, for example checks for results in the database and
-uses information from there to build the dependency on a per-user basis you
-might not want to cache that result, here comes the third argument of the
-container - blacklist. It allows you to specify a list of keys that should
-not be cached and should always be retrieved from the delegated container.</p>
+                <p>There is also the root <code>'shared'</code> meta-key that indicates to the container
+which resolutions should be cached and return the same instance on every
+consequent request made to the container. A good example for this would be
+the <code>\PDO</code> or other object that upon instantiation opens a connection to
+another remote service. It is supported for both <code>invokable</code> and <code>factories</code>
+entries. In those cases you might do something like:</p>
+<pre><code class="php">return (object) [
+    'database' =&gt; (object) [
+        'driver' =&gt; 'mysqli',
+        'database' =&gt; __DIR__ . '/some.db',
+    ],
+    'factories' =&gt; [
+        \PDO::class =&gt; \My\Pdo\Factory::class,
+    ],
+    'shared' =&gt; [
+        \PDO::class,
+    ],
+];
+</code></pre>
+
+<p>What this will do is upon the first request the PDO object will be created
+and if it resolves without any problems the same instance will be used
+whenever you request <code>\PDO::class</code> avoiding opening of multiple connections
+for every class that is resolved through auto-wiring or requiering always to
+keep track of a global connection pool or any other complex technique that
+will almost certainly be out of the scope of what you are trying to do (
+Except if you are building an ORM, which you shouldn't unless you have a
+really good reason to do so, but srsly... please dont &lt;3 ).</p>
               
             </div>
           </div>
@@ -186,10 +199,10 @@ not be cached and should always be retrieved from the delegated container.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../delegation/" class="btn btn-neutral float-right" title="Delegation">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../caching/" class="btn btn-neutral float-right" title="Persistent Caching">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="../shared/" class="btn btn-neutral" title="In-memory Caching"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../factories/" class="btn btn-neutral" title="Factories"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -215,10 +228,10 @@ not be cached and should always be retrieved from the delegated container.</p>
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="../shared/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="../factories/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="../delegation/" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="../caching/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

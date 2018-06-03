@@ -78,7 +78,11 @@
                 </li>
                 <li class="">
                     
-    <a class="" href="../caching/">Caching</a>
+    <a class="" href="../shared/">In-memory Caching</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../caching/">Persistent Caching</a>
                 </li>
                 <li class="">
                     
@@ -166,12 +170,12 @@ implement <code>\Onion\Framework\Dependency\Interfaces\FactoryInterface</code> a
 to build the dependency.</li>
 </ul>
 <p>For example:</p>
-<pre><code class="php">// ...
-    'factories' =&gt; [
+<pre><code class="php">return (object) [
+    'factories' =&gt; (object) [
          Framework\Application\Application::class =&gt;
                 Framework\Application\Factory\ApplicationFactory::class,
     ]
-//...
+];
 </code></pre>
 
 <p>This tells the container, whenever <code>RouterInterface</code> is requested, to invoke the <code>RouterFactory</code>
@@ -195,7 +199,7 @@ objects which might be required on multiple places.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../caching/" class="btn btn-neutral float-right" title="Caching">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../shared/" class="btn btn-neutral float-right" title="In-memory Caching">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
         <a href="../invokables/" class="btn btn-neutral" title="Invokables"><span class="icon icon-circle-arrow-left"></span> Previous</a>
@@ -227,7 +231,7 @@ objects which might be required on multiple places.</p>
         <span><a href="../invokables/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="../caching/" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="../shared/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

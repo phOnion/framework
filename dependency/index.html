@@ -78,7 +78,11 @@
                 </li>
                 <li class="">
                     
-    <a class="" href="caching/">Caching</a>
+    <a class="" href="shared/">In-memory Caching</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="caching/">Persistent Caching</a>
                 </li>
                 <li class="">
                     
@@ -170,22 +174,31 @@ have 3 special keys: <code>invokables</code>, <code>factories</code> and <code>s
 any operations on it. Also if you need to access a specific key which is located in a nested
 array you can use a dot notation, which the container will interpret as indication for a level
 of the array. Say for example, you have an array:</p>
-<pre><code class="php">[
-    // ...
+<pre><code class="php">return (object) [
+    'doctrine' =&gt; (object) [
+        'connection' =&gt; (object) [
+            'dbname' =&gt; 'foo',
+        ],
+    ],
+]
+</code></pre>
+
+<p>OR</p>
+<pre><code class="php">return [
     'doctrine' =&gt; [
         'connection' =&gt; [
             'dbname' =&gt; 'foo',
             // ...
         ]
     ]
-    // ...
 ]
 </code></pre>
 
-<p>In order to access <code>'dbname</code>, you might have to do at least 2 ifs (to ensure the key is there)
-and definitely will have to make something like: <code>Container::get('doctrine')['connection']['dbname']</code>,
-not the prettiest... This is where this could come in to play, instead of doing that you can just du
-<code>Container::get('doctrine.connection.dbname'); // Returns 'foo'</code> and you are all set, and it looks
+<p>In order to access <code>'dbname'</code>, you might have to do at least 2 ifs (to ensure the key is there) or
+definitely will have to make something like: <code>Container::get('doctrine')['connection']['dbname'] ?? false</code>
+and then check if the key is equal to null, but that definetely is not the prettiest... This is where
+this could come in to play, instead of doing that you can just do <code>Container::get('doctrine.connection.dbname');</code>
+which will return <code>'foo'</code> or throw <code>UnknownDependency</code> if nothing is found and you are all set, and it looks
 clearer too + on thje bonus side if you are writing a distributable module, you can be sure that the
 container will throw the appropriate error if any key is not defined and notify the user, no more
 piles of <code>if</code>s in your factories :)</p>

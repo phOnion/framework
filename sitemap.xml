@@ -4,7 +4,7 @@
     
     <url>
      <loc>/</loc>
-     <lastmod>2018-04-22</lastmod>
+     <lastmod>2018-06-04</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
@@ -12,7 +12,7 @@
     
     <url>
      <loc>/setup/</loc>
-     <lastmod>2018-04-22</lastmod>
+     <lastmod>2018-06-04</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
@@ -21,31 +21,37 @@
         
     <url>
      <loc>/dependency/</loc>
-     <lastmod>2018-04-22</lastmod>
+     <lastmod>2018-06-04</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/dependency/invokables/</loc>
-     <lastmod>2018-04-22</lastmod>
+     <lastmod>2018-06-04</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/dependency/factories/</loc>
-     <lastmod>2018-04-22</lastmod>
+     <lastmod>2018-06-04</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/dependency/shared/</loc>
+     <lastmod>2018-06-04</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/dependency/caching/</loc>
-     <lastmod>2018-04-22</lastmod>
+     <lastmod>2018-06-04</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/dependency/delegation/</loc>
-     <lastmod>2018-04-22</lastmod>
+     <lastmod>2018-06-04</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
@@ -55,7 +61,7 @@
         
     <url>
      <loc>/routing/</loc>
-     <lastmod>2018-04-22</lastmod>
+     <lastmod>2018-06-04</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
@@ -64,7 +70,7 @@
     
     <url>
      <loc>/hydratable/</loc>
-     <lastmod>2018-04-22</lastmod>
+     <lastmod>2018-06-04</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
@@ -72,7 +78,7 @@
     
     <url>
      <loc>/collections/</loc>
-     <lastmod>2018-04-22</lastmod>
+     <lastmod>2018-06-04</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
@@ -80,7 +86,7 @@
     
     <url>
      <loc>/rest/</loc>
-     <lastmod>2018-04-22</lastmod>
+     <lastmod>2018-06-04</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
@@ -89,7 +95,7 @@
         
     <url>
      <loc>/modules/</loc>
-     <lastmod>2018-04-22</lastmod>
+     <lastmod>2018-06-04</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
