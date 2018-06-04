@@ -60,46 +60,31 @@ class Application implements ApplicationInterface, LoggerAwareInterface
      * passes it to the emitter for final processing
      * before sending it to the client
      *
+     * @codeCoverageIgnore
+     *
      * @param ServerRequestInterface $request
      * @return void
      */
     public function run(ServerRequestInterface $request): void
     {
-        try {
-            /** @var ResponseInterface $response */
-            $response = $this->handle($request);
-        } catch (\Throwable $exception) {
-            if ($this->requestHandler === null) {
-                throw $exception;
-            }
+        /** @var ResponseInterface $response */
+        $response = $this->handle($request);
+        $status = $response->getStatusCode();
+        $reasonPhrase = $response->getReasonPhrase();
 
-            $response = $this->requestHandler->handle(
-                $request->withAttribute('exception', $exception)
-                    ->withAttribute('error', $exception)
-            );
-        } finally {
-            if (isset($response) && !$this->hasPreviousOutput()) {
-                $status = $response->getStatusCode();
-                $reasonPhrase = $response->getReasonPhrase();
-                header(
-                    "HTTP/{$response->getProtocolVersion()} {$status} {$reasonPhrase}",
-                    true,
-                    $status
-                );
+        header(
+            "HTTP/{$response->getProtocolVersion()} {$status} {$reasonPhrase}",
+            true,
+            $status
+        );
 
-                foreach ($response->getHeaders() as $header => $values) {
-                    foreach ($values as $index => $value) {
-                        if ($value === '') {
-                            continue;
-                        }
-
-                        header("{$header}: {$value}", $index === 0);
-                    }
-                }
-
-                file_put_contents('php://output', $response->getBody());
+        foreach ($response->getHeaders() as $header => $values) {
+            foreach ($values as $index => $value) {
+                header("{$header}: {$value}", $index === 0);
             }
         }
+
+        file_put_contents('php://output', $response->getBody());
     }
 
     /**
@@ -180,15 +165,5 @@ class Application implements ApplicationInterface, LoggerAwareInterface
 
             return new Response(500);
         }
-    }
-
-    /**
-     * Helper to check if output has been sent to the client
-     *
-     * @return bool
-     */
-    private function hasPreviousOutput(): bool
-    {
-        return !headers_sent() && (ob_get_level() === 0 && ob_get_length() === 0);
     }
 }

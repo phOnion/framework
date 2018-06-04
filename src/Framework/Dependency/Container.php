@@ -37,6 +37,9 @@ final class Container implements AttachableContainer
         }
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function attach(ContainerInterface $container): void
     {
         $this->delegate = $container;
@@ -157,10 +160,6 @@ final class Container implements AttachableContainer
 
         $result = $this->retrieveFromReflection($dependency);
         if (in_array($className, $this->shared, true)) {
-            if (!isset($this->dependencies->invokables)) {
-                $this->dependencies->invokables = new \stdClass;
-            }
-
             $this->dependencies->invokables->{$className} = $result;
         }
 
@@ -196,29 +195,31 @@ final class Container implements AttachableContainer
                 ))
             );
 
-            if ($parameter->hasType()) {
-                if (!$parameter->getType()->isBuiltin() && $this->has($parameter->getType())) {
-                    $parameters[$parameter->getPosition()] = $this->get($parameter->getType());
-                    continue;
+            try {
+                if ($parameter->hasType()) {
+                    if (!$parameter->getType()->isBuiltin() && $this->has($parameter->getType())) {
+                        $parameters[$parameter->getPosition()] = $this->get($parameter->getType());
+                        continue;
+                    }
+
+                    if (!$parameter->isOptional()) {
+                        $parameters[$parameter->getPosition()] =
+                            $this->get(strtolower(preg_replace('/(?<!^)[A-Z]/', '.$0', $parameter->getName())));
+                        continue;
+                    }
                 }
 
-                if (!$parameter->isOptional()) {
-                    $parameters[$parameter->getPosition()] =
-                        $this->get(strtolower(preg_replace('/(?<!^)[A-Z]/', '.$0', $parameter->getName())));
+                if ($parameter->isOptional()) {
+                    $parameters[$parameter->getPosition()] = $this->has($parameter->getName()) ?
+                        $this->get($parameter->getName()) : $parameter->getDefaultValue();
                     continue;
                 }
+            } catch (UnknownDependency $ex) {
+                throw new ContainerErrorException(sprintf(
+                    'Unable to find match for type: "%s". Consider using a factory',
+                    $parameter->getType() ?? $parameter->getName()
+                ), 0, $ex);
             }
-
-            if ($parameter->isOptional()) {
-                $parameters[$parameter->getPosition()] = $this->has($parameter->getName()) ?
-                    $this->get($parameter->getName()) : $parameter->getDefaultValue();
-                continue;
-            }
-
-            throw new ContainerErrorException(sprintf(
-                'Unable to find match for type: "%s". Consider using a factory',
-                $parameter->getType() ?? $parameter->getName()
-            ));
         }
 
         return $this->enforceReturnType($className, $classReflection->newInstance(...$parameters));
@@ -283,7 +284,7 @@ final class Container implements AttachableContainer
                 continue;
             }
 
-            new UnknownDependency(
+            throw new UnknownDependency(
                 "Unable to resolve '{$fragment}' of '{$name}'"
             );
         }
