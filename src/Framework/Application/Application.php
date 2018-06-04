@@ -166,14 +166,4 @@ class Application implements ApplicationInterface, LoggerAwareInterface
             return new Response(500);
         }
     }
-
-    /**
-     * Helper to check if output has been sent to the client
-     *
-     * @return bool
-     */
-    private function hasPreviousOutput(): bool
-    {
-        return !headers_sent() && (ob_get_level() === 0 && ob_get_length() === 0);
-    }
 }
