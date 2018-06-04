@@ -185,7 +185,7 @@ final class Container implements AttachableContainer
         $constructorRef = $classReflection->getConstructor();
         $parameters = [];
         foreach ($constructorRef->getParameters() as $parameter) {
-            $parameters[$parameter->getPosution()] = $this->resolveReflectionParameter($parameter);
+            $parameters[$parameter->getPosition()] = $this->resolveReflectionParameter($parameter);
         }
 
         return $this->enforceReturnType($className, $classReflection->newInstance(...$parameters));
