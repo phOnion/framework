@@ -286,7 +286,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $container = new Container((object) []);
         $this->expectException(ContainerExceptionInterface::class);
         $this->expectExceptionMessage(
-            'Unable to resolve a class parameter "foo" of "Tests\Dependency\Doubles\DependencyH::__construct"'
+            'Unable to resolve a class parameter "foo"'
         );
         $container->get(DependencyH::class);
     }
