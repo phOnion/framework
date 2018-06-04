@@ -37,6 +37,9 @@ final class Container implements AttachableContainer
         }
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function attach(ContainerInterface $container): void
     {
         $this->delegate = $container;
