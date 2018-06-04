@@ -196,10 +196,8 @@ final class Container implements AttachableContainer
         assert(
             $parameter->hasType() || $parameter->isOptional() || $this->has($parameter->getName()),
             new ContainerErrorException(sprintf(
-                'Unable to resolve a class parameter "%s" of "%s::%s" without type ',
-                $parameter->getName(),
-                $classReflection->getName(),
-                $constructorRef->getName()
+                'Unable to resolve a class parameter "%s" without type.',
+                $parameter->getName()
             ))
         );
 
