@@ -14,6 +14,7 @@ use Tests\Dependency\Doubles\DependencyG;
 use Tests\Dependency\Doubles\DependencyH;
 use Tests\Dependency\Doubles\DependencyI;
 use Tests\Dependency\Doubles\FactoryStub;
+use Onion\Framework\Dependency\Exception\ContainerErrorException;
 
 class ContainerTest extends \PHPUnit_Framework_TestCase
 {
@@ -323,5 +324,12 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $this->expectException(UnknownDependency::class);
         $this->expectExceptionMessage("Unable to resolve 'connection' of 'foo.bar.connection'");
         $container->get('foo.bar.connection');
+    }
+
+    public function testExceptionWhenKeyDoesNotExist()
+    {
+        $container = new Container((object) []);
+        $this->expectException(ContainerErrorException::class);
+        $container->get(DependencyG::class);
     }
 }
