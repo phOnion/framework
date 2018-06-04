@@ -192,29 +192,31 @@ final class Container implements AttachableContainer
                 ))
             );
 
-            if ($parameter->hasType()) {
-                if (!$parameter->getType()->isBuiltin() && $this->has($parameter->getType())) {
-                    $parameters[$parameter->getPosition()] = $this->get($parameter->getType());
-                    continue;
+            try {
+                if ($parameter->hasType()) {
+                    if (!$parameter->getType()->isBuiltin() && $this->has($parameter->getType())) {
+                        $parameters[$parameter->getPosition()] = $this->get($parameter->getType());
+                        continue;
+                    }
+
+                    if (!$parameter->isOptional()) {
+                        $parameters[$parameter->getPosition()] =
+                            $this->get(strtolower(preg_replace('/(?<!^)[A-Z]/', '.$0', $parameter->getName())));
+                        continue;
+                    }
                 }
 
-                if (!$parameter->isOptional()) {
-                    $parameters[$parameter->getPosition()] =
-                        $this->get(strtolower(preg_replace('/(?<!^)[A-Z]/', '.$0', $parameter->getName())));
+                if ($parameter->isOptional()) {
+                    $parameters[$parameter->getPosition()] = $this->has($parameter->getName()) ?
+                        $this->get($parameter->getName()) : $parameter->getDefaultValue();
                     continue;
                 }
+            } catch (UnknownDependency $ex) {
+                throw new ContainerErrorException(sprintf(
+                    'Unable to find match for type: "%s". Consider using a factory',
+                    $parameter->getType() ?? $parameter->getName()
+                ), 0, $ex);
             }
-
-            if ($parameter->isOptional()) {
-                $parameters[$parameter->getPosition()] = $this->has($parameter->getName()) ?
-                    $this->get($parameter->getName()) : $parameter->getDefaultValue();
-                continue;
-            }
-
-            throw new ContainerErrorException(sprintf(
-                'Unable to find match for type: "%s". Consider using a factory',
-                $parameter->getType() ?? $parameter->getName()
-            ));
         }
 
         return $this->enforceReturnType($className, $classReflection->newInstance(...$parameters));
