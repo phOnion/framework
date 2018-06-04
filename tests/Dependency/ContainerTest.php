@@ -313,4 +313,15 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($container->has('foo.bar'));
         $this->assertSame($container->get('foo.bar'), 'baz');
     }
+
+    public function testRetrievalOfDotStringFromNonExistingProp()
+    {
+        $container = new Container((object) [
+            'foo' => ['bar' => ['baz' => 'foobar']]
+        ]);
+        $this->assertFalse($container->has('foo.bar.connection'));
+        $this->expectException(UnknownDependency::class);
+        $this->expectExceptionMessage("Unable to resolve 'connection' of 'foo.bar.connection'");
+        $container->get('foo.bar.connection');
+    }
 }
