@@ -279,7 +279,7 @@ final class Container implements AttachableContainer
                 continue;
             }
 
-            new UnknownDependency(
+            throw new UnknownDependency(
                 "Unable to resolve '{$fragment}' of '{$name}'"
             );
         }
