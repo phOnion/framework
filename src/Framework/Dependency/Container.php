@@ -157,10 +157,6 @@ final class Container implements AttachableContainer
 
         $result = $this->retrieveFromReflection($dependency);
         if (in_array($className, $this->shared, true)) {
-            if (!isset($this->dependencies->invokables)) {
-                $this->dependencies->invokables = new \stdClass;
-            }
-
             $this->dependencies->invokables->{$className} = $result;
         }
 
