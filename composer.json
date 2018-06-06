@@ -14,7 +14,7 @@
         "roave/security-advisories": "dev-master",
         "psr/http-message": "^1.0",
         "guzzlehttp/psr7": "^1.4",
-        "onion/interfaces": "^2.0.0-rc3",
+        "onion/interfaces": "^2.0",
         "psr/simple-cache": "^1.0",
         "psr/log": "^1.0"
     },
@@ -26,12 +26,16 @@
     },
     "autoload": {
         "psr-4": {
-            "Onion\\": "src/",
-            "Tests\\": "tests/"
+            "Onion\\": "src/"
         },
         "files": [
             "src/Framework/functions.php"
         ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
     },
     "suggest": {
         "onion/rest": "A small library to return REST-compliant responses",
