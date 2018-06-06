@@ -14,12 +14,13 @@ use Tests\Dependency\Doubles\DependencyG;
 use Tests\Dependency\Doubles\DependencyH;
 use Tests\Dependency\Doubles\DependencyI;
 use Tests\Dependency\Doubles\FactoryStub;
+use Onion\Framework\Dependency\Exception\ContainerErrorException;
 
 class ContainerTest extends \PHPUnit_Framework_TestCase
 {
     public function testHasParameterCheck()
     {
-        $container = new Container(['bar' => 'baz']);
+        $container = new Container((object) ['bar' => 'baz']);
         $this->assertFalse($container->has('foo'));
         $this->assertTrue($container->has('bar'));
         $this->assertSame('baz', $container->get('bar'));
@@ -27,8 +28,8 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testRetrievalOfInvokables()
     {
-        $container = new Container([
-            'invokables' => [
+        $container = new Container((object) [
+            'invokables' => (object) [
                 \stdClass::class => \stdClass::class
             ]
         ]);
@@ -40,8 +41,8 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testRetrievalOfInvokablesWithBadMapping()
     {
-        $container = new Container([
-            'invokables' => [
+        $container = new Container((object) [
+            'invokables' => (object) [
                 \stdClass::class => 1
             ]
         ]);
@@ -52,10 +53,9 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testRetrievalWhenUsingAFactory()
     {
-        $factory = new FactoryStub(\stdClass::class);
-        $container = new Container([
-            'factories' => [
-                \stdClass::class => $factory
+        $container = new Container((object) [
+            'factories' => (object) [
+                \stdClass::class => FactoryStub::class
             ]
          ]);
 
@@ -67,9 +67,9 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     public function testRetrievalOfSharedDependenciesFromFactory()
     {
         $container = new Container(
-            [
-                'factories' => [
-                    \stdClass::class => new FactoryStub(new \stdClass())
+            (object) [
+                'factories' => (object) [
+                    \stdClass::class => FactoryStub::class,
                 ],
                 'shared' => [
                     \stdClass::class
@@ -95,12 +95,12 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     public function testRetrievalOfSharedDependenciesFromInvokables()
     {
         $container = new Container(
-            [
-                'invokables' => [
-                    \stdClass::class => new \stdClass()
+            (object) [
+                'invokables' => (object) [
+                    \stdClass::class => \stdClass::class
                 ],
                 'shared' => [
-                    \stdClass::class => \stdClass::class
+                    \stdClass::class
                 ]
             ]
         );
@@ -122,25 +122,9 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testExceptionOnNonExistingEntry()
     {
-        $container = new Container([]);
+        $container = new Container((object) []);
         $this->expectException(NotFoundExceptionInterface::class);
         $container->get('foo');
-    }
-
-    public function testExceptionWhenIdNotAString()
-    {
-        if (ini_get('zend.assertions') === '-1') {
-            $this->markTestSkipped('In production mode assertions probably are disabled and this test will fail');
-        }
-
-        if (ini_get('assert.exception') === '0') {
-            $this->markTestSkipped('The "assert.exception" should be set to "1" to throw the exception');
-        }
-
-        $container = new Container([]);
-        $this->expectException(\InvalidArgumentException::class);
-
-        $container->get(new \stdClass());
     }
 
     public function testExceptionWhenFactoryDoesNotImplementFactoryInterface()
@@ -154,8 +138,8 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         }
 
         $this->expectException(ContainerExceptionInterface::class);
-        $container = new Container([
-            'factories' => [
+        $container = new Container((object) [
+            'factories' => (object) [
                 \stdClass::class => function () {
                 }
             ]
@@ -175,8 +159,8 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
         $this->expectException(ContainerExceptionInterface::class);
         $container = new Container(
-            [
-                'factories' => [
+            (object) [
+                'factories' => (object) [
                     \stdClass::class => \stdClass::class
                 ]
             ]
@@ -188,8 +172,8 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     {
         $this->expectException(UnknownDependency::class);
         $container = new Container(
-            [
-                'invokables' => [
+            (object) [
+                'invokables' => (object) [
                     \stdClass::class => 'FooBarDoesNotExistMan'
                 ]
             ]
@@ -209,8 +193,8 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
         $this->expectException(ContainerExceptionInterface::class);
         $container = new Container(
-            [
-                'invokables' => [
+            (object) [
+                'invokables' => (object) [
                     \SplFixedArray::class => \stdClass::class
                 ]
             ]
@@ -228,14 +212,14 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testDependencyResolutionFromReflection()
     {
-        $container = new Container([]);
+        $container = new Container((object) []);
         $this->assertInstanceOf(DependencyD::class, $container->get(DependencyD::class));
     }
 
     public function testDependencyLookupWhenBoundToInterface()
     {
-        $container = new Container([
-            'invokables' => [
+        $container = new Container((object) [
+            'invokables' => (object) [
                 DependencyC::class => DependencyD::class
             ]
         ]);
@@ -245,7 +229,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testDependencyWithParameterOfUnknownType()
     {
-        $container = new Container([]);
+        $container = new Container((object) []);
 
         $this->expectException(ContainerExceptionInterface::class);
         $container->get(DependencyE::class);
@@ -253,7 +237,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testResolutionBasedOnSimpleVariableName()
     {
-        $container = new Container([
+        $container = new Container((object) [
             'name' => 'foo'
         ]);
 
@@ -263,9 +247,9 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testResolutionWithComplexVariableName()
     {
-        $container = new Container([
-            'test' => [
-                'mock' => [
+        $container = new Container((object) [
+            'test' => (object) [
+                'mock' => (object) [
                     'name' => 'foo'
                 ]
             ]
@@ -278,7 +262,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testExceptionWhenComplexResolutionFails()
     {
-        $container = new Container(['foo' => ['bar'=> 'baz']]);
+        $container = new Container((object) ['foo' => (object) ['bar'=> 'baz']]);
         $this->assertFalse($container->has('foo.bar.baz'));
 //        $this->expectException(ContainerExceptionInterface::class);
 //        $this->expectExceptionMessage('Unable to resolve "foo.bar.baz"');
@@ -286,39 +270,66 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testExceptionOnComplexResolutionTypeMismatch()
     {
-        $container = new Container(['test' => ['mock' => ['name' => 5]]]);
+        $container = new Container((object) ['test' => (object) ['mock' => (object) ['name' => 5]]]);
         $this->assertSame('5', $container->get(DependencyG::class)->getName());
     }
 
     public function testUnknownInterfaceResolution()
     {
-        $container = new Container([]);
+        $container = new Container((object) []);
         $this->expectException(ContainerExceptionInterface::class);
         $container->get(DependencyF::class);
     }
 
     public function testExceptionOnConstructorParameterNotAvailable()
     {
-        $container = new Container([]);
+        $container = new Container((object) []);
         $this->expectException(ContainerExceptionInterface::class);
         $this->expectExceptionMessage(
-            'Unable to resolve a class parameter "foo" of "Tests\Dependency\Doubles\DependencyH::__construct"'
+            'Unable to resolve a class parameter "foo"'
         );
         $container->get(DependencyH::class);
     }
 
     public function testRetrievalOfEmptyConstructorArgs()
     {
-        $container = new Container([]);
+        $container = new Container((object) []);
         $this->assertInstanceOf(DependencyI::class, $container->get(DependencyI::class));
     }
 
-    public function testRetrievalOfDotString()
+    public function testRetrievalOfDotStringFromObject()
     {
-        $container = new Container([
+        $container = new Container((object) [
+            'foo' => (object) ['bar' => 'baz']
+        ]);
+        $this->assertTrue($container->has('foo.bar'));
+        $this->assertSame($container->get('foo.bar'), 'baz');
+    }
+
+    public function testRetrievalOfDotStringFromArray()
+    {
+        $container = new Container((object) [
             'foo' => ['bar' => 'baz']
         ]);
         $this->assertTrue($container->has('foo.bar'));
         $this->assertSame($container->get('foo.bar'), 'baz');
+    }
+
+    public function testRetrievalOfDotStringFromNonExistingProp()
+    {
+        $container = new Container((object) [
+            'foo' => ['bar' => ['baz' => 'foobar']]
+        ]);
+        $this->assertFalse($container->has('foo.bar.connection'));
+        $this->expectException(UnknownDependency::class);
+        $this->expectExceptionMessage("Unable to resolve 'connection' of 'foo.bar.connection'");
+        $container->get('foo.bar.connection');
+    }
+
+    public function testExceptionWhenKeyDoesNotExist()
+    {
+        $container = new Container((object) []);
+        $this->expectException(ContainerErrorException::class);
+        $container->get(DependencyG::class);
     }
 }

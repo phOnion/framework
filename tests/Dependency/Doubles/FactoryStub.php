@@ -10,7 +10,7 @@ class FactoryStub implements FactoryInterface
      * @var object
      */
     protected $returnVal;
-    public function __construct($return)
+    public function __construct($return = \stdClass::class)
     {
         $this->returnVal = $return;
     }

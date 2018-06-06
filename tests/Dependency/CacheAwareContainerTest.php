@@ -18,7 +18,7 @@ class CacheAwareContainerTest extends \PHPUnit_Framework_TestCase
         {
             public function build(Container $container)
             {
-                return new \Onion\Framework\Dependency\Container([
+                return new \Onion\Framework\Dependency\Container((object) [
                     'bar' => 'baz'
                 ]);
             }
@@ -75,20 +75,6 @@ class CacheAwareContainerTest extends \PHPUnit_Framework_TestCase
         );
         $this->assertTrue($cacheContainer->has('bar'));
         $this->assertSame($cacheContainer->get('bar'), 'baz');
-    }
-
-    public function testExceptionWhenStoringValueInCacheFails()
-    {
-        $this->cache->has('bar')->willReturn(false);
-        $this->cache->set('bar', 'baz')->willReturn(false);
-
-        $cacheContainer = new CacheAwareContainer(
-            $this->factory,
-            $this->cache->reveal()
-        );
-        $this->assertTrue($cacheContainer->has('bar'));
-        $this->expectException(ContainerExceptionInterface::class);
-        $cacheContainer->get('bar');
     }
 
     public function testHonoringOfBlacklistedKeys()

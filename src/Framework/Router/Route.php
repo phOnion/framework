@@ -1,11 +1,12 @@
 <?php declare(strict_types=1);
 namespace Onion\Framework\Router;
 
+use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
+use Onion\Framework\Router\Exceptions\MissingHeaderException;
 use Onion\Framework\Router\Interfaces\RouteInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Onion\Framework\Router\Exceptions\MissingHeaderException;
 
 abstract class Route implements RouteInterface
 {
@@ -60,7 +61,7 @@ abstract class Route implements RouteInterface
 
     public function hasMethod(string $method): bool
     {
-        return $this->methods === [] || in_array($method, $this->methods);
+        return $this->methods === [] || in_array(strtolower($method), $this->methods);
     }
 
     public function withMethods(iterable $methods): RouteInterface
@@ -69,7 +70,7 @@ abstract class Route implements RouteInterface
             $methods = iterator_to_array($methods, false);
         }
         $self = clone $this;
-        $self->methods = $methods;
+        $self->methods = array_map('strtolower', $methods);
 
         return $self;
     }
@@ -96,13 +97,17 @@ abstract class Route implements RouteInterface
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $response = $this->getRequestHandler()->handle($request);
-
         foreach ($this->getHeaders() as $header => $required) {
-            if ((bool) $required && !$response->hasHeader($header)) {
+            if ((bool) $required && !$request->hasHeader($header)) {
                 throw new MissingHeaderException($header);
             }
         }
+
+        if (!$this->hasMethod($request->getMethod())) {
+            throw new MethodNotAllowedException($this->getMethods());
+        }
+
+        $response = $this->getRequestHandler()->handle($request);
 
         return $response;
     }

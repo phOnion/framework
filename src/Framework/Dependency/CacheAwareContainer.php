@@ -89,15 +89,13 @@ class CacheAwareContainer implements ContainerInterface
      */
     public function get($key)
     {
-        if (!in_array($key, $this->blacklist, true) && $this->cache->has($key)) {
+        if ($this->cache->has($key)) {
             return $this->cache->get($key);
         }
 
         $dependency = $this->resolveContainer()->get($key);
-        if (!in_array($key, $this->blacklist, true) && !$this->cache->set($key, $dependency)) {
-            throw new ContainerErrorException(
-                "Unable to persist resolved dependency '$key' in cache"
-            );
+        if (!in_array($key, $this->blacklist, true)) {
+            $this->cache->set($key, $dependency);
         }
 
         return $dependency;

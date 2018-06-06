@@ -17,8 +17,6 @@ use Psr\Container\NotFoundExceptionInterface;
 final class Container implements AttachableContainer
 {
     private $dependencies = [];
-    private $invokables = [];
-    private $factories = [];
     private $shared = [];
 
     /** @var ContainerInterface */
@@ -27,29 +25,21 @@ final class Container implements AttachableContainer
     /**
      * Container constructor.
      *
-     * @param array $dependencies
+     * @param object $dependencies
      */
-    public function __construct(array $dependencies)
+    public function __construct(object $dependencies)
     {
         $this->dependencies = $dependencies;
-        if (isset($this->dependencies['invokables'])) {
-            $this->invokables = $this->dependencies['invokables'];
-            unset($this->dependencies['invokables']);
-        }
 
-        if (isset($this->dependencies['factories'])) {
-            $this->factories = $this->dependencies['factories'];
-            unset($this->dependencies['factories']);
+        if (isset($this->dependencies->shared)) {
+            $this->shared = $this->dependencies->shared ?? [];
+            unset($this->dependencies->shared);
         }
-
-        if (isset($this->dependencies['shared'])) {
-            $this->shared = $this->dependencies['shared'] ?? [];
-            unset($this->dependencies['shared']);
-        }
-
-        $this->dependencies = array_merge($this->dependencies, $dependencies);
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function attach(ContainerInterface $container): void
     {
         $this->delegate = $container;
@@ -68,21 +58,18 @@ final class Container implements AttachableContainer
      */
     public function get($key)
     {
-        assert(is_string($key), new \InvalidArgumentException(sprintf(
-            'Dependency identifier must be a string, "%s" given',
-            gettype($key)
-        )));
+        $key = (string) $key;
 
-        if (array_key_exists($key, $this->dependencies)) {
-            return $this->dependencies[$key];
+        if (isset($this->dependencies->$key)) {
+            return $this->dependencies->$key;
         }
 
         try {
-            if (isset($this->invokables[$key])) {
+            if (isset($this->dependencies->invokables->$key)) {
                 return $this->retrieveInvokable($key);
             }
 
-            if (isset($this->factories[$key])) {
+            if (isset($this->dependencies->factories->$key)) {
                 return $this->retrieveFromFactory($key);
             }
 
@@ -91,9 +78,9 @@ final class Container implements AttachableContainer
             }
 
             if (is_string($key)) {
-                if (strpos($this->convertVariableName($key), '.') !== false) {
-                    $key=$this->convertVariableName($key);
+                $key = $this->convertVariableName($key);
 
+                if (strpos($key, '.') !== false) {
                     return $this->retrieveFromDotString($key);
                 }
             }
@@ -114,28 +101,31 @@ final class Container implements AttachableContainer
      */
     public function has($key): bool
     {
+        $key = (string) $key;
         $exists = (
-            array_key_exists($key, $this->dependencies) ||
-            isset($this->dependencies['invokables'][$key]) ||
-            isset($this->dependencies['factories'][$key]) ||
+            isset($this->dependencies->$key) ||
+            isset($this->dependencies->invokables->$key) ||
+            isset($this->dependencies->factories->$key) ||
             class_exists($key)
         );
 
         if (!$exists) {
-            if (strpos(($namePath = $this->convertVariableName($key)), '.') !== false) {
-                $keys = explode('.', $namePath);
-                $ref = &$this->dependencies;
-                while ($keys !== []) {
-                    $component = array_shift($keys);
-                    if (isset($ref[$component])) {
-                        $exists=true;
-                        $ref= &$ref[$component];
-                        continue;
-                    }
+            $fragments = explode('.', $this->convertVariableName($key));
+            $component = &$this->dependencies;
+            foreach ($fragments as $fragment) {
+                $exists = true;
 
-                    $exists = false;
-                    break;
+                if (is_array($component) && isset($component[$fragment])) {
+                    $component = &$component[$fragment];
+                    continue;
                 }
+
+                if (is_object($component) && isset($component->$fragment)) {
+                    $component = &$component->$fragment;
+                    continue;
+                }
+
+                return false;
             }
         }
 
@@ -148,11 +138,11 @@ final class Container implements AttachableContainer
      * @throws \RuntimeException
      * @throws UnknownDependency
      */
-    private function retrieveInvokable(string $className)
+    private function retrieveInvokable(string $className): object
     {
-        $dependency = $this->invokables[$className];
+        $dependency = $this->dependencies->invokables->$className;
         if (is_object($dependency)) {
-            return $dependency;
+            return $this->enforceReturnType($className, $dependency);
         }
 
         if (!is_string($dependency)) {
@@ -168,7 +158,12 @@ final class Container implements AttachableContainer
             );
         }
 
-        return $this->enforceReturnType($className, $this->retrieveFromReflection($dependency));
+        $result = $this->retrieveFromReflection($dependency);
+        if (in_array($className, $this->shared, true)) {
+            $this->dependencies->invokables->{$className} = $result;
+        }
+
+        return $this->enforceReturnType($className, $result);
     }
 
     /**
@@ -176,69 +171,80 @@ final class Container implements AttachableContainer
      * @return mixed|object
      * @throws ContainerErrorException
      */
-    private function retrieveFromReflection(string $className)
+    private function retrieveFromReflection(string $className): object
     {
         $classReflection = new \ReflectionClass($className);
         if ($classReflection->getConstructor() === null) {
             return $classReflection->newInstanceWithoutConstructor();
         }
 
-        if ($classReflection->getConstructor() !== null && $classReflection->getConstructor()->getParameters() === []) {
+        if ($classReflection->getConstructor()->getParameters() === []) {
             return $classReflection->newInstance();
         }
 
         $constructorRef = $classReflection->getConstructor();
         $parameters = [];
         foreach ($constructorRef->getParameters() as $parameter) {
-            if (!$parameter->hasType() && !$parameter->isOptional() && !$this->has($parameter->getName())) {
-                throw new ContainerErrorException(sprintf(
-                    'Unable to resolve a class parameter "%s" of "%s::%s" without type ',
-                    $parameter->getName(),
-                    $classReflection->getName(),
-                    $constructorRef->getName()
-                ));
-            }
-
-            if ($this->has((string)$parameter->getType())) {
-                $parameters[$parameter->getPosition()] = $this->get((string)$parameter->getType());
-                continue;
-            }
-
-            if ($parameter->getType() !== null && $parameter->getType()->isBuiltin() && !$parameter->isOptional()) {
-                $parameters[$parameter->getPosition()] = $this->get($parameter->getName());
-                continue;
-            }
-
-            if ($parameter->isOptional()) {
-                $parameters[$parameter->getPosition()] = $this->has($parameter->getName()) ?
-                    $this->get($parameter->getName()) : $parameter->getDefaultValue();
-                continue;
-            }
-
-            throw new ContainerErrorException(sprintf(
-                'Unable to find match for type: "%s". Consider using a factory',
-                $parameter->getType()
-            ));
+            $parameters[$parameter->getPosition()] = $this->resolveReflectionParameter($parameter);
         }
 
         return $this->enforceReturnType($className, $classReflection->newInstance(...$parameters));
+    }
+
+    private function resolveReflectionParameter(\ReflectionParameter $parameter)
+    {
+        assert(
+            $parameter->hasType() || $parameter->isOptional() || $this->has($parameter->getName()),
+            new ContainerErrorException(sprintf(
+                'Unable to resolve a class parameter "%s" without type.',
+                $parameter->getName()
+            ))
+        );
+
+        try {
+            if ($parameter->hasType()) {
+                if (!$parameter->getType()->isBuiltin() && $this->has($parameter->getType())) {
+                    return $this->get($parameter->getType());
+                }
+
+                if (!$parameter->isOptional()) {
+                    return $this->get(strtolower(preg_replace('/(?<!^)[A-Z]/', '.$0', $parameter->getName())));
+                }
+            }
+
+            if ($parameter->isOptional()) {
+                return $this->has($parameter->getName()) ?
+                    $this->get($parameter->getName()) : $parameter->getDefaultValue();
+            }
+        } catch (UnknownDependency $ex) {
+            throw new ContainerErrorException(sprintf(
+                'Unable to find match for type: "%s". Consider using a factory',
+                $parameter->getType() ?? $parameter->getName()
+            ), 0, $ex);
+        }
     }
 
     /**
      * @param string $className
      * @return mixed
      */
-    private function retrieveFromFactory(string $className)
+    private function retrieveFromFactory(string $className): object
     {
-        $factory = $this->factories[$className];
-        if (!is_object($factory)) {
-            $factory = new $factory();
-        }
+        $name = $this->dependencies->factories->$className;
+        assert(
+            is_string($name),
+            new ContainerErrorException(
+                "Registered factory for '{$className}' must be a valid FQCN, " . gettype($className) . ' given'
+            )
+        );
+
+        $factory = (new \ReflectionClass($name))
+            ->newInstance();
 
         assert(
             $factory instanceof FactoryInterface,
             new ContainerErrorException(
-                "Factory for '$className' does not implement Dependency\\Interfaces\\FactoryInterface"
+                "Factory for '{$className}' does not implement Dependency\\Interfaces\\FactoryInterface"
             )
         );
 
@@ -247,8 +253,11 @@ final class Container implements AttachableContainer
          */
         $result = $this->enforceReturnType($className, $factory->build($this->delegate ?? $this));
         if (in_array($className, $this->shared, true)) {
-            $this->invokables[$className] = $result;
-            unset($this->factories[$className]);
+            if (!isset($this->dependencies->invokables)) {
+                $this->dependencies->invokables = new \stdClass;
+            }
+
+            $this->dependencies->invokables->{$className} = $result;
         }
 
         return $result;
@@ -261,30 +270,22 @@ final class Container implements AttachableContainer
     private function retrieveFromDotString(string $name)
     {
         $fragments = explode('.', $name);
-        $lead = array_shift($fragments);
-        $stack = "$lead";
-
-        assert(
-            isset($this->dependencies[$lead]),
-            new ContainerErrorException(
-                "No definition available for '{$stack}' inside container"
-            )
-        );
-
-        $component = $this->dependencies[$lead];
+        $component = &$this->dependencies;
 
         foreach ($fragments as $fragment) {
-            $stack .= ".$fragment";
-            assert(
-                (
-                    is_array($component) || $component instanceof \ArrayAccess || $component instanceof \ArrayObject
-                ) && isset($component[$fragment]),
-                new ContainerErrorException(
-                    "No definition available for '{$stack}' inside container"
-                )
-            );
+            if (is_array($component) && isset($component[$fragment])) {
+                $component = &$component[$fragment];
+                continue;
+            }
 
-            $component = $component[$fragment];
+            if (is_object($component) && isset($component->$fragment)) {
+                $component = &$component->$fragment;
+                continue;
+            }
+
+            throw new UnknownDependency(
+                "Unable to resolve '{$fragment}' of '{$name}'"
+            );
         }
 
         return $component;
@@ -296,7 +297,7 @@ final class Container implements AttachableContainer
      */
     private function convertVariableName(string $name): string
     {
-        return str_replace('_', '.', strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $name)));
+        return str_replace('\\', '', strtolower(preg_replace('/(?<!^)[A-Z]/', '.$0', $name)));
     }
 
     /**
@@ -309,15 +310,15 @@ final class Container implements AttachableContainer
      * @return mixed
      * @throws ContainerErrorException
      */
-    private function enforceReturnType($identifier, $result)
+    private function enforceReturnType(string $identifier, object $result): object
     {
         if (is_string($identifier)) {
             if (class_exists($identifier) || interface_exists($identifier) ||
-                (function_exists("is_$identifier"))
+                (function_exists("is_{$identifier}"))
             ) {
                 assert(
                     $result instanceof $identifier ||
-                    (function_exists("is_$identifier") && call_user_func("is_$identifier", $result)),
+                    (function_exists("is_{$identifier}") && call_user_func("is_{$identifier}", $result)),
                     new ContainerErrorException(sprintf(
                         'Unable to verify that "%s" is of type "%s"',
                         is_object($result) ? get_class($result) : $result,

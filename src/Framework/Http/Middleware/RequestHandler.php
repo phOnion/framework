@@ -7,7 +7,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 final class RequestHandler implements RequestHandlerInterface
 {
-    /** @var MiddlewareInterface */
+    /** @var \Iterator */
     protected $middleware;
 
     /** @var Message\ResponseInterface */

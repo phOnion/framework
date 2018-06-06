@@ -9,6 +9,7 @@ use Prophecy\Argument\Token\AnyValueToken;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Onion\Framework\Router\Exceptions\MissingHeaderException;
+use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
 
 class RegexRouteTest extends \PHPUnit_Framework_TestCase
 {
@@ -32,9 +33,9 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
 
     public function testPatternHandling()
     {
-        $route = new RegexRoute('/[test][/[bar]][/[num:\d+]]');
-        $this->assertSame('/[test][/[bar]][/[num:\d+]]', $route->getName());
-        $this->assertSame('/[test][/[bar]][/[num:\d+]]', $route->getPattern());
+        $route = new RegexRoute('/{test}{/{bar}{/{num:\d+}}?}?');
+        $this->assertSame('/{test}{/{bar}{/{num:\d+}}?}?', $route->getName());
+        $this->assertSame('/{test}{/{bar}{/{num:\d+}}?}?', $route->getPattern());
         $this->assertTrue($route->isMatch('/foo'));
         $this->assertSame(['test' => 'foo'], $route->getParameters());
         $this->assertTrue($route->isMatch('/foo/baz'));
@@ -56,13 +57,13 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
 
 
         $response = $this->prophesize(ResponseInterface::class);
-        $response->hasHeader('content-type')
-            ->willReturn(true);
 
         $uri = $this->prophesize(UriInterface::class);
 
         $request = $this->prophesize(ServerRequestInterface::class);
+        $request->hasHeader('content-type')->willReturn(true);
         $request->getUri()->willReturn($uri->reveal());
+        $request->getMethod()->willReturn('get');
 
         $handler = $this->prophesize(RequestHandlerInterface::class);
         $handler->handle(new AnyValueToken())->willReturn($response->reveal());
@@ -85,12 +86,11 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
         ];
 
         $response = $this->prophesize(ResponseInterface::class);
-        $response->hasHeader('content-type')
-            ->willReturn(false);
 
         $uri = $this->prophesize(UriInterface::class);
 
         $request = $this->prophesize(ServerRequestInterface::class);
+        $request->hasHeader('content-type')->willReturn(false);
         $request->getUri()->willReturn($uri->reveal());
 
         $handler = $this->prophesize(RequestHandlerInterface::class);
@@ -105,6 +105,22 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
         $route->handle($request->reveal());
     }
 
+    public function testExceptionWhenMethodNotSupported()
+    {
+        $uri = $this->prophesize(UriInterface::class);
+
+        $request = $this->prophesize(ServerRequestInterface::class);
+        $request->getMethod()->willReturn('POST');
+        $request->hasHeader('content-type')->willReturn(false);
+        $request->getUri()->willReturn($uri->reveal());
+
+        $route = $this->route->withMethods(['GET']);
+        $this->assertNotSame($this->route, $route);
+
+        $this->expectException(MethodNotAllowedException::class);
+        $route->handle($request->reveal());
+    }
+
     public function testRouteMethods()
     {
         $route = $this->route->withMethods(new \ArrayIterator(['GET', 'HEAD']));
@@ -112,6 +128,6 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($route->hasMethod('GET'));
         $this->assertTrue($route->hasMethod('HEAD'));
         $this->assertFalse($route->hasMethod('POST'));
-        $this->assertSame(['GET', 'HEAD'], $route->getMethods());
+        $this->assertSame(['get', 'head'], $route->getMethods());
     }
 }
