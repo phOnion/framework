@@ -117,6 +117,36 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(428, $response->getStatusCode());
     }
 
+    public function testGenericHeaderException()
+    {
+        $this->request->getMethod()->willReturn('GET');
+        $this->route->handle(new AnyValueToken())->willThrow(
+            new MissingHeaderException('x-custom-header')
+        );
+
+        $this->route->isMatch('/')->willReturn(true);
+        $app = new Application([$this->route->reveal()]);
+        $app->setLogger(new VoidLogger);
+        $response = $app->handle($this->request->reveal());
+
+        $this->assertSame(400, $response->getStatusCode());
+    }
+
+    public function testBadMethodCallException()
+    {
+        $this->request->getMethod()->willReturn('GET');
+        $this->route->handle(new AnyValueToken())->willThrow(
+            new \BadMethodCallException('Foo')
+        );
+
+        $this->route->isMatch('/')->willReturn(true);
+        $app = new Application([$this->route->reveal()]);
+        $app->setLogger(new VoidLogger);
+        $response = $app->handle($this->request->reveal());
+
+        $this->assertSame(503, $response->getStatusCode());
+    }
+
     public function testApplicationRun()
     {
         $this->request->getMethod()->willReturn('GET');
@@ -128,5 +158,16 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         $response = $app->handle($this->request->reveal());
 
         $this->assertSame(500, $response->getStatusCode());
+    }
+
+    public function testRouteParameters()
+    {
+        $this->request->withAttribute('test', 'test')->shouldBeCalled();
+        $this->route->isMatch('/')->willReturn(true);
+        $this->route->getParameters()->willReturn(['test' => 'test']);
+        $app = new Application([$this->route->reveal()]);
+        $app->setLogger(new VoidLogger);
+
+        $app->handle($this->request->reveal());
     }
 }

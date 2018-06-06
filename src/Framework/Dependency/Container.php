@@ -185,44 +185,43 @@ final class Container implements AttachableContainer
         $constructorRef = $classReflection->getConstructor();
         $parameters = [];
         foreach ($constructorRef->getParameters() as $parameter) {
-            assert(
-                $parameter->hasType() || $parameter->isOptional() || $this->has($parameter->getName()),
-                new ContainerErrorException(sprintf(
-                    'Unable to resolve a class parameter "%s" of "%s::%s" without type ',
-                    $parameter->getName(),
-                    $classReflection->getName(),
-                    $constructorRef->getName()
-                ))
-            );
-
-            try {
-                if ($parameter->hasType()) {
-                    if (!$parameter->getType()->isBuiltin() && $this->has($parameter->getType())) {
-                        $parameters[$parameter->getPosition()] = $this->get($parameter->getType());
-                        continue;
-                    }
-
-                    if (!$parameter->isOptional()) {
-                        $parameters[$parameter->getPosition()] =
-                            $this->get(strtolower(preg_replace('/(?<!^)[A-Z]/', '.$0', $parameter->getName())));
-                        continue;
-                    }
-                }
-
-                if ($parameter->isOptional()) {
-                    $parameters[$parameter->getPosition()] = $this->has($parameter->getName()) ?
-                        $this->get($parameter->getName()) : $parameter->getDefaultValue();
-                    continue;
-                }
-            } catch (UnknownDependency $ex) {
-                throw new ContainerErrorException(sprintf(
-                    'Unable to find match for type: "%s". Consider using a factory',
-                    $parameter->getType() ?? $parameter->getName()
-                ), 0, $ex);
-            }
+            $parameters[$parameter->getPosition()] = $this->resolveReflectionParameter($parameter);
         }
 
         return $this->enforceReturnType($className, $classReflection->newInstance(...$parameters));
+    }
+
+    private function resolveReflectionParameter(\ReflectionParameter $parameter)
+    {
+        assert(
+            $parameter->hasType() || $parameter->isOptional() || $this->has($parameter->getName()),
+            new ContainerErrorException(sprintf(
+                'Unable to resolve a class parameter "%s" without type.',
+                $parameter->getName()
+            ))
+        );
+
+        try {
+            if ($parameter->hasType()) {
+                if (!$parameter->getType()->isBuiltin() && $this->has($parameter->getType())) {
+                    return $this->get($parameter->getType());
+                }
+
+                if (!$parameter->isOptional()) {
+                    return $this->get(strtolower(preg_replace('/(?<!^)[A-Z]/', '.$0', $parameter->getName())));
+                }
+            }
+
+            if ($parameter->isOptional()) {
+                return $this->has($parameter->getName()) ?
+                    $this->get($parameter->getName()) : $parameter->getDefaultValue();
+            }
+        } catch (UnknownDependency $ex) {
+            throw new ContainerErrorException(sprintf(
+                'Unable to find match for type: "%s". Consider using a factory',
+                $parameter->getType() ?? $parameter->getName()
+            ), 0, $ex);
+        }
     }
 
     /**
