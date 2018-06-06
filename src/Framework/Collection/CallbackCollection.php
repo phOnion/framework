@@ -18,6 +18,6 @@ class CallbackCollection extends Collection
 
     public function current()
     {
-        return call_user_func($this->callback, parent::current(), $this->key());
+        return call_user_func($this->callback, $this, $this->key());
     }
 }
