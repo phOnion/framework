@@ -157,7 +157,9 @@ class Application implements ApplicationInterface, LoggerAwareInterface
             $this->logger->warning($ex->getMessage(), [
                 'exception' => $ex
             ]);
-            return (new Response(in_array($request->getMethod(), ['get', 'head']) ? 503 : 501));
+            return (new Response(
+                in_array(strtolower($request->getMethod()), ['get', 'head']) ? 503 : 501
+            ));
         } catch (\Throwable $ex) {
             $this->logger->critical($ex->getMessage(), [
                 'exception' => $ex
