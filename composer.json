@@ -26,12 +26,16 @@
     },
     "autoload": {
         "psr-4": {
-            "Onion\\": "src/",
-            "Tests\\": "tests/"
+            "Onion\\": "src/"
         },
         "files": [
             "src/Framework/functions.php"
         ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
     },
     "suggest": {
         "onion/rest": "A small library to return REST-compliant responses",
