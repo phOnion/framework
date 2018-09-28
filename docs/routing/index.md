@@ -18,7 +18,7 @@ return [
             'pattern' => '/', // Required. Not changed at all
             'methods' => [], // Optional
             'class' => \Onion\Framework\Router\StaticRoute::class, // New! Optional, what class to use when building the route
-            'headers' => [ // NEW! Optional, a list of headers to enforce to the route's response
+            'headers' => [ // NEW! Optional, a list of headers to enforce to the route's request
                 'x-random-stuff' => true,
                 'x-more-random-stuff' => false,
             ],
@@ -62,7 +62,7 @@ The full route structure looks like this:
 - `'middleware'` - A list of middleware keys that handle the route. Ignored if `request_handler` is present
 - `'class'` - A class which will handle the route (Defaults to `RegexRoute`)
 - `'methods'` - A list of HTTP methods to restrict the route to. Useful for early termination
-- `'headers'` - A list of headers to enforce in the request and mark them as required or not
+- `'headers'` - A list of headers to enforce in the request and mark them as required or not.
 
 Route headers could be handy when needing to enforce a rule on a given route.
 For example require the requests to provide an `Authorization` header will
