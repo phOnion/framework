@@ -25,15 +25,15 @@ final class Container implements AttachableContainer
     /**
      * Container constructor.
      *
-     * @param object $dependencies
+     * @param array $dependencies
      */
-    public function __construct(object $dependencies)
+    public function __construct(array $dependencies)
     {
         $this->dependencies = $dependencies;
 
-        if (isset($this->dependencies->shared)) {
-            $this->shared = $this->dependencies->shared ?? [];
-            unset($this->dependencies->shared);
+        if (isset($this->dependencies['shared'])) {
+            $this->shared = $this->dependencies['shared'] ?? [];
+            unset($this->dependencies['shared']);
         }
     }
 
@@ -60,16 +60,16 @@ final class Container implements AttachableContainer
     {
         $key = (string) $key;
 
-        if (isset($this->dependencies->$key)) {
-            return $this->dependencies->$key;
+        if (isset($this->dependencies[$key])) {
+            return $this->dependencies[$key];
         }
 
         try {
-            if (isset($this->dependencies->invokables->$key)) {
+            if (isset($this->dependencies['invokables'][$key])) {
                 return $this->retrieveInvokable($key);
             }
 
-            if (isset($this->dependencies->factories->$key)) {
+            if (isset($this->dependencies['factories'][$key])) {
                 return $this->retrieveFromFactory($key);
             }
 
@@ -103,9 +103,9 @@ final class Container implements AttachableContainer
     {
         $key = (string) $key;
         $exists = (
-            isset($this->dependencies->$key) ||
-            isset($this->dependencies->invokables->$key) ||
-            isset($this->dependencies->factories->$key) ||
+            isset($this->dependencies[$key]) ||
+            isset($this->dependencies['invokables'][$key]) ||
+            isset($this->dependencies['factories'][$key]) ||
             class_exists($key)
         );
 
@@ -140,7 +140,7 @@ final class Container implements AttachableContainer
      */
     private function retrieveInvokable(string $className): object
     {
-        $dependency = $this->dependencies->invokables->$className;
+        $dependency = $this->dependencies['invokables'][$className];
         if (is_object($dependency)) {
             return $this->enforceReturnType($className, $dependency);
         }
@@ -160,7 +160,7 @@ final class Container implements AttachableContainer
 
         $result = $this->retrieveFromReflection($dependency);
         if (in_array($className, $this->shared, true)) {
-            $this->dependencies->invokables->{$className} = $result;
+            $this->dependencies['invokables'][$className] = $result;
         }
 
         return $this->enforceReturnType($className, $result);
@@ -230,7 +230,7 @@ final class Container implements AttachableContainer
      */
     private function retrieveFromFactory(string $className): object
     {
-        $name = $this->dependencies->factories->$className;
+        $name = $this->dependencies['factories'][$className];
         assert(
             is_string($name),
             new ContainerErrorException(
@@ -253,11 +253,11 @@ final class Container implements AttachableContainer
          */
         $result = $this->enforceReturnType($className, $factory->build($this->delegate ?? $this));
         if (in_array($className, $this->shared, true)) {
-            if (!isset($this->dependencies->invokables)) {
-                $this->dependencies->invokables = new \stdClass;
+            if (!isset($this->dependencies['invokables'])) {
+                $this->dependencies['invokables'] = [];
             }
 
-            $this->dependencies->invokables->{$className} = $result;
+            $this->dependencies['invokables'][$className] = $result;
         }
 
         return $result;

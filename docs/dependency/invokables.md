@@ -12,8 +12,8 @@ chance of making typos as most editors will suggest the class proper class name.
 For example:
 
 ```php
-return (object) [
-    'invokables' => (object) [
+return  [
+    'invokables' =>  [
          \Psr\Http\Message\ResponseInterface::class =>
                 \Guzzle\Psr7\Response::class
     ]
