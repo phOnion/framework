@@ -7,8 +7,8 @@ another remote service. It is supported for both `invokable` and `factories`
 entries. In those cases you might do something like:
 
 ```php
-return (object) [
-    'database' => (object) [
+return  [
+    'database' =>  [
         'driver' => 'mysqli',
         'database' => __DIR__ . '/some.db',
     ],

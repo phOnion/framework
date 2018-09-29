@@ -11,9 +11,9 @@ array you can use a dot notation, which the container will interpret as indicati
 of the array. Say for example, you have an array:
 
 ```php
-return (object) [
-    'doctrine' => (object) [
-        'connection' => (object) [
+return [
+    'doctrine' =>  [
+        'connection' =>  [
             'dbname' => 'foo',
         ],
     ],

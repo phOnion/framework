@@ -5,8 +5,8 @@ to build the dependency.
 For example:
 
 ```php
-return (object) [
-    'factories' => (object) [
+return  [
+    'factories' =>  [
          Framework\Application\Application::class =>
                 Framework\Application\Factory\ApplicationFactory::class,
     ]

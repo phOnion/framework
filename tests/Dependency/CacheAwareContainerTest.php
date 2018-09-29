@@ -18,7 +18,7 @@ class CacheAwareContainerTest extends \PHPUnit_Framework_TestCase
         {
             public function build(Container $container)
             {
-                return new \Onion\Framework\Dependency\Container((object) [
+                return new \Onion\Framework\Dependency\Container([
                     'bar' => 'baz'
                 ]);
             }
