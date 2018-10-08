@@ -52,7 +52,7 @@ function merge(array $array1, array $array2): array
             }
 
             if (is_array($value) && is_array($array1[$key])) {
-                $array1[$key] = array_merge_distinct($array1[$key], $value);
+                $array1[$key] = merge($array1[$key], $value);
                 continue;
             }
 
