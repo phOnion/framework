@@ -4,6 +4,7 @@ namespace Onion\Framework\Dependency;
 use Onion\Framework\Dependency\Exception\ContainerErrorException;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
 use Onion\Framework\Dependency\Interfaces\AttachableContainer;
+use Onion\Framework\Dependency\Interfaces\FactoryBuilderInterface;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -238,20 +239,27 @@ final class Container implements AttachableContainer
             )
         );
 
-        $factory = (new \ReflectionClass($name))
-            ->newInstance();
+        $container = $this->delegate ?? $this;
+        $factoryReflection = new \ReflectionClass($name);
 
         assert(
-            $factory instanceof FactoryInterface,
+            $factoryReflection->implementsInterface(FactoryInterface::class) ||
+                $factoryReflection->implementsInterface(FactoryBuilderInterface::class),
             new ContainerErrorException(
-                "Factory for '{$className}' does not implement Dependency\\Interfaces\\FactoryInterface"
+                "Factory for '{$className}' does not implement any of Dependency\\Interfaces"
             )
         );
+        $factory = $container->get($name);
+
+        $factoryResult = $factory->build($container, $className);
+        if ($factory instanceof FactoryBuilderInterface && $factoryResult instanceof FactoryInterface) {
+            $factoryResult = $factoryResult->build($container);
+        }
 
         /**
          * @var $factory FactoryInterface
          */
-        $result = $this->enforceReturnType($className, $factory->build($this->delegate ?? $this));
+        $result = $this->enforceReturnType($className, $factoryResult);
         if (in_array($className, $this->shared, true)) {
             if (!isset($this->dependencies['invokables'])) {
                 $this->dependencies['invokables'] = [];
