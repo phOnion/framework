@@ -46,9 +46,7 @@ class DelegateContainer implements ContainerInterface, \Countable
                     return $hit;
                 }
 
-                if (is_array($result)) {
-                    $result = merge($result ?? [], $hit);
-                }
+                $result = merge($result ?? [], $hit);
             }
         }
 
