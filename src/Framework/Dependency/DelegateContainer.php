@@ -4,6 +4,7 @@ namespace Onion\Framework\Dependency;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
 use Onion\Framework\Dependency\Interfaces\AttachableContainer;
 use Psr\Container\ContainerInterface;
+use function Onion\Framework\merge;
 
 class DelegateContainer implements ContainerInterface, \Countable
 {
@@ -35,11 +36,24 @@ class DelegateContainer implements ContainerInterface, \Countable
             throw new Exception\UnknownDependency("No containers provided, can't retrieve '$id'");
         }
 
+        $result = null;
         foreach ($this->containers as $container) {
             /** @var ContainerInterface $container */
             if ($container->has($id)) {
-                return $container->get($id);
+                $hit = $container->get($id);
+
+                if (!is_array($hit)) {
+                    return $hit;
+                }
+
+                if (is_array($result)) {
+                    $result = merge($result ?? [], $hit);
+                }
             }
+        }
+
+        if ($result !== null) {
+            return $result;
         }
 
         throw new Exception\UnknownDependency("Unable to resolve '$id'");
