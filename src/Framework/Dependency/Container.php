@@ -121,11 +121,6 @@ final class Container implements AttachableContainer
                     continue;
                 }
 
-                if (is_object($component) && isset($component->$fragment)) {
-                    $component = &$component->$fragment;
-                    continue;
-                }
-
                 return false;
             }
         }
@@ -283,11 +278,6 @@ final class Container implements AttachableContainer
         foreach ($fragments as $fragment) {
             if (is_array($component) && isset($component[$fragment])) {
                 $component = &$component[$fragment];
-                continue;
-            }
-
-            if (is_object($component) && isset($component->$fragment)) {
-                $component = &$component->$fragment;
                 continue;
             }
 
