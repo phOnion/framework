@@ -44,6 +44,30 @@ class DelegateContainerTest extends \PHPUnit_Framework_TestCase
         $delegate->get('foo');
     }
 
+    public function testAggregatedRetrieval()
+    {
+        $c = $this->prophesize(Container::class);
+        $c->has('list')->willReturn(true);
+        $c->get('list')->willReturn([
+            'foo' => 'bar',
+        ]);
+        $c->attach(new AnyValueToken())->willReturn(null);
+
+        $c1 = $this->prophesize(Container::class);
+        $c1->has('list')->willReturn(true);
+        $c1->get('list')->willReturn([
+            'bar' => 'baz',
+        ]);
+        $c1->attach(new AnyValueToken())->willReturn(null);
+
+        $container = new DelegateContainer([$c->reveal(), $c1->reveal()]);
+
+        $this->assertSame([
+            'foo' => 'bar',
+            'bar' => 'baz',
+        ], $container->get('list'));
+    }
+
     public function testRetrievalExceptionWithoutContainers()
     {
         $delegate = new DelegateContainer([]);
