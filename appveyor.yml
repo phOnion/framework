@@ -43,7 +43,6 @@ install:
             Add-Content php.ini "`n extension=php_curl.dll"
             Add-Content php.ini "`n extension=php_mbstring.dll"
             Add-Content php.ini "`n extension=php_fileinfo.dll"
-            Add-Content php.ini "`n extension=php_fileinfo.dll"
             Add-Content php.ini "`n zend.assertions=1"
             Add-Content php.ini "`n assert.exception=1"
 
