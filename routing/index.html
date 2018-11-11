@@ -190,7 +190,7 @@ of the response to the client.</p>
             'pattern' =&gt; '/', // Required. Not changed at all
             'methods' =&gt; [], // Optional
             'class' =&gt; \Onion\Framework\Router\StaticRoute::class, // New! Optional, what class to use when building the route
-            'headers' =&gt; [ // NEW! Optional, a list of headers to enforce to the route's response
+            'headers' =&gt; [ // NEW! Optional, a list of headers to enforce to the route's request
                 'x-random-stuff' =&gt; true,
                 'x-more-random-stuff' =&gt; false,
             ],
@@ -231,7 +231,7 @@ data to the logic or implement some sort of a redirect route.</p>
 <li><code>'middleware'</code> - A list of middleware keys that handle the route. Ignored if <code>request_handler</code> is present</li>
 <li><code>'class'</code> - A class which will handle the route (Defaults to <code>RegexRoute</code>)</li>
 <li><code>'methods'</code> - A list of HTTP methods to restrict the route to. Useful for early termination</li>
-<li><code>'headers'</code> - A list of headers to enforce in the request and mark them as required or not</li>
+<li><code>'headers'</code> - A list of headers to enforce in the request and mark them as required or not.</li>
 </ul>
 <p>Route headers could be handy when needing to enforce a rule on a given route.
 For example require the requests to provide an <code>Authorization</code> header will

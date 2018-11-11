@@ -170,8 +170,8 @@ consequent request made to the container. A good example for this would be
 the <code>\PDO</code> or other object that upon instantiation opens a connection to
 another remote service. It is supported for both <code>invokable</code> and <code>factories</code>
 entries. In those cases you might do something like:</p>
-<pre><code class="php">return (object) [
-    'database' =&gt; (object) [
+<pre><code class="php">return  [
+    'database' =&gt;  [
         'driver' =&gt; 'mysqli',
         'database' =&gt; __DIR__ . '/some.db',
     ],

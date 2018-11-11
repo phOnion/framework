@@ -174,9 +174,9 @@ have 3 special keys: <code>invokables</code>, <code>factories</code> and <code>s
 any operations on it. Also if you need to access a specific key which is located in a nested
 array you can use a dot notation, which the container will interpret as indication for a level
 of the array. Say for example, you have an array:</p>
-<pre><code class="php">return (object) [
-    'doctrine' =&gt; (object) [
-        'connection' =&gt; (object) [
+<pre><code class="php">return [
+    'doctrine' =&gt;  [
+        'connection' =&gt;  [
             'dbname' =&gt; 'foo',
         ],
     ],

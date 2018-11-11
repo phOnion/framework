@@ -173,8 +173,8 @@
 it allows for auto-wiring and makes the code more obvious, more readable and lowers the
 chance of making typos as most editors will suggest the class proper class name.</p>
 <p>For example:</p>
-<pre><code class="php">return (object) [
-    'invokables' =&gt; (object) [
+<pre><code class="php">return  [
+    'invokables' =&gt;  [
          \Psr\Http\Message\ResponseInterface::class =&gt;
                 \Guzzle\Psr7\Response::class
     ]

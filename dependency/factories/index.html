@@ -74,6 +74,15 @@
     <a class="current" href="./">Factories</a>
     <ul class="subnav">
             
+    <li class="toctree-l3"><a href="#basic-factories">Basic factories</a></li>
+    
+
+    <li class="toctree-l3"><a href="#abstract-factories">Abstract factories</a></li>
+    
+
+    <li class="toctree-l3"><a href="#memory-caching">Memory caching</a></li>
+    
+
     </ul>
                 </li>
                 <li class="">
@@ -164,14 +173,13 @@
           <div role="main">
             <div class="section">
               
-                <ul>
-<li><code>factories</code> are another essential part of the container. These are manually created classes that
+                <h2 id="basic-factories">Basic factories</h2>
+<p><code>factories</code> are another essential part of the container. These are manually created classes that
 implement <code>\Onion\Framework\Dependency\Interfaces\FactoryInterface</code> and serve as "formulas" how
-to build the dependency.</li>
-</ul>
+to build the dependency.</p>
 <p>For example:</p>
-<pre><code class="php">return (object) [
-    'factories' =&gt; (object) [
+<pre><code class="php">return  [
+    'factories' =&gt;  [
          Framework\Application\Application::class =&gt;
                 Framework\Application\Factory\ApplicationFactory::class,
     ]
@@ -186,12 +194,36 @@ If you use setter injection you will have to use factories, as the container doe
 way to auto-wire them. Also setter injected dependencies, could be considered optional and may not
 be needed for the class, no need to spend time on them.</p>
 <hr />
+<h2 id="abstract-factories">Abstract factories</h2>
+<p>Abstract factories are aimed to allow the creation of a factory for more
+than can determine based on the key what object to return. In general it
+is a factory factory as it must return a <code>FactoryInterface</code> which will
+return the real object to be injected. For example if an abstract factory
+is used to build a cache service an "alias" key can be used like:</p>
+<pre><code class="php">// ...
+    'factories' =&gt; [
+        'cache:redis' =&gt; AbstractCacheFactory::class,
+    ],
+// ...
+</code></pre>
+
+<p>There the abstract factory can switch from which configuration to use
+without the need of defining factory for each option.</p>
+<p>This could come in handy when dealing with multiple database, cache or
+other such backends or multiple servers, where the difference can be
+very small (even a single string, like the <code>driver</code> key in db configs).</p>
+<p>Abstract factory is defined under the <code>factories</code> key, with the only
+just like with any other factory and all is handled transparently for
+the application.</p>
+<hr />
+<h2 id="memory-caching">Memory caching</h2>
 <p>And if an object is often required, but does not need to be instantiated multiple times,
-there is the <code>shared</code> key. It allows you to define the a list of factories that should not
-be triggered on every request, but actually "share" the same instance of the first result.
-This can be useful in scenarios like, constructing database connection, instantiating
-connection to a remote service, etc. The main intent for this is to be used for heavy
-objects which might be required on multiple places.</p>
+there is the <code>shared</code> key. It allows you to define the a list of factory keys that should not
+be triggered on every request to the container, but actually "share" the same instance
+of the first result. This can be useful in scenarios like, constructing database connection,
+instantiating connection to a remote service, etc. The main intent for this is to be used
+for heavy objects which might be required on multiple places but sharing the same instance
+makes sense.</p>
               
             </div>
           </div>
