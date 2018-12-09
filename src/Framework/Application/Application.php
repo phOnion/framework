@@ -22,12 +22,9 @@ use Psr\Log\LoggerAwareTrait;
 class Application implements ApplicationInterface, LoggerAwareInterface
 {
     /**
-     * @var RouteInterface[]
+     * @var iterable
      */
     protected $routes = [];
-
-    /** @var RequestHandlerInterface */
-    private $requestHandler;
 
     /** @var string */
     private $baseAuthorization;
@@ -39,17 +36,13 @@ class Application implements ApplicationInterface, LoggerAwareInterface
 
     /**
      * Application constructor.
-     *
-     * @param RouteInterface[] $routes Array of routes that are supported
      */
     public function __construct(
         iterable $routes,
-        RequestHandlerInterface $rootHandler = null,
-        $baseAuthType = 'bearer',
-        $proxyAuthType = 'digest'
+        string $baseAuthType = 'bearer',
+        string $proxyAuthType = 'digest'
     ) {
         $this->routes = $routes;
-        $this->requestHandler = $rootHandler;
         $this->baseAuthorization = ucfirst($baseAuthType);
         $this->proxyAuthorization = ucfirst($proxyAuthType);
     }
@@ -100,8 +93,8 @@ class Application implements ApplicationInterface, LoggerAwareInterface
     {
         try {
             $path = $request->getUri()->getPath();
-            reset($this->routes);
             foreach ($this->routes as $route) {
+                /** @var RouteInterface $route */
                 if ($route->isMatch($path)) {
                     foreach ($route->getParameters() as $attr => $value) {
                         $request = $request->withAttribute($attr, $value);
@@ -146,10 +139,14 @@ class Application implements ApplicationInterface, LoggerAwareInterface
         } catch (NotFoundException $ex) {
             return new Response(404);
         } catch (MethodNotAllowedException $ex) {
+            $methods = [];
+            foreach ($ex->getAllowedMethods() as $method) {
+                $methods[] = $method;
+            }
             $this->logger->debug("Request to {url} does not support '{method}'. Supported: {allowed}", [
                 'url' => $request->getUri()->getPath(),
                 'method' => $request->getMethod(),
-                'allowed' => implode(', ', $ex->getAllowedMethods()),
+                'allowed' => implode(', ', $methods),
             ]);
             return (new Response(405))
                 ->withHeader('Allow', $ex->getAllowedMethods());

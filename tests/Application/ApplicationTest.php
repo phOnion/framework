@@ -70,7 +70,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->route->isMatch('/')->willReturn(true);
-        $app = new Application([$this->route->reveal()], null, 'basic');
+        $app = new Application([$this->route->reveal()], 'basic');
         $app->setLogger(new VoidLogger);
         $response = $app->handle($this->request->reveal());
 
@@ -90,7 +90,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->route->isMatch('/')->willReturn(true);
-        $app = new Application([$this->route->reveal()], null, 'basic', 'bearer');
+        $app = new Application([$this->route->reveal()], 'basic', 'bearer');
         $app->setLogger(new VoidLogger);
         $response = $app->handle($this->request->reveal());
 

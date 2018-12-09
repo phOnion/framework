@@ -31,7 +31,7 @@ abstract class RestController implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $httpMethod = strtolower($request->getMethod());
-        if ($httpMethod === 'head' && !method_exists('head')) {
+        if ($httpMethod === 'head' && !method_exists($this, 'head')) {
             $httpMethod = 'get';
         }
 

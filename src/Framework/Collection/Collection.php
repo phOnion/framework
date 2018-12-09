@@ -3,14 +3,16 @@ namespace Onion\Framework\Collection;
 
 class Collection implements \Iterator
 {
-    /** @var \Iterator */
+    /** @var \Iterator $items */
     private $items;
 
+    /** @param mixed[]|\Iterator $items */
     public function __construct(iterable $items)
     {
-        if (is_array($items)) {
+        if (!$items instanceof \Iterator) {
             $items = new \ArrayIterator($items);
         }
+
         $this->items = $items;
     }
 

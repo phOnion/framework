@@ -21,9 +21,9 @@ class CacheAwareContainer implements ContainerInterface
     /**
      * A container which holds the dependencies
      *
-     * @var ContainerInterface
+     * @var ContainerInterface|null
      */
-    private $container;
+    private $container = null;
 
     /**
      * Factory for lazy initializing the container
@@ -45,7 +45,7 @@ class CacheAwareContainer implements ContainerInterface
      * This is to allow the construction of dependencies that
      * might change on some factors external to the application.
      *
-     * @var array
+     * @var string[]
      */
     private $blacklist;
 
@@ -76,7 +76,15 @@ class CacheAwareContainer implements ContainerInterface
     private function resolveContainer(): ContainerInterface
     {
         if ($this->container === null) {
-            $this->container = $this->containerFactory->build($this);
+            $container = $this->containerFactory->build($this);
+
+            if (!$container instanceof ContainerInterface) {
+                throw new \RuntimeException(
+                    "Invalid factory result, expected ContainerInterface"
+                );
+            }
+
+            $this->container = $container;
         }
 
         return $this->container;
