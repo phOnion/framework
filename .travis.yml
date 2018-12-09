@@ -9,7 +9,7 @@ install: composer install -o --no-interaction --prefer-dist
 script:
     - vendor/bin/phpunit --bootstrap vendor/autoload.php --coverage-clover=coverage.xml
     - vendor/bin/phpcs src/ --standard=psr2
-    - vendor/bin/spalm --show-info=false
+    - vendor/bin/psalm --show-info=false
 after_success:
     - php vendor/bin/codacycoverage clover coverage.xml
 notifications:
