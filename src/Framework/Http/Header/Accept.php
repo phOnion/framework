@@ -3,8 +3,11 @@ namespace Onion\Framework\Http\Header;
 
 class Accept implements Interfaces\AcceptInterface
 {
+    /** @var string $name */
     private $name;
+    /** @var string $value */
     private $value;
+    /** @var float[] $types */
     private $types = [];
 
     /**

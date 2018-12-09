@@ -6,7 +6,9 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class PrefixRoute extends RegexRoute
 {
+    /** @var string $prefix */
     protected $prefix;
+
     public function __construct(string $pattern, string $name = null)
     {
         $this->prefix = $pattern;

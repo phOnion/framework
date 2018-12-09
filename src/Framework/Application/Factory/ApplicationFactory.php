@@ -8,10 +8,10 @@ use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Onion\Framework\Http\Middleware\RequestHandler;
 use Onion\Framework\Log\VoidLogger;
 use Onion\Framework\Router\RegexRoute;
-use Onion\Framework\Router\Route;
+use Onion\Framework\Router\Interfaces\RouteInterface as Route;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Server\RequestHandlerInterface;
+use Onion\Framework\Router\Interfaces\RouteInterface;
 
 /**
  * A factory class solely responsible for assembling the Application
@@ -30,7 +30,7 @@ final class ApplicationFactory implements FactoryInterface
      */
     public function build(ContainerInterface $container): object
     {
-        $routeCallback = function ($route) use ($container) {
+        $routeCallback = function (array $route) use ($container): RouteInterface {
             $className = RegexRoute::class;
             if (isset($route['class'])) {
                 $className = $route['class'];
@@ -49,7 +49,7 @@ final class ApplicationFactory implements FactoryInterface
                 return $routeObject->withRequestHandler($container->get($route['request_handler']));
             }
 
-            $middlewareGenerator = function () use ($route, $container) {
+            $middlewareGenerator = function () use ($route, $container): \Generator {
                 $stack = array_merge(
                     ($container->has('middleware') ? $container->get('middleware') : []),
                     $route['middleware']
@@ -69,8 +69,6 @@ final class ApplicationFactory implements FactoryInterface
         $routes = new CallbackCollection($container->get('routes'), $routeCallback);
         $app = new Application(
             $routes,
-            $container->has(RequestHandlerInterface::class) ?
-                $container->get(RequestHandlerInterface::class) : null,
             $container->has('application.authorization.base') ?
                 $container->get('application.authorization.base') : '',
             $container->has('application.authorization.proxy') ?

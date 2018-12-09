@@ -10,13 +10,13 @@ final class RequestHandler implements RequestHandlerInterface
     /** @var \Iterator */
     protected $middleware;
 
-    /** @var Message\ResponseInterface */
+    /** @var Message\ResponseInterface|null */
     protected $response;
 
     /**
-     * @param \Iterator $middleware Middleware of the frame
+     * @param \Iterator|MiddlewareInterface[] $middleware Middleware of the frame
      */
-    public function __construct(iterable $middleware, Message\ResponseInterface $response = null)
+    public function __construct(iterable $middleware, ?Message\ResponseInterface $response = null)
     {
         if (is_array($middleware)) {
             $middleware = new \ArrayIterator($middleware);

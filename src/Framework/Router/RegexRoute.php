@@ -2,18 +2,14 @@
 declare(strict_types=1);
 namespace Onion\Framework\Router;
 
-use Onion\Framework\Http\Middleware\RequestHandler;
-use Onion\Framework\Router\Interfaces\RouteInterface;
-
 class RegexRoute extends Route
 {
+    /** @var string[] $parameters */
     private $parameters = [];
 
     public function getParameters(): iterable
     {
-        return array_filter($this->parameters, function ($idx) {
-            return !is_int($idx);
-        }, ARRAY_FILTER_USE_KEY);
+        return array_filter($this->parameters, 'is_string', ARRAY_FILTER_USE_KEY);
     }
 
     public function isMatch(string $path): bool
