@@ -7,7 +7,7 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface as Container;
 use Psr\SimpleCache\CacheInterface;
 
-class CacheAwareContainerTest extends \PHPUnit_Framework_TestCase
+class CacheAwareContainerTest extends \PHPUnit\Framework\TestCase
 {
     private $cache;
     private $factory;

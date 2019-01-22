@@ -6,7 +6,7 @@ namespace Tests\Hydrator;
 use Onion\Framework\Hydrator\Interfaces\HydratableInterface;
 use Onion\Framework\Hydrator\PropertyHydrator;
 
-class PropertyHydratorTest extends \PHPUnit_Framework_TestCase
+class PropertyHydratorTest extends \PHPUnit\Framework\TestCase
 {
     private $testable;
 

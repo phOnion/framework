@@ -3,7 +3,7 @@ namespace Tests\Collection;
 
 use Onion\Framework\Collection\Collection;
 
-class CollectionTest extends \PHPUnit_Framework_TestCase
+class CollectionTest extends \PHPUnit\Framework\TestCase
 {
     public function testInitializationWithArray()
     {

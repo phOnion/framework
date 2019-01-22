@@ -7,7 +7,7 @@ use Onion\Framework\Dependency\Exception\UnknownDependency;
 use Onion\Framework\Dependency\Interfaces\AttachableContainer as Container;
 use Prophecy\Argument\Token\AnyValueToken;
 
-class DelegateContainerTest extends \PHPUnit_Framework_TestCase
+class DelegateContainerTest extends \PHPUnit\Framework\TestCase
 {
     public function testBasicConstruction()
     {

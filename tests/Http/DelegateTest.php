@@ -9,7 +9,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 
-class DelegateTest extends \PHPUnit_Framework_TestCase
+class DelegateTest extends \PHPUnit\Framework\TestCase
 {
     public function testExceptionWhenMiddlewareDoesNotImplementRequiredInterfaces()
     {
