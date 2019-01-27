@@ -123,6 +123,31 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         );
     }
 
+    public function testMultipleSharedDependencies()
+    {
+        $container = new Container([
+            'invokables' => [
+                \stdClass::class => \stdClass::class
+            ],
+            'factories' => [
+                'foo' => FactoryStub::class,
+                'bar' => FactoryStub::class,
+            ],
+            'shared' => [
+                'foo',
+                'bar',
+                \stdClass::class
+            ]
+        ]);
+        $std = $container->get(\stdClass::class);
+        $foo = $container->get('foo');
+        $bar = $container->get('bar');
+
+        $this->assertSame($std, $container->get(\stdClass::class));
+        $this->assertSame($foo, $container->get('foo'));
+        $this->assertSame($bar, $container->get('bar'));
+    }
+
     public function testExceptionOnNonExistingEntry()
     {
         $container = new Container( []);
@@ -398,10 +423,19 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage Provided key must be a string
      */
-    public function testExceptionOnInvalidKey()
+    public function testExceptionOnHasInvalidKey()
     {
         $container = new Container([]);
         $this->assertFalse($container->has(new \stdClass));
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage Provided key must be a string
+     */
+    public function testExceptionOnGetInvalidKey()
+    {
+        $container = new Container([]);
         $this->assertFalse($container->get(new \stdClass));
     }
 
