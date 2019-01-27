@@ -5,9 +5,11 @@ platform: x86
 clone_folder: c:\phonion\framework
 
 environment:
-    matrix:
-        - php: 7.2
-        - php: 7.3
+  matrix:
+    - php: '7.2'
+      XDEBUG_VERSION: '2.7.0beta1-7.2'
+    - php: '7.3'
+      XDEBUG_VERSION: '2.7.0beta1-7.3'
 
 branches:
   only:
@@ -61,6 +63,8 @@ install:
     - cd c:\phonion\framework
     - appveyor-retry composer self-update
     - appveyor-retry composer install --no-progress --ansi
+    - IF NOT EXIST php-installed.txt curl -fsS -o c:\php\%PHP_VERSION%\ext\php_xdebug-%XDEBUG_VERSION%-vc15.dll https://xdebug.org/files/php_xdebug-%XDEBUG_VERSION%-vc15.dll
+    - IF NOT EXIST php-installed.txt echo zend_extension=php_xdebug-%XDEBUG_VERSION%-vc15.dll >> php.ini
 
 test_script:
     - cd c:\phonion\framework
