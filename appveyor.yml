@@ -67,4 +67,4 @@ test_script:
     - vendor\bin\phpunit.bat --bootstrap vendor/autoload.php
     - vendor\bin\phpcs.bat src\ --standard=psr2
     - vendor\bin\psalm.bat --show-info=false
-    - vendor\bin\infection.bat -j4 -q --min-msi=85 --min-covered-msi=95
+    - vendor\bin\infection.bat -j4 --min-msi=85 --min-covered-msi=95
