@@ -41,7 +41,7 @@ final class ApplicationFactory implements FactoryInterface
                 $routeObject = $routeObject->withMethods(array_map('strtoupper', $route['methods']));
             }
 
-            if ($routeObject instanceof Route && isset($route['headers'])) {
+            if (isset($route['headers'])) {
                 $routeObject = $routeObject->withHeaders($route['headers']);
             }
 
@@ -74,9 +74,6 @@ final class ApplicationFactory implements FactoryInterface
             $container->has('application.authorization.proxy') ?
                 $container->get('application.authorization.proxy') : ''
         );
-        $logger = $container->has(\Psr\Log\LoggerInterface::class) ?
-            $container->get(\Psr\Log\LoggerInterface::class) : new VoidLogger;
-        $app->setLogger($logger);
 
         return $app;
     }

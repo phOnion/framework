@@ -20,7 +20,7 @@ class PrefixRoute extends RegexRoute
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $uri = $request->getUri();
-        $uri = $uri->withPath(preg_replace("~^{$this->prefix}/~", '/', $uri->getPath(), 1));
+        $uri = $uri->withPath(preg_replace("~^{$this->prefix}/~", '/', $uri->getPath()));
 
         return parent::handle($request->withUri($uri));
     }

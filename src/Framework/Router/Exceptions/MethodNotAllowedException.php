@@ -20,9 +20,9 @@ class MethodNotAllowedException extends \Exception implements NotAllowedExceptio
      * @param int $code
      * @param \Exception|null $previous
      */
-    public function __construct(iterable $methods, $code = 0, \Exception $previous = null)
+    public function __construct(iterable $methods)
     {
-        parent::__construct('HTTP method not allowed', $code, $previous);
+        parent::__construct('HTTP method not allowed');
         if ($methods instanceof \Traversable) {
             $methods = iterator_to_array($methods);
         }
