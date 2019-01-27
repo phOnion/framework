@@ -16,7 +16,7 @@ use Tests\Dependency\Doubles\DependencyI;
 use Tests\Dependency\Doubles\FactoryStub;
 use Onion\Framework\Dependency\Exception\ContainerErrorException;
 
-class ContainerTest extends \PHPUnit_Framework_TestCase
+class ContainerTest extends \PHPUnit\Framework\TestCase
 {
     public function testHasParameterCheck()
     {

@@ -6,7 +6,7 @@ namespace Tests\Hydrator;
 use \Onion\Framework\Hydrator\Interfaces\HydratableInterface;
 use \Onion\Framework\Hydrator\MethodHydrator;
 
-class MethodHydratorTest extends \PHPUnit_Framework_TestCase
+class MethodHydratorTest extends \PHPUnit\Framework\TestCase
 {
     public function testHydration()
     {
@@ -19,7 +19,7 @@ class MethodHydratorTest extends \PHPUnit_Framework_TestCase
 
             private $id;
             private $name;
-            
+
             public function getId(): int
             {
                 return $this->id;
@@ -80,6 +80,6 @@ class MethodHydratorTest extends \PHPUnit_Framework_TestCase
             }
         };
 
-       $this->assertSame(['first_name' => 'Jane'], $testable->extract(['first_name'])); 
+       $this->assertSame(['first_name' => 'Jane'], $testable->extract(['first_name']));
     }
 }

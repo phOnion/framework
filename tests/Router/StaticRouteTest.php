@@ -3,7 +3,7 @@ namespace Tests\Router;
 
 use Onion\Framework\Router\StaticRoute;
 
-class StaticRouteTest extends \PHPUnit_Framework_TestCase
+class StaticRouteTest extends \PHPUnit\Framework\TestCase
 {
     private $route;
     public function setUp()

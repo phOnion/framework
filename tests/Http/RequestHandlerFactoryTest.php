@@ -11,7 +11,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Onion\Framework\Http\Middleware\Factory\RequestHandlerFactory;
 
-class RequestHandlerFactoryTest extends \PHPUnit_Framework_TestCase
+class RequestHandlerFactoryTest extends \PHPUnit\Framework\TestCase
 {
     /** @var FactoryInterface */
     private $factory;
