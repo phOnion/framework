@@ -5,7 +5,7 @@ use Onion\Framework\Collection\HydratableCollection;
 use Onion\Framework\Hydrator\Interfaces\HydratableInterface;
 use Onion\Framework\Hydrator\PropertyHydrator;
 
-class HydratableCollectionTest extends \PHPUnit_Framework_TestCase
+class HydratableCollectionTest extends \PHPUnit\Framework\TestCase
 {
     public function testCollection()
     {

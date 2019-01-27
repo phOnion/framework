@@ -8,7 +8,7 @@ use Onion\Framework\Application\Factory\ApplicationFactory;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Tests\Application\Stubs\MiddlewareStub;
 
-class ApplicationFactoryTest extends \PHPUnit_Framework_TestCase
+class ApplicationFactoryTest extends \PHPUnit\Framework\TestCase
 {
     public function testApplicationContainerRetrieval()
     {

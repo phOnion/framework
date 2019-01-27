@@ -8,7 +8,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-class PrefixRouteTest extends \PHPUnit_Framework_TestCase
+class PrefixRouteTest extends \PHPUnit\Framework\TestCase
 {
     private $route;
     public function setUp()
