@@ -61,8 +61,9 @@ install:
 
             if (!(Test-Path c:\tools\php\ext\php_xdebug-%XDEBUG_VERSION%-vc15.dll)) {
               appveyor-retry appveyor DownloadFile https://xdebug.org/files/php_xdebug-%XDEBUG_VERSION%-vc15.dll -Filename c:\tools\php\ext\php_xdebug-%XDEBUG_VERSION%-vc15.dll
-              echo zend_extension=php_xdebug-%XDEBUG_VERSION%-vc15.dll >> C:\tools\php\php.ini
             }
+
+            Add-Content php.ini "`n zend_extension=php_xdebug-%XDEBUG_VERSION%-vc15.dll"
         }
 
     - cd c:\phonion\framework
