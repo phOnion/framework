@@ -207,8 +207,8 @@ final class Container implements AttachableContainer
         try {
             $type = $parameter->hasType() ? $parameter->getType() : null;
             if ($type !== null) {
-                if (!$type->isBuiltin() && $this->has($type)) {
-                    return $this->get($parameter->getType());
+                if (!$type->isBuiltin() && $this->has((string) $type)) {
+                    return $this->get((string) $parameter->getType());
                 }
 
                 if (!$parameter->isOptional()) {
