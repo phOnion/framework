@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Tests\Http;
 
-use Test\Router;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -23,10 +22,15 @@ class RequestHandlerFactoryTest extends \PHPUnit\Framework\TestCase
     public function testProperInit()
     {
         $middleware = $this->prophesize(MiddlewareInterface::class);
+        $m2 = clone $middleware;
+
+        $response = $this->prophesize(
+            ResponseInterface::class
+        );
+        $response->getStatusCode()->willReturn(200);
+
         $middleware->process(new AnyValueToken(), new AnyValueToken())
-            ->willReturn($this->prophesize(
-                ResponseInterface::class
-            ));
+            ->willReturn($response->reveal());
 
         $container = $this->prophesize(ContainerInterface::class);
         $container->has(RequestHandlerInterface::class)->willReturn(false);
@@ -40,10 +44,9 @@ class RequestHandlerFactoryTest extends \PHPUnit\Framework\TestCase
 
         $handler = $this->factory->build($container->reveal());
         $this->assertInstanceOf(RequestHandlerInterface::class, $handler);
-        $this->assertInstanceOf(
-            ResponseInterface::class,
-            $handler->handle($this->prophesize(ServerRequestInterface::class)->reveal())
-        );
+        $r = $handler->handle($this->prophesize(ServerRequestInterface::class)->reveal());
+        $this->assertInstanceOf(ResponseInterface::class, $r);
+        $this->assertSame(200, $r->getStatusCode());
     }
 
     public function testInvalidMiddlewareReturned()

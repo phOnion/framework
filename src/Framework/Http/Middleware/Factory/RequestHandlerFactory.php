@@ -23,12 +23,14 @@ class RequestHandlerFactory implements FactoryInterface
             foreach ($middleware as $identifier) {
                 $instance = $container->get($identifier);
                 assert(
-                    is_object($instance) && $instance instanceof MiddlewareInterface,
+                    $instance instanceof MiddlewareInterface,
                     new \TypeError("'{$identifier}' must implement MiddlewareInterface")
                 );
+
                 yield $instance;
             }
         };
+
         return new RequestHandler(
             $middlewareGenerator(),
             $container->has(ResponseInterface::class) ?

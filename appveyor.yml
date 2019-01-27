@@ -65,4 +65,5 @@ test_script:
     - cd c:\phonion\framework
     - vendor\bin\phpunit.bat --bootstrap vendor/autoload.php
     - vendor\bin\phpcs.bat src\ --standard=psr2
-    - vendor\bin\psalm --show-info=false
+    - vendor\bin\psalm.bat --show-info=false
+    - vendor\bin\infection -j4 -q --min-msi=85 --min-covered-msi=95

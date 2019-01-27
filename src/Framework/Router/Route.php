@@ -24,7 +24,7 @@ abstract class Route implements RouteInterface
     /** @var string[] $parameters */
     private $parameters = [];
 
-    public function __construct(string $pattern, string $name = null)
+    public function __construct(string $pattern, ?string $name = null)
     {
         $this->pattern = $pattern;
         $this->name = $name ?? $pattern;
@@ -108,7 +108,7 @@ abstract class Route implements RouteInterface
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         foreach ($this->getHeaders() as $header => $required) {
-            if ((bool) $required && !$request->hasHeader($header)) {
+            if ($required && !$request->hasHeader($header)) {
                 throw new MissingHeaderException($header);
             }
         }

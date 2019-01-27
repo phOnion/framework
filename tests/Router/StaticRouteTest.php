@@ -18,4 +18,19 @@ class StaticRouteTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($this->route->isMatch('/'));
         $this->assertEmpty($this->route->getParameters());
     }
+
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage No handler provided
+     */
+    public function testEmptyRequestHandler()
+    {
+        $this->route->getRequestHandler();
+    }
+
+    public function testNamedRoute()
+    {
+        $route = new StaticRoute('/', 'home');
+        $this->assertSame('home', $route->getName());
+    }
 }

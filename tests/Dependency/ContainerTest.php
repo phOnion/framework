@@ -15,6 +15,7 @@ use Tests\Dependency\Doubles\DependencyH;
 use Tests\Dependency\Doubles\DependencyI;
 use Tests\Dependency\Doubles\FactoryStub;
 use Onion\Framework\Dependency\Exception\ContainerErrorException;
+use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 
 class ContainerTest extends \PHPUnit\Framework\TestCase
 {
@@ -23,6 +24,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         $container = new Container( ['bar' => 'baz']);
         $this->assertFalse($container->has('foo'));
         $this->assertTrue($container->has('bar'));
+        $this->assertFalse($container->has(1));
         $this->assertSame('baz', $container->get('bar'));
     }
 
@@ -47,6 +49,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
             ]
         ]);
 
+        $this->expectExceptionMessage('Unable to resolve');
         $this->expectException(ContainerExceptionInterface::class);
         $container->get(\stdClass::class);
     }
@@ -123,6 +126,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
     public function testExceptionOnNonExistingEntry()
     {
         $container = new Container( []);
+        $this->expectExceptionMessage('Unable to resolve');
         $this->expectException(NotFoundExceptionInterface::class);
         $container->get('foo');
     }
@@ -137,6 +141,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
             $this->markTestSkipped('The "assert.exception" should be set to "1" to throw the exception');
         }
 
+        $this->expectExceptionMessage('Registered factory for \'stdClass\' must be a valid FQCN');
         $this->expectException(ContainerExceptionInterface::class);
         $container = new Container( [
             'factories' =>  [
@@ -157,6 +162,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
             $this->markTestSkipped('The "assert.exception" should be set to "1" to throw the exception');
         }
 
+        $this->expectExceptionMessage('Factory for \'stdClass\' does not implement any of Dependency\\Interfaces');
         $this->expectException(ContainerExceptionInterface::class);
         $container = new Container(
              [
@@ -170,6 +176,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
 
     public function testExceptionWhenInvokableIsStringButNotAClass()
     {
+        $this->expectExceptionMessage('Unable to resolve');
         $this->expectException(UnknownDependency::class);
         $container = new Container(
              [
@@ -191,6 +198,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
             $this->markTestSkipped('The "assert.exception" should be set to "1" to throw the exception');
         }
 
+        $this->expectExceptionMessage('Unable to verify that "stdClass" is of type "SplFixedArray"');
         $this->expectException(ContainerExceptionInterface::class);
         $container = new Container(
              [
@@ -331,5 +339,84 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         $container = new Container( []);
         $this->expectException(ContainerErrorException::class);
         $container->get(DependencyG::class);
+    }
+
+    public function testRetrievalFromAttachedContainer()
+    {
+        $class = new class implements FactoryInterface {
+            public function build(\Psr\Container\ContainerInterface $container)
+            {
+                $class = new \stdClass;
+                $class->foo = $container->get('foo');
+
+                return $class;
+            }
+        };
+        $container = new Container([
+            'factories' => [
+                \StdClass::class => get_class($class),
+            ],
+            'invokables' => [
+                get_class($class) => $class,
+            ]
+        ]);
+        $attached = new Container([
+            'foo' => 'bar',
+        ]);
+
+        $container->attach($attached);
+
+        $this->assertTrue($container->has(\StdClass::class));
+        $this->assertSame('bar', $container->get(\StdClass::class)->foo);
+    }
+
+    /**
+     * @expectedExceptionMessage No factory available
+     */
+    public function testCreationFromFactoryWithInvalidResut()
+    {
+        $class = new class implements FactoryInterface {
+            public function build(\Psr\Container\ContainerInterface $container)
+            {
+                // nothing is returned
+            }
+        };
+        $container = new Container([
+            'factories' => [
+                \StdClass::class => get_class($class),
+            ],
+            'invokables' => [
+                get_class($class) => $class,
+            ]
+        ]);
+        $this->assertTrue($container->has(\StdClass::class));
+        $this->expectException(ContainerErrorException::class);
+        $container->get(\StdClass::class);
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage Provided key must be a string
+     */
+    public function testExceptionOnInvalidKey()
+    {
+        $container = new Container([]);
+        $this->assertFalse($container->has(new \stdClass));
+        $this->assertFalse($container->get(new \stdClass));
+    }
+
+    public function testKeyIsStringCompatible()
+    {
+        $key = new class {
+            public function __toString()
+            {
+                return 'key';
+            }
+        };
+
+        $this->assertFalse((new Container([]))->has($key));
+
+        $this->expectException(UnknownDependency::class);
+        (new Container([]))->get($key);
     }
 }

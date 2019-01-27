@@ -61,6 +61,13 @@ final class Container implements AttachableContainer
      */
     public function get($key)
     {
+        if (!$this->isKeyValid($key)) {
+            throw new \InvalidArgumentException(sprintf(
+                'Provided key must be a string, %s given',
+                gettype($key)
+            ));
+        }
+
         $key = (string) $key;
 
         if (isset($this->dependencies[$key])) {
@@ -85,8 +92,8 @@ final class Container implements AttachableContainer
             if (strpos($key, '.') !== false) {
                 return $this->retrieveFromDotString($key);
             }
-        } catch (\RuntimeException $ex) {
-            throw new ContainerErrorException($ex->getMessage(), 0, $ex);
+        } catch (\RuntimeException | \InvalidArgumentException $ex) {
+            throw new ContainerErrorException($ex->getMessage());
         }
 
         throw new UnknownDependency(sprintf('Unable to resolve "%s"', $key));
@@ -102,6 +109,13 @@ final class Container implements AttachableContainer
      */
     public function has($key): bool
     {
+        if (!$this->isKeyValid($key)) {
+            throw new \InvalidArgumentException(sprintf(
+                'Provided key must be a string, %s given',
+                gettype($key)
+            ));
+        }
+
         $key = (string) $key;
         $exists = (
             isset($this->dependencies[$key]) ||
@@ -208,9 +222,10 @@ final class Container implements AttachableContainer
             }
         } catch (UnknownDependency $ex) {
             throw new ContainerErrorException(sprintf(
-                'Unable to find match for type: "%s". Consider using a factory',
-                (string) $parameter->getType() ?? $parameter->getName()
-            ), 0, $ex);
+                'Unable to find match for type: "%s (%s)". Consider using a factory',
+                $parameter->getName(),
+                $parameter->getType() ?? ''
+            ));
         }
     }
 
@@ -320,5 +335,11 @@ final class Container implements AttachableContainer
         );
 
         return $result;
+    }
+
+    private function isKeyValid($key): bool
+    {
+        return is_string($key) || is_scalar($key) ||
+            (is_object($key) && method_exists($key, '__toString'));
     }
 }

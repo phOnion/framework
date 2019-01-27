@@ -3,8 +3,16 @@ namespace Onion\Framework\Router\Exceptions;
 
 class MissingHeaderException extends \RuntimeException
 {
-    public function __construct(string $headerName, int $code = 0, \Throwable $ex = null)
+    private $headerName;
+
+    public function __construct(string $headerName)
     {
-        parent::__construct($headerName, $code, $ex);
+        $this->headerName = $headerName;
+        parent::__construct("Missing header '{$headerName}'");
+    }
+
+    public function getHeaderName(): string
+    {
+        return $this->headerName;
     }
 }

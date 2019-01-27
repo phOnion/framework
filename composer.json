@@ -23,7 +23,8 @@
         "phpspec/prophecy": "^1.6",
         "squizlabs/php_codesniffer": "^2.7",
         "codacy/coverage": "^1.4",
-        "vimeo/psalm": "^3.0"
+        "vimeo/psalm": "^3.0",
+        "infection/infection": "^0.12.0"
     },
     "autoload": {
         "psr-4": {
