@@ -21,7 +21,7 @@ class DelegateContainerTest extends \PHPUnit\Framework\TestCase
     public function testExistanceInNthContainer()
     {
         $c = $this->prophesize(Container::class);
-        $c->attach(new AnyValueToken())->willReturn(null);
+        $c->attach(new AnyValueToken())->willReturn(null)->shouldBeCalled();
         $c1 = $c->reveal();
         $c->has('foo')->willReturn(true);
 
@@ -34,7 +34,7 @@ class DelegateContainerTest extends \PHPUnit\Framework\TestCase
     {
         $c = $this->prophesize(Container::class);
         $c->has('foo')->willReturn(false);
-        $c->attach(new AnyValueToken())->willReturn(null);
+        $c->attach(new AnyValueToken())->willReturn(null)->shouldBeCalled();
 
         $delegate = new DelegateContainer([$c->reveal(), $c->reveal()]);
         $this->assertFalse($delegate->has('foo'));
@@ -51,14 +51,14 @@ class DelegateContainerTest extends \PHPUnit\Framework\TestCase
         $c->get('list')->willReturn([
             'foo' => 'bar',
         ]);
-        $c->attach(new AnyValueToken())->willReturn(null);
+        $c->attach(new AnyValueToken())->willReturn(null)->shouldBeCalled();
 
         $c1 = $this->prophesize(Container::class);
         $c1->has('list')->willReturn(true);
         $c1->get('list')->willReturn([
             'bar' => 'baz',
         ]);
-        $c1->attach(new AnyValueToken())->willReturn(null);
+        $c1->attach(new AnyValueToken())->willReturn(null)->shouldBeCalled();
 
         $container = new DelegateContainer([$c->reveal(), $c1->reveal()]);
 
