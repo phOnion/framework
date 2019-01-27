@@ -10,6 +10,7 @@ script:
 - vendor/bin/phpunit --bootstrap vendor/autoload.php --coverage-clover=coverage.xml
 - vendor/bin/phpcs src/ --standard=psr2
 - vendor/bin/psalm --show-info=false
+- vendor/bin/infection -j4 -q --min-msi=85 --min-covered-msi=95
 after_success:
 - php vendor/bin/codacycoverage clover coverage.xml
 notifications:
