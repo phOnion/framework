@@ -24,7 +24,7 @@ abstract class Route implements RouteInterface
     /** @var string[] $parameters */
     private $parameters = [];
 
-    public function __construct(string $pattern, string $name = null)
+    public function __construct(string $pattern, ?string $name = null)
     {
         $this->pattern = $pattern;
         $this->name = $name ?? $pattern;

@@ -222,8 +222,8 @@ final class Container implements AttachableContainer
             }
         } catch (UnknownDependency $ex) {
             throw new ContainerErrorException(sprintf(
-                'Unable to find match for type: "%s". Consider using a factory',
-                $parameter->getType() ?? $parameter->getName()
+                'Unable to find match for type: "%s (%s)". Consider using a factory',
+                $parameter->getName(), $parameter->getType() ?? ''
             ));
         }
     }

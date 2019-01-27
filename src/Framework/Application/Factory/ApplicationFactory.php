@@ -36,7 +36,7 @@ final class ApplicationFactory implements FactoryInterface
                 $className = $route['class'];
             }
 
-            $routeObject = new $className($route['pattern'], $route['name'] ?? null);
+            $routeObject = new $className($route['pattern'], $route['name']);
             if (isset($route['methods'])) {
                 $routeObject = $routeObject->withMethods(array_map('strtoupper', $route['methods']));
             }

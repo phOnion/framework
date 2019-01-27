@@ -49,6 +49,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
             ]
         ]);
 
+        $this->expectExceptionMessage('Unable to resolve');
         $this->expectException(ContainerExceptionInterface::class);
         $container->get(\stdClass::class);
     }
@@ -125,6 +126,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
     public function testExceptionOnNonExistingEntry()
     {
         $container = new Container( []);
+        $this->expectExceptionMessage('Unable to resolve');
         $this->expectException(NotFoundExceptionInterface::class);
         $container->get('foo');
     }
@@ -139,6 +141,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
             $this->markTestSkipped('The "assert.exception" should be set to "1" to throw the exception');
         }
 
+        $this->expectExceptionMessage('Registered factory for \'stdClass\' must be a valid FQCN');
         $this->expectException(ContainerExceptionInterface::class);
         $container = new Container( [
             'factories' =>  [
@@ -159,6 +162,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
             $this->markTestSkipped('The "assert.exception" should be set to "1" to throw the exception');
         }
 
+        $this->expectExceptionMessage('Factory for \'stdClass\' does not implement any of Dependency\\Interfaces');
         $this->expectException(ContainerExceptionInterface::class);
         $container = new Container(
              [
@@ -172,6 +176,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
 
     public function testExceptionWhenInvokableIsStringButNotAClass()
     {
+        $this->expectExceptionMessage('Unable to resolve');
         $this->expectException(UnknownDependency::class);
         $container = new Container(
              [
@@ -193,6 +198,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
             $this->markTestSkipped('The "assert.exception" should be set to "1" to throw the exception');
         }
 
+        $this->expectExceptionMessage('Unable to verify that "stdClass" is of type "SplFixedArray"');
         $this->expectException(ContainerExceptionInterface::class);
         $container = new Container(
              [

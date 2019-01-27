@@ -26,9 +26,11 @@ class RequestHandlerFactory implements FactoryInterface
                     $instance instanceof MiddlewareInterface,
                     new \TypeError("'{$identifier}' must implement MiddlewareInterface")
                 );
+
                 yield $instance;
             }
         };
+
         return new RequestHandler(
             $middlewareGenerator(),
             $container->has(ResponseInterface::class) ?
