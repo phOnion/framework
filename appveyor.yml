@@ -65,3 +65,4 @@ test_script:
     - cd c:\phonion\framework
     - vendor\bin\phpunit.bat --bootstrap vendor/autoload.php
     - vendor\bin\phpcs.bat src\ --standard=psr2
+    - vendor\bin\psalm --show-info=false
