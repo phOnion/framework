@@ -325,14 +325,16 @@ final class Container implements AttachableContainer
      */
     private function enforceReturnType(string $identifier, object $result): object
     {
-        assert(
-            $result instanceof $identifier,
-            new ContainerErrorException(sprintf(
-                'Unable to verify that "%s" is of type "%s"',
-                get_class($result),
-                $identifier
-            ))
-        );
+        if (interface_exists($identifier) || class_exists($identifier)) {
+            assert(
+                $result instanceof $identifier,
+                new ContainerErrorException(sprintf(
+                    'Unable to verify that "%s" is of type "%s"',
+                    get_class($result),
+                    $identifier
+                ))
+            );
+        }
 
         return $result;
     }
