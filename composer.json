@@ -10,7 +10,7 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^7.2",
+        "php": "^7.2 || 7.0.99",
         "roave/security-advisories": "dev-master",
         "psr/http-message": "^1.0",
         "guzzlehttp/psr7": "^1.4",
