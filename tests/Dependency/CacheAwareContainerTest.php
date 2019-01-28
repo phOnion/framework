@@ -3,11 +3,10 @@ namespace tests\Dependency;
 
 use Onion\Framework\Dependency\CacheAwareContainer;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
-use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface as Container;
 use Psr\SimpleCache\CacheInterface;
 
-class CacheAwareContainerTest extends \PHPUnit_Framework_TestCase
+class CacheAwareContainerTest extends \PHPUnit\Framework\TestCase
 {
     private $cache;
     private $factory;
@@ -21,6 +20,14 @@ class CacheAwareContainerTest extends \PHPUnit_Framework_TestCase
                 return new \Onion\Framework\Dependency\Container([
                     'bar' => 'baz'
                 ]);
+            }
+        };
+
+        $this->fakeFactory = new class implements FactoryInterface
+        {
+            public function build(Container $container)
+            {
+                return 42;
             }
         };
     }
@@ -67,7 +74,8 @@ class CacheAwareContainerTest extends \PHPUnit_Framework_TestCase
     public function testStoringValueInCache()
     {
         $this->cache->has('bar')->willReturn(false);
-        $this->cache->set('bar', 'baz')->willReturn(true);
+        $this->cache->set('bar', 'baz')->willReturn(true)
+            ->shouldBeCalled();
 
         $cacheContainer = new CacheAwareContainer(
             $this->factory,
@@ -85,5 +93,16 @@ class CacheAwareContainerTest extends \PHPUnit_Framework_TestCase
             'bar'
         ]);
         $this->assertSame($container->get('bar'), 'baz');
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage Invalid factory result
+     */
+    public function testInvalidContainerResult()
+    {
+        $this->cache->has('foo')->willReturn(false);
+        $container = new CacheAwareContainer($this->fakeFactory, $this->cache->reveal());
+        $container->get('foo');
     }
 }

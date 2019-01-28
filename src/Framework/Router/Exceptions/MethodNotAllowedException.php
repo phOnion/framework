@@ -10,25 +10,30 @@ use Onion\Framework\Router\Interfaces\Exception\NotAllowedException;
  */
 class MethodNotAllowedException extends \Exception implements NotAllowedException
 {
+    /** @var iterable $allowedMethods */
     protected $allowedMethods = [];
 
     /**
      * MethodNotAllowedException constructor.
      *
-     * @param array $methods The methods which are supported by the current route
+     * @param iterable $methods The methods which are supported by the current route
      * @param int $code
      * @param \Exception|null $previous
      */
-    public function __construct(iterable $methods, $code = 0, \Exception $previous = null)
+    public function __construct(iterable $methods)
     {
-        parent::__construct('HTTP method not allowed', $code, $previous);
+        parent::__construct('HTTP method not allowed');
+        if ($methods instanceof \Traversable) {
+            $methods = iterator_to_array($methods);
+        }
+
         $this->setAllowedMethods($methods);
     }
 
     /**
      * Returns the list of methods supported by the route
      *
-     * @return array
+     * @return iterable
      */
     public function getAllowedMethods(): iterable
     {
@@ -38,7 +43,7 @@ class MethodNotAllowedException extends \Exception implements NotAllowedExceptio
     /**
      * Sets the methods that ARE supported by the method
      *
-     * @param array $methods
+     * @param iterable $methods
      *
      * @return void
      */

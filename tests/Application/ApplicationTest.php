@@ -2,20 +2,15 @@
 namespace Tests;
 
 use Psr\Http\Message\UriInterface;
-use Prophecy\Argument\Token\TypeToken;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
 use Prophecy\Argument\Token\AnyValueToken;
 use Onion\Framework\Application\Application;
 use Psr\Http\Message\ServerRequestInterface;
 use Onion\Framework\Router\Interfaces\RouteInterface;
 use Psr\Http\Server\RequestHandlerInterface as RequestHandlerInterface;
-use Onion\Framework\Router\Exceptions\NotFoundException;
 use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
 use Onion\Framework\Router\Exceptions\MissingHeaderException;
-use Onion\Framework\Log\VoidLogger;
 
-class ApplicationTest extends \PHPUnit_Framework_TestCase
+class ApplicationTest extends \PHPUnit\Framework\TestCase
 {
     protected $route;
     protected $request;
@@ -55,11 +50,11 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
 
         $this->route->isMatch('/')->willReturn(true);
         $app = new Application([$this->route->reveal()]);
-        $app->setLogger(new VoidLogger);
         $response = $app->handle($this->request->reveal());
 
         $this->assertSame(405, $response->getStatusCode());
         $this->assertTrue($response->hasHeader('allow'));
+        $this->assertSame('POST', $response->getHeaderLine('allow'));
     }
 
     public function testMissingAuthorizationHeaderException()
@@ -70,8 +65,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->route->isMatch('/')->willReturn(true);
-        $app = new Application([$this->route->reveal()], null, 'basic');
-        $app->setLogger(new VoidLogger);
+        $app = new Application([$this->route->reveal()], 'basic');
         $response = $app->handle($this->request->reveal());
 
         $this->assertSame(401, $response->getStatusCode());
@@ -90,8 +84,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->route->isMatch('/')->willReturn(true);
-        $app = new Application([$this->route->reveal()], null, 'basic', 'bearer');
-        $app->setLogger(new VoidLogger);
+        $app = new Application([$this->route->reveal()], 'basic', 'bearer');
         $response = $app->handle($this->request->reveal());
 
         $this->assertSame(407, $response->getStatusCode());
@@ -111,7 +104,6 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
 
         $this->route->isMatch('/')->willReturn(true);
         $app = new Application([$this->route->reveal()]);
-        $app->setLogger(new VoidLogger);
         $response = $app->handle($this->request->reveal());
 
         $this->assertSame(428, $response->getStatusCode());
@@ -126,13 +118,12 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
 
         $this->route->isMatch('/')->willReturn(true);
         $app = new Application([$this->route->reveal()]);
-        $app->setLogger(new VoidLogger);
         $response = $app->handle($this->request->reveal());
 
         $this->assertSame(400, $response->getStatusCode());
     }
 
-    public function testBadMethodCallException()
+    public function testGetBadMethodCallException()
     {
         $this->request->getMethod()->willReturn('GET');
         $this->route->handle(new AnyValueToken())->willThrow(
@@ -141,10 +132,23 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
 
         $this->route->isMatch('/')->willReturn(true);
         $app = new Application([$this->route->reveal()]);
-        $app->setLogger(new VoidLogger);
         $response = $app->handle($this->request->reveal());
 
         $this->assertSame(503, $response->getStatusCode());
+    }
+
+    public function testPostBadMethodCallException()
+    {
+        $this->request->getMethod()->willReturn('Post');
+        $this->route->handle(new AnyValueToken())->willThrow(
+            new \BadMethodCallException('Foo')
+        );
+
+        $this->route->isMatch('/')->willReturn(true);
+        $app = new Application([$this->route->reveal()]);
+        $response = $app->handle($this->request->reveal());
+
+        $this->assertSame(501, $response->getStatusCode());
     }
 
     public function testApplicationRun()
@@ -154,7 +158,6 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         $this->route->isMatch('/')->willReturn(true);
         $this->route->handle(new AnyValueToken())->willThrow(new \ErrorException('OK'));
         $app = new Application([$this->route->reveal()]);
-        $app->setLogger(new VoidLogger);
         $response = $app->handle($this->request->reveal());
 
         $this->assertSame(500, $response->getStatusCode());
@@ -166,7 +169,6 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         $this->route->isMatch('/')->willReturn(true);
         $this->route->getParameters()->willReturn(['test' => 'test']);
         $app = new Application([$this->route->reveal()]);
-        $app->setLogger(new VoidLogger);
 
         $app->handle($this->request->reveal());
     }

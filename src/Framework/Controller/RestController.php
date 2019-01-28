@@ -3,7 +3,6 @@ declare(strict_types=1);
 namespace Onion\Framework\Controller;
 
 use GuzzleHttp\Psr7\Stream;
-use Onion\Framework\Rest\Interfaces\EntityInterface as Entity;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
@@ -31,12 +30,12 @@ abstract class RestController implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $httpMethod = strtolower($request->getMethod());
-        if ($httpMethod === 'head' && !method_exists('head')) {
+        if ($httpMethod === 'head' && !method_exists($this, 'head')) {
             $httpMethod = 'get';
         }
 
         if (!method_exists($this, $httpMethod)) {
-            throw new \BadMethodCallException('method not implemented');
+            throw new \BadMethodCallException('Method not implemented');
         }
 
         /** @var ResponseInterface $response */
@@ -46,12 +45,20 @@ abstract class RestController implements MiddlewareInterface
             $response = $response->withBody($this->getEmptyStream());
         }
 
-        if ($httpMethod === 'options') {
+        if ($httpMethod === 'options' && !$response->hasHeader('allow')) {
             $ref = new \ReflectionObject($this);
-            $response = $response->withAddedHeader('allow', array_intersect(
+            $methods = array_intersect(
                 self::HTTP_METHODS,
-                $ref->getMethods(\ReflectionMethod::IS_PUBLIC)
-            ));
+                array_map(function (\ReflectionMethod $method) {
+                    return strtolower($method->getName());
+                }, $ref->getMethods(\ReflectionMethod::IS_PUBLIC))
+            );
+
+            if (empty($methods)) {
+                return $response;
+            }
+
+            $response = $response->withAddedHeader('allow', implode(', ', $methods));
         }
 
         return $response;

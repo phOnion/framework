@@ -6,12 +6,11 @@ class CallbackCollection extends Collection
     /** @var callable */
     private $callback;
 
+    /**
+     * @param mixed[]|\Iterator $items
+     */
     public function __construct(iterable $items, callable $callback)
     {
-        if (is_array($items)) {
-            $items = new \ArrayIterator($items);
-        }
-
         parent::__construct($items);
         $this->callback = $callback;
     }

@@ -11,7 +11,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Onion\Framework\Router\Exceptions\MissingHeaderException;
 use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
 
-class RegexRouteTest extends \PHPUnit_Framework_TestCase
+class RegexRouteTest extends \PHPUnit\Framework\TestCase
 {
     /** @var RegexRoute */
     private $route;
@@ -22,7 +22,7 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
 
     public function testRouteName()
     {
-        $this->assertTrue($this->route->hasName());
+        $this->assertFalse($this->route->hasName());
         $this->assertSame('/', $this->route->getName());
     }
 

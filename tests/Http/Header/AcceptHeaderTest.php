@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Tests\Http\Header;
 
-class AcceptHeaderTest extends \PHPUnit_Framework_TestCase
+class AcceptHeaderTest extends \PHPUnit\Framework\TestCase
 {
     public function testWithSingleValueWithoutWeight()
     {

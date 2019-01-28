@@ -10,15 +10,21 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 abstract class Route implements RouteInterface
 {
+    /** @var string $name */
     private $name;
+    /** @var string $pattern */
     private $pattern;
-    private $handler;
+    /** @var RequestHandlerInterface|null $handler */
+    private $handler = null;
+    /** @var string[] */
     private $methods = [];
+    /** @var bool[] $headers*/
     private $headers = [];
 
+    /** @var string[] $parameters */
     private $parameters = [];
 
-    public function __construct(string $pattern, string $name = null)
+    public function __construct(string $pattern, ?string $name = null)
     {
         $this->pattern = $pattern;
         $this->name = $name ?? $pattern;
@@ -41,6 +47,11 @@ abstract class Route implements RouteInterface
 
     public function getRequestHandler(): RequestHandlerInterface
     {
+        if ($this->handler === null) {
+            throw new \RuntimeException(
+                "No handler provided for route {$this->getName()}"
+            );
+        }
         return $this->handler;
     }
 
@@ -56,7 +67,7 @@ abstract class Route implements RouteInterface
 
     public function hasName(): bool
     {
-        return $this->name !== null;
+        return $this->name !== $this->getPattern();
     }
 
     public function hasMethod(string $method): bool
@@ -66,11 +77,10 @@ abstract class Route implements RouteInterface
 
     public function withMethods(iterable $methods): RouteInterface
     {
-        if ($methods instanceof \Iterator) {
-            $methods = iterator_to_array($methods, false);
-        }
         $self = clone $this;
-        $self->methods = array_map('strtolower', $methods);
+        foreach ($methods as $method) {
+            $self->methods[] = strtolower($method);
+        }
 
         return $self;
     }
@@ -98,7 +108,7 @@ abstract class Route implements RouteInterface
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         foreach ($this->getHeaders() as $header => $required) {
-            if ((bool) $required && !$request->hasHeader($header)) {
+            if ($required && !$request->hasHeader($header)) {
                 throw new MissingHeaderException($header);
             }
         }

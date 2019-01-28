@@ -17,10 +17,12 @@ use Psr\Container\NotFoundExceptionInterface;
  */
 final class Container implements AttachableContainer
 {
+    /** @var string[][]|object[][] */
     private $dependencies = [];
+    /** @var string[] $shared */
     private $shared = [];
 
-    /** @var ContainerInterface */
+    /** @var ContainerInterface|null */
     private $delegate = null;
 
     /**
@@ -59,6 +61,13 @@ final class Container implements AttachableContainer
      */
     public function get($key)
     {
+        if (!$this->isKeyValid($key)) {
+            throw new \InvalidArgumentException(sprintf(
+                'Provided key must be a string, %s given',
+                gettype($key)
+            ));
+        }
+
         $key = (string) $key;
 
         if (isset($this->dependencies[$key])) {
@@ -78,15 +87,13 @@ final class Container implements AttachableContainer
                 return $this->retrieveFromReflection($key);
             }
 
-            if (is_string($key)) {
-                $key = $this->convertVariableName($key);
+            $key = $this->convertVariableName($key);
 
-                if (strpos($key, '.') !== false) {
-                    return $this->retrieveFromDotString($key);
-                }
+            if (strpos($key, '.') !== false) {
+                return $this->retrieveFromDotString($key);
             }
-        } catch (\RuntimeException $ex) {
-            throw new ContainerErrorException($ex->getMessage(), 0, $ex);
+        } catch (\RuntimeException | \InvalidArgumentException $ex) {
+            throw new ContainerErrorException($ex->getMessage());
         }
 
         throw new UnknownDependency(sprintf('Unable to resolve "%s"', $key));
@@ -102,6 +109,13 @@ final class Container implements AttachableContainer
      */
     public function has($key): bool
     {
+        if (!$this->isKeyValid($key)) {
+            throw new \InvalidArgumentException(sprintf(
+                'Provided key must be a string, %s given',
+                gettype($key)
+            ));
+        }
+
         $key = (string) $key;
         $exists = (
             isset($this->dependencies[$key]) ||
@@ -130,8 +144,8 @@ final class Container implements AttachableContainer
 
     /**
      * @param string $className
-     * @return mixed
-     * @throws \RuntimeException
+     * @return object
+     *
      * @throws UnknownDependency
      */
     private function retrieveInvokable(string $className): object
@@ -139,13 +153,6 @@ final class Container implements AttachableContainer
         $dependency = $this->dependencies['invokables'][$className];
         if (is_object($dependency)) {
             return $this->enforceReturnType($className, $dependency);
-        }
-
-        if (!is_string($dependency)) {
-            throw new \RuntimeException(
-                "Invalid invokable definition encountered while resolving '$className'. '" .
-                'Expected a string, but received ' . gettype($dependency)
-            );
         }
 
         if (!$this->has($dependency)) {
@@ -164,21 +171,18 @@ final class Container implements AttachableContainer
 
     /**
      * @param string $className
-     * @return mixed|object
+     * @return object
      * @throws ContainerErrorException
      */
     private function retrieveFromReflection(string $className): object
     {
         $classReflection = new \ReflectionClass($className);
-        if ($classReflection->getConstructor() === null) {
+        $constructorRef = $classReflection->getConstructor();
+
+        if ($constructorRef === null) {
             return $classReflection->newInstanceWithoutConstructor();
         }
 
-        if ($classReflection->getConstructor()->getParameters() === []) {
-            return $classReflection->newInstance();
-        }
-
-        $constructorRef = $classReflection->getConstructor();
         $parameters = [];
         foreach ($constructorRef->getParameters() as $parameter) {
             $parameters[$parameter->getPosition()] = $this->resolveReflectionParameter($parameter);
@@ -187,6 +191,9 @@ final class Container implements AttachableContainer
         return $this->enforceReturnType($className, $classReflection->newInstance(...$parameters));
     }
 
+    /**
+     * @return mixed
+     */
     private function resolveReflectionParameter(\ReflectionParameter $parameter)
     {
         assert(
@@ -198,9 +205,10 @@ final class Container implements AttachableContainer
         );
 
         try {
-            if ($parameter->hasType()) {
-                if (!$parameter->getType()->isBuiltin() && $this->has($parameter->getType())) {
-                    return $this->get($parameter->getType());
+            $type = $parameter->hasType() ? $parameter->getType() : null;
+            if ($type !== null) {
+                if (!$type->isBuiltin() && $this->has((string) $type)) {
+                    return $this->get((string) $parameter->getType());
                 }
 
                 if (!$parameter->isOptional()) {
@@ -214,15 +222,16 @@ final class Container implements AttachableContainer
             }
         } catch (UnknownDependency $ex) {
             throw new ContainerErrorException(sprintf(
-                'Unable to find match for type: "%s". Consider using a factory',
-                $parameter->getType() ?? $parameter->getName()
-            ), 0, $ex);
+                'Unable to find match for type: "%s (%s)". Consider using a factory',
+                $parameter->getName(),
+                $parameter->getType() ?? ''
+            ));
         }
     }
 
     /**
      * @param string $className
-     * @return mixed
+     * @return object
      */
     private function retrieveFromFactory(string $className): object
     {
@@ -244,16 +253,22 @@ final class Container implements AttachableContainer
                 "Factory for '{$className}' does not implement any of Dependency\\Interfaces"
             )
         );
-        $factory = $container->get($name);
 
-        $factoryResult = $factory->build($container, $className);
-        if ($factory instanceof FactoryBuilderInterface && $factoryResult instanceof FactoryInterface) {
-            $factoryResult = $factoryResult->build($container);
+        $factory = $container->get($name);
+        if ($factory instanceof FactoryBuilderInterface) {
+            $factoryResult = $factory->build($container, $className);
         }
 
-        /**
-         * @var $factory FactoryInterface
-         */
+        if ($factory instanceof FactoryInterface) {
+            $factoryResult = $factory->build($container);
+        }
+
+        if (!isset($factoryResult)) {
+            throw new \RuntimeException(
+                "No factory available to build {$className}"
+            );
+        }
+
         $result = $this->enforceReturnType($className, $factoryResult);
         if (in_array($className, $this->shared, true)) {
             if (!isset($this->dependencies['invokables'])) {
@@ -303,29 +318,30 @@ final class Container implements AttachableContainer
      * the identifier (if it is a class/interface)
      *
      * @param string $identifier
-     * @param mixed  $result
+     * @param object  $result
      *
-     * @return mixed
+     * @return object
      * @throws ContainerErrorException
      */
     private function enforceReturnType(string $identifier, object $result): object
     {
-        if (is_string($identifier)) {
-            if (class_exists($identifier) || interface_exists($identifier) ||
-                (function_exists("is_{$identifier}"))
-            ) {
-                assert(
-                    $result instanceof $identifier ||
-                    (function_exists("is_{$identifier}") && call_user_func("is_{$identifier}", $result)),
-                    new ContainerErrorException(sprintf(
-                        'Unable to verify that "%s" is of type "%s"',
-                        is_object($result) ? get_class($result) : $result,
-                        $identifier
-                    ))
-                );
-            }
+        if (interface_exists($identifier) || class_exists($identifier)) {
+            assert(
+                $result instanceof $identifier,
+                new ContainerErrorException(sprintf(
+                    'Unable to verify that "%s" is of type "%s"',
+                    get_class($result),
+                    $identifier
+                ))
+            );
         }
 
         return $result;
+    }
+
+    private function isKeyValid($key): bool
+    {
+        return is_string($key) || is_scalar($key) ||
+            (is_object($key) && method_exists($key, '__toString'));
     }
 }

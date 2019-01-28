@@ -5,8 +5,11 @@ platform: x86
 clone_folder: c:\phonion\framework
 
 environment:
-    matrix:
-        - php: 7.2
+  matrix:
+    - php: '7.2'
+      XDEBUG_VERSION: '2.7.0beta1-7.2'
+    - php: '7.3'
+      XDEBUG_VERSION: '2.7.0beta1-7.3'
 
 branches:
   only:
@@ -55,6 +58,12 @@ install:
                 appveyor-retry appveyor DownloadFile https://getcomposer.org/composer.phar -Filename C:\tools\composer\composer.phar
                 Set-Content -path 'C:\tools\composer\composer.bat' -Value ('@php C:\tools\composer\composer.phar %*')
             }
+
+            if (!(Test-Path c:\tools\php\ext\php_xdebug-%XDEBUG_VERSION%-vc15.dll)) {
+              appveyor-retry appveyor DownloadFile https://xdebug.org/files/php_xdebug-%XDEBUG_VERSION%-vc15-nts-x86_64.dll -Filename c:\tools\php\ext\php_xdebug.dll
+            }
+
+            Add-Content php.ini "`n zend_extension=php_xdebug.dll"
         }
 
     - cd c:\phonion\framework
@@ -65,3 +74,5 @@ test_script:
     - cd c:\phonion\framework
     - vendor\bin\phpunit.bat --bootstrap vendor/autoload.php
     - vendor\bin\phpcs.bat src\ --standard=psr2
+    - vendor\bin\psalm.bat --show-info=false
+    - vendor\bin\infection.bat -j4 --min-msi=85 --min-covered-msi=95

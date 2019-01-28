@@ -3,7 +3,7 @@ namespace Tests\Router;
 
 use Onion\Framework\Router\StaticRoute;
 
-class StaticRouteTest extends \PHPUnit_Framework_TestCase
+class StaticRouteTest extends \PHPUnit\Framework\TestCase
 {
     private $route;
     public function setUp()
@@ -17,5 +17,20 @@ class StaticRouteTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($this->route->getPattern(), '/');
         $this->assertTrue($this->route->isMatch('/'));
         $this->assertEmpty($this->route->getParameters());
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage No handler provided
+     */
+    public function testEmptyRequestHandler()
+    {
+        $this->route->getRequestHandler();
+    }
+
+    public function testNamedRoute()
+    {
+        $route = new StaticRoute('/', 'home');
+        $this->assertSame('home', $route->getName());
     }
 }

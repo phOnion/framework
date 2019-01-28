@@ -3,7 +3,7 @@ namespace Tests\Collection;
 
 use Onion\Framework\Collection\CallbackCollection;
 
-class CallbackCollectionTest extends \PHPUnit_Framework_TestCase
+class CallbackCollectionTest extends \PHPUnit\Framework\TestCase
 {
     public function testCollectionFiltering()
     {
