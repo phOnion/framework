@@ -71,7 +71,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase
 
         $this->assertNotSame($collection, $slice);
         $this->assertSame(
-            [2 => 3, 3 => 4],
+            [3, 4],
             iterator_to_array($slice)
         );
     }

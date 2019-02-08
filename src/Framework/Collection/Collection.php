@@ -68,7 +68,7 @@ class Collection implements \Iterator, \Countable
     public function slice(int $start, int $length = -1): self
     {
         return new self(
-            new \LimitIterator($this->items, $start, $length)
+            array_slice(iterator_to_array($this->items), $start, $length)
         );
     }
 
