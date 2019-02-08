@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 namespace Onion\Framework\Collection;
 
-class Collection implements \Iterator
+class Collection implements \Iterator, \Countable
 {
     /** @var \Iterator $items */
     private $items;
@@ -70,5 +70,10 @@ class Collection implements \Iterator
         return new self(
             new \LimitIterator($this->items, $start, $length)
         );
+    }
+
+    public function count()
+    {
+        return iterator_count($this->items);
     }
 }
