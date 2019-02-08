@@ -41,8 +41,47 @@ class Collection implements \Iterator
         return $this->items->valid();
     }
 
+    /**
+     * @deprecated
+     * @see self::filter
+     */
     public function setFilter(callable $callback): void
     {
         $this->items = new \CallbackFilterIterator($this->items, $callback);
+    }
+
+    public function filter(callable $callback): self
+    {
+        $self = clone $this;
+        $self->setFilter($callback);
+
+        return $self;
+    }
+
+    public function map(callable $callback): self
+    {
+        return new self(
+            new CallbackCollection($this->items, $callback)
+        );
+    }
+
+    public function slice(int $start, int $length = 0): self
+    {
+        $items = [];
+        $this->rewind();
+        $cursor = 0;
+        while ($this->valid()) {
+            if ($this->key() >= $start && $cursor <= $length) {
+                $cursor++;
+                $items[] = $this->current();
+            }
+
+            $this->next();
+            if ($cursor === $length) {
+                break;
+            }
+        }
+
+        return new self($items);
     }
 }
