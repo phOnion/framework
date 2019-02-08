@@ -2,15 +2,24 @@ language: php
 before_script:
 - echo 'zend.assertions=1' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
 - echo 'assert.exception=1' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
-php:
-- '7.2'
-- '7.3'
-install: composer install -o --no-interaction --prefer-dist
+- echo 'hhvm.php7.all=1' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
+matrix:
+  include:
+    - php: '7.2'
+      env: EXTRA_INFECTION_OPTIONS='-q' EXTRA_COMPOSER_ARGS=''
+    - php: '7.3'
+      env: EXTRA_INFECTION_OPTIONS='-q' EXTRA_COMPOSER_ARGS=''
+    - php: 'nightly'
+      env: EXTRA_INFECTION_OPTIONS='--show-mutations' EXTRA_COMPOSER_ARGS='--ignore-platform-reqs'
+  allow_failures:
+    - php: 'nightly'
+install:
+ - composer install -o --no-interaction --prefer-dist $EXTRA_COMPOSER_ARGS
 script:
-- vendor/bin/phpunit --bootstrap vendor/autoload.php --coverage-clover=coverage.xml
+- vendor/bin/phpunit --bootstrap vendor/autoload.php --coverage-clover=coverage.xml --process-isolation
 - vendor/bin/phpcs src/ --standard=psr2
 - vendor/bin/psalm --show-info=false
-- vendor/bin/infection -j4 -q --min-msi=85 --min-covered-msi=95
+- vendor/bin/infection $EXTRA_INFECTION_OPTIONS --min-msi=85 --min-covered-msi=95
 after_success:
 - php vendor/bin/codacycoverage clover coverage.xml
 notifications:

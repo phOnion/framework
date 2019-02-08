@@ -2,6 +2,8 @@
 <phpunit
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/7.5/phpunit.xsd"
+         executionOrder="random"
+         resolveDependencies="true" 
          backupGlobals="true"
          backupStaticAttributes="false"
          cacheResult="false"
