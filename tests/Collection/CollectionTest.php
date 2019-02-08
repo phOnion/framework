@@ -71,8 +71,32 @@ class CollectionTest extends \PHPUnit\Framework\TestCase
 
         $this->assertNotSame($collection, $slice);
         $this->assertSame(
-            [3, 4],
+            [2 => 3, 3 => 4],
             iterator_to_array($slice)
+        );
+    }
+
+    public function testCollectionCounting()
+    {
+        $collection = new Collection([1, 2, 3, 4, 5]);
+        $this->assertCount(5, $collection);
+        $filtered = $collection->filter(function ($i) {
+            return ($i%2) !== 0;
+        });
+        $this->assertCount(3, $filtered);
+    }
+
+    public function testCollectionSorting()
+    {
+        $collection = new Collection([1, 2, 3, 4, 5]);
+        $sorted = $collection->sort(function ($a, $b) {
+            return $b <=> $a;
+        });
+
+        $this->assertNotSame($collection, $sorted);
+        $this->assertSame(
+            [5, 4, 3, 2, 1],
+            iterator_to_array($sorted)
         );
     }
 }
