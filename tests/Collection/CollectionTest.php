@@ -38,4 +38,41 @@ class CollectionTest extends \PHPUnit\Framework\TestCase
             iterator_to_array($collection)
         );
     }
+
+    public function testNewFilteredCollection()
+    {
+        $collection = new Collection([1, 2, 3, 4, 5]);
+        $filteredCollection = $collection->filter(function ($i) { return ($i%2) === 0; });
+        $this->assertNotSame($collection, $filteredCollection);
+        $this->assertSame(
+            [1 => 2, 3 => 4],
+            iterator_to_array($filteredCollection)
+        );
+    }
+
+    public function testCollectionMapping()
+    {
+        $collection = new Collection([1, 2, 3, 4, 5]);
+        $mapped = $collection->map(function ($item) {
+            return $item**2;
+        });
+
+        $this->assertNotSame($collection, $mapped);
+        $this->assertSame(
+            [1, 4, 9, 16, 25],
+            iterator_to_array($mapped)
+        );
+    }
+
+    public function testCollectionSlicing()
+    {
+        $collection = new Collection([1, 2, 3, 4, 5]);
+        $slice = $collection->slice(2, 2);
+
+        $this->assertNotSame($collection, $slice);
+        $this->assertSame(
+            [3, 4],
+            iterator_to_array($slice)
+        );
+    }
 }
