@@ -72,10 +72,10 @@ class Collection implements \Iterator, \Countable
         );
     }
 
-    public function sort(callable $callback, int $flags = SORT_REGULAR): self
+    public function sort(callable $callback): self
     {
         $items = iterator_to_array($this);
-        sort($items, $flags);
+        usort($items, $callback);
 
         return new self($items);
     }
