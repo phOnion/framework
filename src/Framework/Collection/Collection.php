@@ -72,6 +72,14 @@ class Collection implements \Iterator, \Countable
         );
     }
 
+    public function sort(callable $callback, int $flags = SORT_REGULAR): self
+    {
+        $items = iterator_to_array($this);
+        sort($items, $flags);
+
+        return new self($items);
+    }
+
     public function count()
     {
         return iterator_count($this->items);
