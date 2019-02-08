@@ -6,15 +6,15 @@ before_script:
 matrix:
   include:
     - php: '7.2'
-      env: EXTRA_INFECTION_OPTIONS='-q'
+      env: EXTRA_INFECTION_OPTIONS='-q' EXTRA_COMPOSER_ARGS=''
     - php: '7.3'
-      env: EXTRA_INFECTION_OPTIONS='-q'
+      env: EXTRA_INFECTION_OPTIONS='-q' EXTRA_COMPOSER_ARGS=''
     - php: 'nightly'
-      env: EXTRA_INFECTION_OPTIONS='--show-mutations'
+      env: EXTRA_INFECTION_OPTIONS='--show-mutations' EXTRA_COMPOSER_ARGS='--ignore-platform-reqs'
   allow_failures:
     - php: 'nightly'
-install: 
- - composer install -o --no-interaction --prefer-dist
+install:
+ - composer install -o --no-interaction --prefer-dist $EXTRA_COMPOSER_ARGS
 script:
 - vendor/bin/phpunit --bootstrap vendor/autoload.php --coverage-clover=coverage.xml --process-isolation
 - vendor/bin/phpcs src/ --standard=psr2
