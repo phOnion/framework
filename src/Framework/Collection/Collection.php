@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 namespace Onion\Framework\Collection;
 
-class Collection implements \Iterator
+class Collection implements \Iterator, \Countable
 {
     /** @var \Iterator $items */
     private $items;
@@ -41,8 +41,47 @@ class Collection implements \Iterator
         return $this->items->valid();
     }
 
+    /**
+     * @deprecated
+     * @see self::filter
+     */
     public function setFilter(callable $callback): void
     {
         $this->items = new \CallbackFilterIterator($this->items, $callback);
+    }
+
+    public function filter(callable $callback): self
+    {
+        $self = clone $this;
+        $self->setFilter($callback);
+
+        return $self;
+    }
+
+    public function map(callable $callback): self
+    {
+        return new self(
+            new CallbackCollection($this->items, $callback)
+        );
+    }
+
+    public function slice(int $start, int $length = -1): self
+    {
+        return new self(
+            array_slice(iterator_to_array($this->items), $start, $length)
+        );
+    }
+
+    public function sort(callable $callback): self
+    {
+        $items = iterator_to_array($this);
+        usort($items, $callback);
+
+        return new self($items);
+    }
+
+    public function count()
+    {
+        return iterator_count($this->items);
     }
 }
