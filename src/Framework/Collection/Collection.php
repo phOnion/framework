@@ -65,23 +65,10 @@ class Collection implements \Iterator
         );
     }
 
-    public function slice(int $start, int $length = 0): self
+    public function slice(int $start, int $length = -1): self
     {
-        $items = [];
-        $this->rewind();
-        $cursor = 0;
-        while ($this->valid()) {
-            if ($this->key() >= $start && $cursor <= $length) {
-                $cursor++;
-                $items[] = $this->current();
-            }
-
-            $this->next();
-            if ($cursor === $length) {
-                break;
-            }
-        }
-
-        return new self($items);
+        return new self(
+            new \LimitIterator($this->items, $start, $length)
+        );
     }
 }
