@@ -95,12 +95,10 @@ abstract class Route implements RouteInterface
 
     public function withHeaders(iterable $headers): RouteInterface
     {
-        if ($headers instanceof \Iterator) {
-            $headers = iterator_to_array($headers, true);
-        }
-
         $self = clone $this;
-        $self->headers = $headers;
+        foreach ($headers as $header => $required) {
+            $self->headers[strtolower($header)] = $required;
+        }
 
         return $self;
     }
