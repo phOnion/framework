@@ -21,6 +21,11 @@ class RegexRoute extends Route
         return false;
     }
 
+    public function getParsedPattern()
+    {
+        return $this->parse($this->getPattern());
+    }
+
     /**
      * @param string $path
      * @return string
