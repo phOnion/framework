@@ -3,8 +3,6 @@ namespace Onion\Framework\Router\Strategy;
 
 use function Onion\Framework\merge;
 
-
-
 class TreeStrategy
 {
     private $routes;
