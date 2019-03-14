@@ -5,7 +5,7 @@ use function Onion\Framework\merge;
 
 class TreeStrategy
 {
-    private $routes;
+    private $routes = [];
 
     public function __construct(array $routes)
     {
