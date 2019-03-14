@@ -20,22 +20,4 @@ class RegexRoute extends Route
 
         return false;
     }
-
-    public function getParsedPattern()
-    {
-        return $this->parse($this->getPattern());
-    }
-
-    /**
-     * @param string $path
-     * @return string
-     */
-    private function parse(string $path): string
-    {
-        return preg_replace(
-            ['~\{(\w+)\}+~iuU', '~\{(\w+)\:(.*)\}+~iuU', '~\{/?(.*)\}\?~iuU', '~\{(.*)\}\?~iuU', ],
-            ['(?P<$1>[^/]+)', '(?P<$1>$2)', '(?:$1)?', '(?:$1)?', ],
-            str_replace('/*', '/(?:.*)', $path)
-        );
-    }
 }
