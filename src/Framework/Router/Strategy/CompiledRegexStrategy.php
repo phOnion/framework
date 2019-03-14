@@ -84,7 +84,7 @@ class CompiledRegexStrategy
 
                 $name = preg_replace('~([/\{]{1,2})~', '', $param['name']);
                 $params[] = $name;
-                $expr = $param['pattern'] ?? '[^/]';
+                $expr = (isset($param['pattern']) && !empty($param['pattern'])) ? $param['pattern'] : '[^/]';
                 $partial = (rtrim($partial, '/') . "/({$expr})") . ($param['conditional'] ?? '');
                 $patterns[$partial] = $params;
             }
