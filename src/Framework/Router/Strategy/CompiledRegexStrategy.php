@@ -45,7 +45,7 @@ class CompiledRegexStrategy
     public function resolve(string $method, string $path)
     {
         foreach ($this->routes as $pattern => $route) {
-            if(!preg_match('~'.$pattern.'~', $path, $matches)) {
+            if (!preg_match('~'.$pattern.'~', $path, $matches)) {
                 continue;
             }
 
