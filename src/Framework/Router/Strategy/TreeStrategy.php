@@ -2,49 +2,67 @@
 namespace Onion\Framework\Router\Strategy;
 
 use function Onion\Framework\merge;
+use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
+use Onion\Framework\Router\Exceptions\NotFoundException;
+use Onion\Framework\Router\Interfaces\ResolverInterface;
+use Onion\Framework\Router\Interfaces\RouteInterface;
 
-class TreeStrategy
+class TreeStrategy implements ResolverInterface
 {
+    /** @var RouteInterface[] $routes */
     private $routes = [];
 
+    /**
+     * @var RouteInterface[] $routes
+     */
     public function __construct(array $routes)
     {
         $this->routes = $routes;
     }
 
-    public function resolve(string $method, string $path)
+    public function resolve(string $method, string $path): RouteInterface
     {
-        $parts = explode('/', trim($path, '/'));
+        $route = $this->match($this->routes, explode('/', trim($path, '/')), $params);
 
-        $params = [];
-        $match = $this->match($this->routes, $parts, $params);
-
-        if ($match === null) {
-            throw new \RuntimeException('No match found');
+        if ($route === null) {
+            throw new NotFoundException("No match for '{$path}' found");
         }
+
+        if (!$route->hasMethod($method)) {
+            throw new MethodNotAllowedException($route->getMethods());
+        }
+
         $params = array_filter($params, function ($key) {
             return !is_integer($key);
         }, ARRAY_FILTER_USE_KEY);
 
-        if (isset($match['methods']) && !in_array($method, $match['methods'])) {
-            throw new \BadMethodCallException("Method {$method} not allowed");
-        }
-
-        return [$match, $params];
+        return $route->withParameters($params);
     }
 
-    private function match(array $routes, array $parts, &$params = []): ?array
+    private function match(array $routes, array $parts, ?array &$params = []): ?RouteInterface
     {
         $part = array_shift($parts);
 
         if ($part === null) {
-            return $routes;
+            return null;
         }
 
         foreach ($routes as $segment => $remaining) {
+            if ($segment === '*') {
+                $segment === '.*';
+            }
+
             if (preg_match("/^{$segment}$/i", $part, $matches) > 0) {
                 $params = merge($params ?? [], $matches);
-                return $this->match($remaining, $parts, $params);
+
+                if ($remaining instanceof RouteInterface) {
+                    return $remaining;
+                }
+
+                /** @var array $routes */
+                $routes = $remaining;
+
+                return $this->match($routes, $parts, $params);
             }
         }
 

@@ -1,12 +1,21 @@
 <?php
 namespace Onion\Framework\Router\Strategy;
 
-class CompiledRegexStrategy
+use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
+use Onion\Framework\Router\Exceptions\NotFoundException;
+use Onion\Framework\Router\Interfaces\ResolverInterface;
+use Onion\Framework\Router\Interfaces\RouteInterface;
+
+class CompiledRegexStrategy implements ResolverInterface
 {
-    private const PARAM_REGEX = '~(\{(?P<name>[^\:\}]+)(?:\:(?P<pattern>[^\}]+))?\}(?P<conditional>\?)?+)+~iuU';
+    /** @var Route[] $routes */
     private $routes = [];
 
-    public function __construct(array $routes, int $groupCount = 10)
+    /**
+     * @var RouteInterface[] $routes List of defined routes
+     * @var int $maxGroupCount Maximum number of groups
+     */
+    public function __construct(array $routes, int $maxGroupCount = 10)
     {
         $compiledRoutes = [];
         foreach ($routes as $route) {
@@ -21,19 +30,16 @@ class CompiledRegexStrategy
                 $compiledRoutes[$pattern] = [$route, $params];
             }
         }
-        $sections = round(count($compiledRoutes)/$groupCount)+1;
+        $sections = round(count($compiledRoutes)/$maxGroupCount)+1;
 
         for ($i=0; $i<$sections; $i++) {
             $segments = [];
             $handlers = [];
-            $length = $groupCount;
+            $length = $maxGroupCount;
             foreach ($compiledRoutes as $key => $route) {
                 $expansion = str_repeat('()', $length);
                 $segments[] = "{$key}{$expansion}";
                 $index = ($length + count($route[1]));
-                if (isset($handlers[$index])) {
-                    throw new \RuntimeException("Possible route conflict");
-                }
                 $handlers[$index] = $route;
 
                 $length--;
@@ -49,34 +55,22 @@ class CompiledRegexStrategy
         }
     }
 
-    public function resolve(string $method, string $path)
+    public function resolve(string $method, string $path): RouteInterface
     {
-        foreach ($this->routes as $pattern => $route) {
-            if (!preg_match('~^'.$pattern.'$~', $path, $matches)) {
-                continue;
-            }
+        $route = $this->match($path, $params);
 
-            $params = [];
-            array_shift($matches);
-            $index = count($matches);
-
-            $matches = array_filter($matches, function ($value) {
-                return $value !== '';
-            });
-
-            foreach ($matches as $i => $match) {
-                if ($match === '') {
-                    continue;
-                }
-
-                $params[$route[$index][1][$i]] = $match;
-            }
-
-            return $route[$index][0]->withParameters($params);
+        if ($route === null) {
+            throw new NotFoundException("No match for '{$path}' found");
         }
+
+        if (!$route->hasMethod($method)) {
+            throw new MethodNotAllowedException($route->getMethods());
+        }
+
+        return $route->withParameters($params);
     }
 
-    private function compile(string $pattern)
+    private function compile(string $pattern): array
     {
         $segments = explode('/', trim($pattern, '/'));
         $params = [];
@@ -104,5 +98,34 @@ class CompiledRegexStrategy
         $patterns[$path] = $params;
 
         return array_reverse($patterns);
+    }
+
+    private function match(string $path, ?array &$params = []): ?RouteInterface
+    {
+        $params = $params ?? [];
+        foreach ($this->routes as $pattern => $definition) {
+            if (!preg_match('~^'.$pattern.'$~', $path, $matches)) {
+                continue;
+            }
+
+            array_shift($matches);
+            $index = count($matches);
+
+            $matches = array_filter($matches, function ($value) {
+                return $value !== '';
+            });
+
+            foreach ($matches as $i => $match) {
+                if ($match === '') {
+                    continue;
+                }
+
+                $params[$definition[$index][1][$i]] = $match;
+            }
+
+            return $definition[$index][0];
+        }
+
+        return null;
     }
 }

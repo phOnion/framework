@@ -8,7 +8,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-abstract class Route implements RouteInterface
+class Route implements RouteInterface
 {
     /** @var string $name */
     private $name;
