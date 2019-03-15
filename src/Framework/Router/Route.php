@@ -103,6 +103,14 @@ abstract class Route implements RouteInterface
         return $self;
     }
 
+    public function withParameters(iterable $parameters)
+    {
+        $self = clone $this;
+        $self->parameters = $parameters;
+
+        return $self;
+    }
+
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         foreach ($this->getHeaders() as $header => $required) {
