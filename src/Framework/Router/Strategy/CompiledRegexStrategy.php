@@ -11,18 +11,25 @@ class CompiledRegexStrategy
         $compiledRoutes = [];
         foreach ($routes as $route) {
             foreach ($this->compile($route->getPattern()) as $pattern => $params) {
+                if (isset($compiledRoutes[$pattern])) {
+                    throw new \LogicException(sprintf('Compiled route %s duplicates %s',
+                        $route->getName(),
+                        $compiledRoutes[$pattern][0]->getName()
+                    ));
+                }
+
                 $compiledRoutes[$pattern] = [$route, $params];
             }
         }
         $sections = round(count($compiledRoutes)/$groupCount)+1;
 
         for ($i=0; $i<$sections; $i++) {
+            $segments = [];
             $handlers = [];
-            $pattern = '(?|';
             $length = $groupCount;
             foreach ($compiledRoutes as $key => $route) {
                 $expansion = str_repeat('()', $length);
-                $pattern .= "{$key}{$expansion}|";
+                $segments[] = "{$key}{$expansion}";
                 $index = ($length + count($route[1]));
                 if (isset($handlers[$index])) {
                     throw new \RuntimeException("Possible route conflict");
@@ -36,8 +43,7 @@ class CompiledRegexStrategy
                 }
             }
 
-            $pattern = rtrim($pattern, '/|');
-            $pattern .= ')';
+            $pattern = '(?|' . implode('|', $segments) . ')';
 
             $this->routes[$pattern] = $handlers;
         }
