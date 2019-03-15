@@ -14,7 +14,7 @@ class CompiledRegexStrategy
                 $compiledRoutes[$pattern] = [$route, $params];
             }
         }
-        $sections = round(count($compiledRoutes)/10)+1;
+        $sections = round(count($compiledRoutes)/$groupCount)+1;
 
         for ($i=0; $i<$sections; $i++) {
             $handlers = [];
@@ -31,7 +31,7 @@ class CompiledRegexStrategy
 
                 $length--;
                 unset($compiledRoutes[$key]);
-                if ($groupCount === 0) {
+                if ($length === 0) {
                     break;
                 }
             }
