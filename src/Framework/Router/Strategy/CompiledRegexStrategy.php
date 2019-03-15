@@ -3,6 +3,7 @@ namespace Onion\Framework\Router\Strategy;
 
 class CompiledRegexStrategy
 {
+    private const PARAM_REGEX = '~(\{(?P<name>[^\:\}]+)(?:\:(?P<pattern>[^\}]+))?\}(?P<conditional>\?)?+)+~iuU';
     private $routes = [];
 
     public function __construct(array $routes, int $groupCount = 10)
@@ -18,7 +19,7 @@ class CompiledRegexStrategy
         for ($i=0; $i<$sections; $i++) {
             $handlers = [];
             $pattern = '(?|';
-            $length = 0;
+            $length = $groupCount;
             foreach ($compiledRoutes as $key => $route) {
                 $expansion = str_repeat('()', $length);
                 $pattern .= "{$key}{$expansion}|";
@@ -28,11 +29,11 @@ class CompiledRegexStrategy
                 }
                 $handlers[$index] = $route;
 
-                $length++;
-                if ($groupCount === $length) {
+                $length--;
+                unset($compiledRoutes[$key]);
+                if ($groupCount === 0) {
                     break;
                 }
-                unset($compiledRoutes[$key]);
             }
 
             $pattern = rtrim($pattern, '/|');
@@ -45,7 +46,7 @@ class CompiledRegexStrategy
     public function resolve(string $method, string $path)
     {
         foreach ($this->routes as $pattern => $route) {
-            if (!preg_match('~'.$pattern.'~', $path, $matches)) {
+            if (!preg_match('~^'.$pattern.'$~', $path, $matches)) {
                 continue;
             }
 
@@ -65,31 +66,37 @@ class CompiledRegexStrategy
                 $params[$route[$index][1][$i]] = $match;
             }
 
-            return [$route[$index][0], $params];
+            return $route[$index][0]->withParameters($params);
         }
     }
 
     private function compile(string $pattern)
     {
-        $patterns = [];
+        $segments = explode('/', trim($pattern, '/'));
         $params = [];
-        preg_match('~([^\{]+)~i', $pattern, $prefix);
-        $partial = rtrim($prefix[0] ?? '', '/');
-        preg_match_all('~(\{(?P<name>.*)(?:\:\s?(?P<pattern>.*))?\}(?P<conditional>\?)?+)+~iuU', $pattern, $matches, PREG_SET_ORDER);
-        if (!empty($matches)) {
-            foreach ($matches as $param) {
-                if (isset($param['conditional']) && !empty($param['conditional'])) {
-                    $patterns[$partial] = $params;
+        $patterns = [];
+        $path = '';
+
+        foreach ($segments as $segment) {
+            if (preg_match(self::PARAM_REGEX, $segment, $matches)) {
+                if (isset($matches['conditional']) && $matches['conditional'] !== '') {
+                    $patterns[$path] = $params;
                 }
 
-                $name = preg_replace('~([/\{]{1,2})~', '', $param['name']);
-                $params[] = $name;
-                $expr = (isset($param['pattern']) && !empty($param['pattern'])) ? $param['pattern'] : '[^/]';
-                $partial = (rtrim($partial, '/') . "/({$expr})") . ($param['conditional'] ?? '');
-                $patterns[$partial] = $params;
+                $params[] = trim($matches['name']);
+                $path .= '/(' . trim($matches['pattern'] ?? '[^/]') . ')';
+                if (isset($matches['conditional']) && $matches['conditional'] !== '') {
+                    $patterns[$path] = $params;
+                }
+
+                continue;
+            } else {
+                $path .= "/{$segment}";
             }
         }
 
-        return $patterns;
+        $patterns[$path] = $params;
+
+        return array_reverse($patterns);
     }
 }
