@@ -20,12 +20,12 @@ class CompiledRegexStrategy implements ResolverInterface
         $compiledRoutes = [];
         foreach ($routes as $route) {
             foreach ($this->compile($route->getPattern()) as $pattern => $params) {
-                if (isset($compiledRoutes[$pattern])) {
-                    throw new \LogicException(sprintf('Compiled route %s duplicates %s',
-                        $route->getName(),
-                        $compiledRoutes[$pattern][0]->getName()
-                    ));
-                }
+                assert(
+                    !isset($compiledRoutes[$pattern]),
+                    new \LogicException(sprintf('Compilation of %s duplicates an already existing pattern',
+                        $route->getName()
+                    ))
+                );
 
                 $compiledRoutes[$pattern] = [$route, $params];
             }
