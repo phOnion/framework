@@ -22,6 +22,7 @@ class TreeStrategy implements ResolverInterface
 
     public function resolve(string $method, string $path): RouteInterface
     {
+        $params = [];
         $route = $this->match($this->routes, explode('/', trim($path, '/')), $params);
 
         if ($route === null) {
