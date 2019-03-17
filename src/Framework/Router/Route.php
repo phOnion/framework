@@ -35,7 +35,7 @@ class Route implements RouteInterface
         return $this->name;
     }
 
-    public function getMethods(): iterable
+    public function getMethods(): array
     {
         return $this->methods;
     }
@@ -55,12 +55,17 @@ class Route implements RouteInterface
         return $this->handler;
     }
 
-    public function getParameters(): iterable
+    public function getParameters(): array
     {
         return $this->parameters;
     }
 
-    public function getHeaders(): iterable
+    public function getParameter(string $name, $default = null)
+    {
+        return $this->parameters[$name] ?? $default;
+    }
+
+    public function getHeaders(): array
     {
         return $this->headers;
     }
@@ -75,7 +80,7 @@ class Route implements RouteInterface
         return $this->methods === [] || in_array(strtolower($method), $this->methods);
     }
 
-    public function withMethods(iterable $methods): RouteInterface
+    public function withMethods(array $methods): RouteInterface
     {
         $self = clone $this;
         foreach ($methods as $method) {
@@ -93,7 +98,7 @@ class Route implements RouteInterface
         return $self;
     }
 
-    public function withHeaders(iterable $headers): RouteInterface
+    public function withHeaders(array $headers): RouteInterface
     {
         $self = clone $this;
         foreach ($headers as $header => $required) {
@@ -103,7 +108,7 @@ class Route implements RouteInterface
         return $self;
     }
 
-    public function withParameters(iterable $parameters)
+    public function withParameters(array $parameters): RouteInterface
     {
         $self = clone $this;
         $self->parameters = $parameters;
