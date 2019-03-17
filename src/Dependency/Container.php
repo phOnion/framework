@@ -94,7 +94,7 @@ final class Container implements AttachableContainer
                 return $this->retrieveFromFactory($key);
             }
 
-            if (($this->mode & self::REFLECTION_RESOLUTION) === self::REFLECTION_RESOLUTION && class_exists($key)) {
+            if (($this->mode & self::REFLECTION_RESOLUTION) === self::REFLECTION_RESOLUTION) {
                 return $this->retrieveFromReflection($key);
             }
         } catch (\RuntimeException | \InvalidArgumentException $ex) {
@@ -163,6 +163,9 @@ final class Container implements AttachableContainer
      */
     private function retrieveFromReflection(string $className): object
     {
+        if (!class_exists($className)) {
+            throw new \InvalidArgumentException("Provided '{$className}' does not exist");
+        }
         $classReflection = new \ReflectionClass($className);
         $constructorRef = $classReflection->getConstructor();
 
@@ -228,6 +231,11 @@ final class Container implements AttachableContainer
             new ContainerErrorException(
                 "Registered factory for '{$className}' must be a valid FQCN, " . gettype($className) . ' given'
             )
+        );
+
+        assert(
+            class_exists($name),
+            new \InvalidArgumentException("Provided '{$name}' does not exist")
         );
 
         $factoryReflection = new \ReflectionClass($name);
