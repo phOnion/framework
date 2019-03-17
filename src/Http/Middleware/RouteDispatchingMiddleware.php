@@ -2,7 +2,6 @@
 namespace Onion\Framework\Http\Middleware;
 
 use Onion\Framework\Router\Interfaces\ResolverInterface;
-use Onion\Framework\Router\Interfaces\RouteInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -27,7 +26,7 @@ class RouteDispatchingMiddleware implements MiddlewareInterface
             $request->getUri()->getPath()
         );
 
-        $resolution = $route->handle($request->withAttribute(RouteInterface::class, $route));
+        $resolution = $route->handle($request->withAttribute('route', $route));
 
         foreach ($resolution->getHeaders() as $header => $value) {
             $response = $response->withHeader($header, $value);
