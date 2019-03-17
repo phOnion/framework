@@ -17,6 +17,10 @@ use Psr\Container\NotFoundExceptionInterface;
  */
 final class Container implements AttachableContainer
 {
+    public const INVOKABLE_RESOLUTION = 1;
+    public const FACTORY_RESOLUTION = 2;
+    public const REFLECTION_RESOLUTION = 4;
+
     /** @var string[]|object[] $invokables */
     public $invokables = [];
     /** @var string[] $factories */
@@ -24,6 +28,9 @@ final class Container implements AttachableContainer
 
     /** @var string[] $shared */
     private $shared = [];
+
+    /** @var int $mode */
+    private $mode;
 
     /** @var ContainerInterface */
     private $delegate;
@@ -33,8 +40,10 @@ final class Container implements AttachableContainer
      *
      * @param array $dependencies
      */
-    public function __construct(array $dependencies)
+    public function __construct(array $dependencies, int $mode = self::INVOKABLE_RESOLUTION | self::FACTORY_RESOLUTION)
     {
+        $this->mode = $mode;
+
         $this->invokables = $dependencies['invokables'] ?? [];
         $this->factories = $dependencies['factories'] ?? [];
 
@@ -75,15 +84,17 @@ final class Container implements AttachableContainer
 
         $key = (string) $key;
         try {
-            if (isset($this->invokables[$key])) {
-                return $this->retrieveInvokable($key);
+            if (($this->mode & self::INVOKABLE_RESOLUTION) === self::INVOKABLE_RESOLUTION &&
+                isset($this->invokables[$key])) {
+                    return $this->retrieveInvokable($key);
             }
 
-            if (isset($this->factories[$key])) {
-                return $this->retrieveFromFactory($key);
+            if (($this->mode & self::FACTORY_RESOLUTION) === self::FACTORY_RESOLUTION &&
+                isset($this->factories[$key])) {
+                    return $this->retrieveFromFactory($key);
             }
 
-            if (class_exists($key)) {
+            if (($this->mode & self::REFLECTION_RESOLUTION) === self::REFLECTION_RESOLUTION && class_exists($key)) {
                 return $this->retrieveFromReflection($key);
             }
         } catch (\RuntimeException | \InvalidArgumentException $ex) {
