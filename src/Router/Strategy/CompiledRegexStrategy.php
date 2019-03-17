@@ -15,7 +15,7 @@ class CompiledRegexStrategy implements ResolverInterface
      * @var RouteInterface[] $routes List of defined routes
      * @var int $maxGroupCount Maximum number of groups
      */
-    public function __construct(array $routes, int $maxGroupCount = 10)
+    public function __construct(iterable $routes, int $maxGroupCount = 10)
     {
         $compiledRoutes = [];
         foreach ($routes as $route) {
@@ -81,14 +81,12 @@ class CompiledRegexStrategy implements ResolverInterface
         foreach ($segments as $segment) {
             if (preg_match(self::PARAM_REGEX, $segment, $matches)) {
                 if (isset($matches['conditional']) && $matches['conditional'] !== '') {
-                    $patterns[$path] = $params;
+                    $patterns[$path ?: '/'] = $params;
                 }
 
                 $params[] = trim($matches['name']);
-                $path .= '/(' . trim($matches['pattern'] ?? '[^/]') . ')';
-                if (isset($matches['conditional']) && $matches['conditional'] !== '') {
-                    $patterns[$path] = $params;
-                }
+                $path .= '/(' . ($matches['pattern'] ?: '[^/]+') . ')';
+                $patterns[$path] = $params;
 
                 continue;
             }
