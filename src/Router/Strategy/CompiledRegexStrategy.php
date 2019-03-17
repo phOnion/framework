@@ -8,7 +8,7 @@ use Onion\Framework\Router\Interfaces\RouteInterface;
 
 class CompiledRegexStrategy implements ResolverInterface
 {
-    /** @var RouteInterface[] $routes */
+    /** @var array $routes */
     private $routes = [];
 
     /**
@@ -58,6 +58,7 @@ class CompiledRegexStrategy implements ResolverInterface
 
     public function resolve(string $method, string $path): RouteInterface
     {
+        $params = [];
         $route = $this->match($path, $params);
 
         if ($route === null) {

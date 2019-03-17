@@ -59,10 +59,7 @@ class TreeStrategy implements ResolverInterface
                     return $remaining;
                 }
 
-                /** @var array $routes */
-                $routes = $remaining;
-
-                return $this->match($routes, $parts, $params);
+                return $this->match($remaining, $parts, $params);
             }
         }
 
