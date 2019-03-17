@@ -58,7 +58,6 @@ class CompiledRegexStrategy implements ResolverInterface
 
     public function resolve(string $method, string $path): RouteInterface
     {
-        $params = [];
         $route = $this->match($path, $params);
 
         if ($route === null) {
@@ -69,7 +68,7 @@ class CompiledRegexStrategy implements ResolverInterface
             throw new MethodNotAllowedException($route->getMethods());
         }
 
-        return $route->withParameters($params);
+        return $route->withParameters($params ?? []);
     }
 
     private function compile(string $pattern): array

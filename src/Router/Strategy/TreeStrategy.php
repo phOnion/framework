@@ -22,7 +22,6 @@ class TreeStrategy implements ResolverInterface
 
     public function resolve(string $method, string $path): RouteInterface
     {
-        $params = [];
         $route = $this->match($this->routes, explode('/', trim($path, '/')), $params);
 
         if ($route === null) {
@@ -33,7 +32,7 @@ class TreeStrategy implements ResolverInterface
             throw new MethodNotAllowedException($route->getMethods());
         }
 
-        $params = array_filter($params, function ($key) {
+        $params = array_filter($params ?? [], function ($key) {
             return !is_integer($key);
         }, ARRAY_FILTER_USE_KEY);
 
