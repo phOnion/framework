@@ -10,7 +10,7 @@ class ResponseBuildingMiddleware implements MiddlewareInterface
 {
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        ob_start();
+        $level = ob_start();
         $response = $handler->handle($request);
 
         header(
@@ -27,7 +27,7 @@ class ResponseBuildingMiddleware implements MiddlewareInterface
 
         echo $response->getBody();
 
-        while (ob_get_level() > 0) {
+        while (ob_get_level() > $level) {
             ob_end_flush();
         }
 
