@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Tests\Dependency;
 
-use Psr\Container\ContainerInterface;
 use Onion\Framework\Dependency\DelegateContainer;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
 use Onion\Framework\Dependency\Interfaces\AttachableContainer as Container;

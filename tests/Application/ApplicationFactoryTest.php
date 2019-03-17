@@ -4,9 +4,12 @@ namespace Tests\Application;
 use Onion\Framework\Application;
 use Onion\Framework\Application\Factory\ApplicationFactory;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
+use Prophecy\Argument\Token\AnyValueToken;
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Tests\Application\Stubs\MiddlewareStub;
 
 class ApplicationFactoryTest extends \PHPUnit\Framework\TestCase
@@ -24,10 +27,9 @@ class ApplicationFactoryTest extends \PHPUnit\Framework\TestCase
             ]
         ]);
 
-        $container->has('application.authorization.base')->willReturn(false);
-        $container->has('application.authorization.proxy')->willReturn(false);
-        $container->has(\Psr\Log\LoggerInterface::class)->willReturn(false);
-        $container->get('test')->willReturn(new MiddlewareStub());
+        $requestHandler = $this->prophesize(RequestHandlerInterface::class);
+        $requestHandler->handle(new AnyValueToken)->willReturn($this->prophesize(ResponseInterface::class)->reveal());
+        $container->get(RequestHandlerInterface::class)->willReturn($requestHandler->reveal());
 
         $factory = new ApplicationFactory();
         $this->assertInstanceOf(FactoryInterface::class, $factory);
@@ -39,7 +41,6 @@ class ApplicationFactoryTest extends \PHPUnit\Framework\TestCase
         $uri = $this->prophesize(UriInterface::class);
         $uri->getPath()->willReturn('/');
         $request->getUri()->willReturn($uri->reveal());
-        $response = $app->handle($request->reveal());
-        $this->assertSame(500, $response->getStatusCode());
+        $response = $app->run($request->reveal());
     }
 }

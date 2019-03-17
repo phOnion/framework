@@ -4,6 +4,7 @@ namespace tests\Dependency;
 use Onion\Framework\Dependency\CacheAwareContainer;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Psr\Container\ContainerInterface as Container;
+use Psr\Container\ContainerInterface;
 use Psr\SimpleCache\CacheInterface;
 
 class CacheAwareContainerTest extends \PHPUnit\Framework\TestCase
@@ -13,13 +14,21 @@ class CacheAwareContainerTest extends \PHPUnit\Framework\TestCase
     public function setUp()
     {
         $this->cache = $this->prophesize(CacheInterface::class);
-        $this->factory = new class implements FactoryInterface
+        $mock = $this->prophesize(ContainerInterface::class);
+        $mock->get('bar')->willReturn('baz');
+        $mock->has('bar')->willReturn(true);
+        $mock->has('test')->willReturn(false);
+
+        $this->factory = new class ($mock->reveal()) implements FactoryInterface
         {
+            private $container;
+            public function __construct($mock)
+            {
+                $this->container = $mock;
+            }
             public function build(Container $container)
             {
-                return new \Onion\Framework\Dependency\Container([
-                    'bar' => 'baz'
-                ]);
+                return $this->container;
             }
         };
 

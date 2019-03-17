@@ -1,14 +1,15 @@
 <?php
 namespace Tests;
 
-use Psr\Http\Message\UriInterface;
-use Prophecy\Argument\Token\AnyValueToken;
 use Onion\Framework\Application\Application;
-use Psr\Http\Message\ServerRequestInterface;
-use Onion\Framework\Router\Interfaces\RouteInterface;
-use Psr\Http\Server\RequestHandlerInterface as RequestHandlerInterface;
 use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
 use Onion\Framework\Router\Exceptions\MissingHeaderException;
+use Onion\Framework\Router\Interfaces\RouteInterface;
+use Prophecy\Argument\Token\AnyValueToken;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\UriInterface;
+use Psr\Http\Server\RequestHandlerInterface as RequestHandlerInterface;
 
 class ApplicationTest extends \PHPUnit\Framework\TestCase
 {
@@ -30,146 +31,13 @@ class ApplicationTest extends \PHPUnit\Framework\TestCase
         $this->request->getUri()->willReturn($uri->reveal());
     }
 
-    public function testApplicationRunNoRoute()
+    public function testInvokeOfRequestHandler()
     {
-        $this->request->getMethod()->willReturn('GET');
+        $requestHandler = $this->prophesize(RequestHandlerInterface::class);
+        $requestHandler->handle(new \Prophecy\Argument\Token\TypeToken(ServerRequestInterface::class))
+            ->willReturn($this->prophesize(ResponseInterface::class)->reveal())
+            ->shouldBeCalled(1);
 
-        $this->route->isMatch('/')->willReturn(false);
-        $app = new Application([$this->route->reveal()]);
-        $response = $app->handle($this->request->reveal());
-
-        $this->assertSame(404, $response->getStatusCode());
-    }
-
-    public function testMethodNotAllowedException()
-    {
-        $this->request->getMethod()->willReturn('GET');
-        $this->route->handle(new AnyValueToken())->willThrow(
-            new MethodNotAllowedException(['POST'])
-        );
-
-        $this->route->isMatch('/')->willReturn(true);
-        $app = new Application([$this->route->reveal()]);
-        $response = $app->handle($this->request->reveal());
-
-        $this->assertSame(405, $response->getStatusCode());
-        $this->assertTrue($response->hasHeader('allow'));
-        $this->assertSame('POST', $response->getHeaderLine('allow'));
-    }
-
-    public function testMissingAuthorizationHeaderException()
-    {
-        $this->request->getMethod()->willReturn('GET');
-        $this->route->handle(new AnyValueToken())->willThrow(
-            new MissingHeaderException('authorization')
-        );
-
-        $this->route->isMatch('/')->willReturn(true);
-        $app = new Application([$this->route->reveal()], 'basic');
-        $response = $app->handle($this->request->reveal());
-
-        $this->assertSame(401, $response->getStatusCode());
-        $this->assertTrue($response->hasHeader('www-authenticate'));
-        $this->assertSame(
-            'Basic realm="localhost" charset="UTF-8"',
-            $response->getHeaderLine('www-authenticate')
-        );
-    }
-
-    public function testMissingProxyAuthorizationHeaderException()
-    {
-        $this->request->getMethod()->willReturn('GET');
-        $this->route->handle(new AnyValueToken())->willThrow(
-            new MissingHeaderException('proxy-authorization')
-        );
-
-        $this->route->isMatch('/')->willReturn(true);
-        $app = new Application([$this->route->reveal()], 'basic', 'bearer');
-        $response = $app->handle($this->request->reveal());
-
-        $this->assertSame(407, $response->getStatusCode());
-        $this->assertTrue($response->hasHeader('proxy-authenticate'));
-        $this->assertSame(
-            'Bearer realm="localhost" charset="UTF-8"',
-            $response->getHeaderLine('proxy-authenticate')
-        );
-    }
-
-    public function testConditionHeaderException()
-    {
-        $this->request->getMethod()->willReturn('GET');
-        $this->route->handle(new AnyValueToken())->willThrow(
-            new MissingHeaderException('if-modified-since')
-        );
-
-        $this->route->isMatch('/')->willReturn(true);
-        $app = new Application([$this->route->reveal()]);
-        $response = $app->handle($this->request->reveal());
-
-        $this->assertSame(428, $response->getStatusCode());
-    }
-
-    public function testGenericHeaderException()
-    {
-        $this->request->getMethod()->willReturn('GET');
-        $this->route->handle(new AnyValueToken())->willThrow(
-            new MissingHeaderException('x-custom-header')
-        );
-
-        $this->route->isMatch('/')->willReturn(true);
-        $app = new Application([$this->route->reveal()]);
-        $response = $app->handle($this->request->reveal());
-
-        $this->assertSame(400, $response->getStatusCode());
-    }
-
-    public function testGetBadMethodCallException()
-    {
-        $this->request->getMethod()->willReturn('GET');
-        $this->route->handle(new AnyValueToken())->willThrow(
-            new \BadMethodCallException('Foo')
-        );
-
-        $this->route->isMatch('/')->willReturn(true);
-        $app = new Application([$this->route->reveal()]);
-        $response = $app->handle($this->request->reveal());
-
-        $this->assertSame(503, $response->getStatusCode());
-    }
-
-    public function testPostBadMethodCallException()
-    {
-        $this->request->getMethod()->willReturn('Post');
-        $this->route->handle(new AnyValueToken())->willThrow(
-            new \BadMethodCallException('Foo')
-        );
-
-        $this->route->isMatch('/')->willReturn(true);
-        $app = new Application([$this->route->reveal()]);
-        $response = $app->handle($this->request->reveal());
-
-        $this->assertSame(501, $response->getStatusCode());
-    }
-
-    public function testApplicationRun()
-    {
-        $this->request->getMethod()->willReturn('GET');
-
-        $this->route->isMatch('/')->willReturn(true);
-        $this->route->handle(new AnyValueToken())->willThrow(new \ErrorException('OK'));
-        $app = new Application([$this->route->reveal()]);
-        $response = $app->handle($this->request->reveal());
-
-        $this->assertSame(500, $response->getStatusCode());
-    }
-
-    public function testRouteParameters()
-    {
-        $this->request->withAttribute('test', 'test')->shouldBeCalled();
-        $this->route->isMatch('/')->willReturn(true);
-        $this->route->getParameters()->willReturn(['test' => 'test']);
-        $app = new Application([$this->route->reveal()]);
-
-        $app->handle($this->request->reveal());
+        (new Application($requestHandler->reveal()))->run($this->request->reveal());
     }
 }

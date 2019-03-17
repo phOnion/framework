@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 namespace Tests\Http;
 
+use Onion\Framework\Dependency\Interfaces\FactoryInterface;
+use Onion\Framework\Http\RequestHandler\Factory\RequestHandlerFactory;
+use Prophecy\Argument\Token\AnyValueToken;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Server\MiddlewareInterface;
-use Prophecy\Argument\Token\AnyValueToken;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Onion\Framework\Dependency\Interfaces\FactoryInterface;
-use Onion\Framework\Http\Middleware\Factory\RequestHandlerFactory;
 
 class RequestHandlerFactoryTest extends \PHPUnit\Framework\TestCase
 {
