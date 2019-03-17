@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 namespace Onion\Framework\Dependency;
 
+use function Onion\Framework\Common\merge;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
 use Onion\Framework\Dependency\Interfaces\AttachableContainer;
 use Psr\Container\ContainerInterface;
-use function Onion\Framework\merge;
 
 class DelegateContainer implements ContainerInterface, \Countable
 {
