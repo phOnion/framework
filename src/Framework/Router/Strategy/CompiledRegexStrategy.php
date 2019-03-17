@@ -22,7 +22,8 @@ class CompiledRegexStrategy implements ResolverInterface
             foreach ($this->compile($route->getPattern()) as $pattern => $params) {
                 assert(
                     !isset($compiledRoutes[$pattern]),
-                    new \LogicException(sprintf('Compilation of %s duplicates an already existing pattern',
+                    new \LogicException(sprintf(
+                        'Compilation of %s duplicates an already existing pattern',
                         $route->getName()
                     ))
                 );

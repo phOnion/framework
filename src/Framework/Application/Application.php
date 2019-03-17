@@ -17,7 +17,8 @@ class Application implements ApplicationInterface
     /**
      * Application constructor.
      */
-    public function __construct(RequestHandlerInterface $middleware) {
+    public function __construct(RequestHandlerInterface $middleware)
+    {
         $this->middleware = $middleware;
     }
 
