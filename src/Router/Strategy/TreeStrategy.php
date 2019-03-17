@@ -49,7 +49,7 @@ class TreeStrategy implements ResolverInterface
 
         foreach ($routes as $segment => $remaining) {
             if ($segment === '*') {
-                $segment === '.*';
+                $segment = '.*';
             }
 
             if (preg_match("/^{$segment}$/i", $part, $matches) > 0) {
