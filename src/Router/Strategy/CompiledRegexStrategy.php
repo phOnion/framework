@@ -92,9 +92,9 @@ class CompiledRegexStrategy implements ResolverInterface
                 }
 
                 continue;
-            } else {
-                $path .= "/{$segment}";
             }
+
+            $path .= "/{$segment}";
         }
 
         $patterns[$path] = $params;
