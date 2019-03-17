@@ -1,15 +1,10 @@
 <?php declare(strict_types=1);
 namespace Onion\Framework\Application\Factory;
 
-use GuzzleHttp\Psr7\Response;
 use Onion\Framework\Application\Application;
-use Onion\Framework\Collection\CallbackCollection;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
-use Onion\Framework\Http\Middleware\RequestHandler;
-use Onion\Framework\Router\RegexRoute;
 use Psr\Container\ContainerInterface;
-use Psr\Http\Message\ResponseInterface;
-use Onion\Framework\Router\Interfaces\RouteInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * A factory class solely responsible for assembling the Application
@@ -28,51 +23,6 @@ final class ApplicationFactory implements FactoryInterface
      */
     public function build(ContainerInterface $container): object
     {
-        $routeCallback = function (array $route) use ($container): RouteInterface {
-            $className = RegexRoute::class;
-            if (isset($route['class'])) {
-                $className = $route['class'];
-            }
-
-            $routeObject = new $className($route['pattern'], $route['name']);
-            if (isset($route['methods'])) {
-                $routeObject = $routeObject->withMethods(array_map('strtoupper', $route['methods']));
-            }
-
-            if (isset($route['headers'])) {
-                $routeObject = $routeObject->withHeaders($route['headers']);
-            }
-
-            if (isset($route['request_handler'])) {
-                return $routeObject->withRequestHandler($container->get($route['request_handler']));
-            }
-
-            $middlewareGenerator = function () use ($route, $container): \Generator {
-                $stack = array_merge(
-                    ($container->has('middleware') ? $container->get('middleware') : []),
-                    $route['middleware']
-                );
-                foreach ($stack as $middleware) {
-                    yield $container->get($middleware);
-                }
-            };
-
-            return $routeObject->withRequestHandler(new RequestHandler(
-                $middlewareGenerator(),
-                $container->has(ResponseInterface::class) ?
-                    $container->get(ResponseInterface::class) : new Response()
-            ));
-        };
-
-        $routes = new CallbackCollection($container->get('routes'), $routeCallback);
-        $app = new Application(
-            $routes,
-            $container->has('application.authorization.base') ?
-                $container->get('application.authorization.base') : '',
-            $container->has('application.authorization.proxy') ?
-                $container->get('application.authorization.proxy') : ''
-        );
-
-        return $app;
+        return new Application($container->get(RequestHandlerInterface::class));
     }
 }
