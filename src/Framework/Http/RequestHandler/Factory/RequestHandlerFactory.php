@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
-namespace Onion\Framework\Http\Middleware\Factory;
+namespace Onion\Framework\Http\RequestHandler\Factory;
 
 use GuzzleHttp\Psr7\Response;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
-use Onion\Framework\Http\Middleware\RequestHandler;
+use Onion\Framework\Http\RequestHandler\RequestHandler;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\MiddlewareInterface;

@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-namespace Onion\Framework\Http\Middleware;
+namespace Onion\Framework\Http\RequestHandler;
 
 use Psr\Http\Message;
 use Psr\Http\Server\MiddlewareInterface;
