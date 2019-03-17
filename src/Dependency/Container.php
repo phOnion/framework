@@ -86,12 +86,12 @@ final class Container implements AttachableContainer
         try {
             if (($this->mode & self::INVOKABLE_RESOLUTION) === self::INVOKABLE_RESOLUTION &&
                 isset($this->invokables[$key])) {
-                    return $this->retrieveInvokable($key);
+                return $this->retrieveInvokable($key);
             }
 
             if (($this->mode & self::FACTORY_RESOLUTION) === self::FACTORY_RESOLUTION &&
                 isset($this->factories[$key])) {
-                    return $this->retrieveFromFactory($key);
+                return $this->retrieveFromFactory($key);
             }
 
             if (($this->mode & self::REFLECTION_RESOLUTION) === self::REFLECTION_RESOLUTION && class_exists($key)) {
