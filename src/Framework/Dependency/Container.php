@@ -17,13 +17,16 @@ use Psr\Container\NotFoundExceptionInterface;
  */
 final class Container implements AttachableContainer
 {
-    /** @var string[][]|object[][] */
-    private $dependencies = [];
+    /** @var string[]|object[] $invokables */
+    public $invokables = [];
+    /** @var string[] $factories */
+    public $factories = [];
+
     /** @var string[] $shared */
     private $shared = [];
 
-    /** @var ContainerInterface|null */
-    private $delegate = null;
+    /** @var ContainerInterface */
+    private $delegate;
 
     /**
      * Container constructor.
@@ -32,12 +35,14 @@ final class Container implements AttachableContainer
      */
     public function __construct(array $dependencies)
     {
-        $this->dependencies = $dependencies;
+        $this->invokables = $dependencies['invokables'] ?? [];
+        $this->factories = $dependencies['factories'] ?? [];
 
-        if (isset($this->dependencies['shared'])) {
-            $this->shared = $this->dependencies['shared'] ?? [];
-            unset($this->dependencies['shared']);
+        if (isset($dependencies['shared'])) {
+            $this->shared = $dependencies['shared'] ?? [];
         }
+
+        $this->delegate = $this;
     }
 
     /**
@@ -69,28 +74,17 @@ final class Container implements AttachableContainer
         }
 
         $key = (string) $key;
-
-        if (isset($this->dependencies[$key])) {
-            return $this->dependencies[$key];
-        }
-
         try {
-            if (isset($this->dependencies['invokables'][$key])) {
+            if (isset($this->invokables[$key])) {
                 return $this->retrieveInvokable($key);
             }
 
-            if (isset($this->dependencies['factories'][$key])) {
+            if (isset($this->factories[$key])) {
                 return $this->retrieveFromFactory($key);
             }
 
             if (class_exists($key)) {
                 return $this->retrieveFromReflection($key);
-            }
-
-            $key = $this->convertVariableName($key);
-
-            if (strpos($key, '.') !== false) {
-                return $this->retrieveFromDotString($key);
             }
         } catch (\RuntimeException | \InvalidArgumentException $ex) {
             throw new ContainerErrorException($ex->getMessage());
@@ -117,29 +111,11 @@ final class Container implements AttachableContainer
         }
 
         $key = (string) $key;
-        $exists = (
-            isset($this->dependencies[$key]) ||
-            isset($this->dependencies['invokables'][$key]) ||
-            isset($this->dependencies['factories'][$key]) ||
+        return (
+            isset($this->invokables[$key]) ||
+            isset($this->factories[$key]) ||
             class_exists($key)
         );
-
-        if (!$exists) {
-            $fragments = explode('.', $this->convertVariableName($key));
-            $component = &$this->dependencies;
-            foreach ($fragments as $fragment) {
-                $exists = true;
-
-                if (is_array($component) && isset($component[$fragment])) {
-                    $component = &$component[$fragment];
-                    continue;
-                }
-
-                return false;
-            }
-        }
-
-        return $exists;
     }
 
     /**
@@ -150,7 +126,7 @@ final class Container implements AttachableContainer
      */
     private function retrieveInvokable(string $className): object
     {
-        $dependency = $this->dependencies['invokables'][$className];
+        $dependency = $this->invokables[$className];
         if (is_object($dependency)) {
             return $this->enforceReturnType($className, $dependency);
         }
@@ -163,7 +139,7 @@ final class Container implements AttachableContainer
 
         $result = $this->retrieveFromReflection($dependency);
         if (in_array($className, $this->shared, true)) {
-            $this->dependencies['invokables'][$className] = $result;
+            $this->invokables[$className] = $result;
         }
 
         return $this->enforceReturnType($className, $result);
@@ -212,7 +188,7 @@ final class Container implements AttachableContainer
                 }
 
                 if (!$parameter->isOptional()) {
-                    return $this->get(strtolower(preg_replace('/(?<!^)[A-Z]/', '.$0', $parameter->getName())));
+                    return $this->get($this->convertVariableName($parameter->getName()));
                 }
             }
 
@@ -235,7 +211,7 @@ final class Container implements AttachableContainer
      */
     private function retrieveFromFactory(string $className): object
     {
-        $name = $this->dependencies['factories'][$className];
+        $name = $this->factories[$className];
         assert(
             is_string($name),
             new ContainerErrorException(
@@ -243,7 +219,6 @@ final class Container implements AttachableContainer
             )
         );
 
-        $container = $this->delegate ?? $this;
         $factoryReflection = new \ReflectionClass($name);
 
         assert(
@@ -254,13 +229,13 @@ final class Container implements AttachableContainer
             )
         );
 
-        $factory = $container->get($name);
+        $factory = $this->delegate->get($name);
         if ($factory instanceof FactoryBuilderInterface) {
-            $factoryResult = $factory->build($container, $className);
+            $factoryResult = $factory->build($this->delegate, $className);
         }
 
         if ($factory instanceof FactoryInterface) {
-            $factoryResult = $factory->build($container);
+            $factoryResult = $factory->build($this->delegate);
         }
 
         if (!isset($factoryResult)) {
@@ -271,37 +246,14 @@ final class Container implements AttachableContainer
 
         $result = $this->enforceReturnType($className, $factoryResult);
         if (in_array($className, $this->shared, true)) {
-            if (!isset($this->dependencies['invokables'])) {
-                $this->dependencies['invokables'] = [];
+            if (!isset($this->invokables)) {
+                $this->invokables = [];
             }
 
-            $this->dependencies['invokables'][$className] = $result;
+            $this->invokables[$className] = $result;
         }
 
         return $result;
-    }
-
-    /**
-     * @param string $name
-     * @return mixed
-     */
-    private function retrieveFromDotString(string $name)
-    {
-        $fragments = explode('.', $name);
-        $component = &$this->dependencies;
-
-        foreach ($fragments as $fragment) {
-            if (is_array($component) && isset($component[$fragment])) {
-                $component = &$component[$fragment];
-                continue;
-            }
-
-            throw new UnknownDependency(
-                "Unable to resolve '{$fragment}' of '{$name}'"
-            );
-        }
-
-        return $component;
     }
 
     /**
