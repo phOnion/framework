@@ -4,7 +4,6 @@ namespace Onion\Framework\Router\Strategy\Factory;
 use GuzzleHttp\Psr7\Response;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Onion\Framework\Http\RequestHandler\RequestHandler;
-use Onion\Framework\Router\Interfaces\RouteInterface;
 use Onion\Framework\Router\Route;
 use Onion\Framework\Router\Strategy\CompiledRegexStrategy;
 
@@ -26,11 +25,18 @@ class CompiledRegexStrategyFactory implements FactoryInterface
                     new \InvalidArgumentException("Missing 'middleware' key of route")
                 );
 
-                /** @var RouteInterface $object */
+                /** @var Route $object */
                 $object = (new Route($route['pattern'], $route['name'] ?? $route['pattern']))
                     ->withMethods($route['methods'] ?? ['GET', 'HEAD'])
                     ->withHeaders($route['headers'] ?? []);
 
+                foreach ($route['consumes'] ?? [] as $kind => $types) {
+                    $object = $object->withConsumed($kind, $types);
+                }
+
+                foreach ($route['produces'] ?? [] as $kind => $types) {
+                    $object = $object->withProduced($kind, $types);
+                }
                 $middleware = function () use ($route, $container) {
                     foreach ($route['middleware'] as $class) {
                         yield $container->get($class);
