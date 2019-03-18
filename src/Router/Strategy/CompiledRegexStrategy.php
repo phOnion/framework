@@ -81,11 +81,11 @@ class CompiledRegexStrategy implements ResolverInterface
         foreach ($segments as $segment) {
             if (preg_match(self::PARAM_REGEX, $segment, $matches)) {
                 if (isset($matches['conditional']) && $matches['conditional'] !== '') {
-                    $patterns[$path ?: '/'] = $params;
+                    $patterns[!empty($path) ? $path : '/'] = $params;
                 }
 
                 $params[] = trim($matches['name']);
-                $path .= '/(' . ($matches['pattern'] ?: '[^/]+') . ')';
+                $path .= '/(' . (!empty($matches['pattern']) ? $matches['pattern'] : '[^/]+') . ')';
                 $patterns[$path] = $params;
 
                 continue;
