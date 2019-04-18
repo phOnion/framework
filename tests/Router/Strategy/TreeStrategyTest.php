@@ -97,4 +97,24 @@ class TreeStrategyTest extends TestCase
         $this->expectException(NotAllowedException::class);
         $strategy->resolve('GET', '/');
     }
+
+    public function testWildcardMatches()
+    {
+        $route = $this->prophesize(RouteInterface::class);
+        $route->hasMethod('GET')->willReturn(true);
+        $route->getMethods()->willReturn(['GET']);
+        $route->getPattern()->willReturn('/test/{name}/*');
+        $route->getName()->willReturn('index');
+
+        $route->withParameters([
+            'name' => 'foo',
+        ])->willReturn($route->reveal())
+            ->shouldBeCalledOnce();
+
+        $strategy = new TreeStrategy([$route->reveal()]);
+        $this->assertInstanceOf(
+            RouteInterface::class,
+            $strategy->resolve('GET', '/test/foo/bar')
+        );
+    }
 }

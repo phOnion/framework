@@ -75,7 +75,10 @@ class TreeStrategy implements ResolverInterface
         $patterns = [];
         $path = '';
 
-        foreach ($segments as $segment) {
+        foreach ($segments as $index => $segment) {
+            if ($segment === '*') {
+                $segment = "{{$index}}";
+            }
             $matched = preg_match(self::PARAM_REGEX, $segment, $matches);
             if ($matched) {
                 $params[] = trim($matches['name']);
