@@ -15,8 +15,7 @@ class RouteStrategyFactory implements FactoryBuilderInterface
     public function build(ContainerInterface $container, string $key): FactoryInterface
     {
         $key = $container->has('router.resolver') ? $container->get('router.resolver') : CompiledRegexStrategy::class;
-        return new class ($key) implements FactoryInterface
-        {
+        return new class($key) implements FactoryInterface {
             private $target;
 
             public function __construct(string $target)
