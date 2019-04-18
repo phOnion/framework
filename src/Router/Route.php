@@ -148,7 +148,6 @@ class Route implements RouteInterface
             $request = $request->withAttribute('language', $accept);
         }
 
-
         return $this->getRequestHandler()
             ->handle($request->withAttribute('route', $this));
     }

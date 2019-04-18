@@ -30,7 +30,8 @@ class RouteDispatchingMiddleware implements MiddlewareInterface
         foreach ($resolution->getHeaders() as $header => $value) {
             if ($response->hasHeader($header)) {
                 $response->withAddedHeader($header, $value);
-            } else {
+            }
+            if (!$response->hasHeader($header)) {
                 $response = $response->withHeader($header, $value);
             }
         }
