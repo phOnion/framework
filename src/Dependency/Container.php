@@ -250,7 +250,7 @@ final class Container implements AttachableContainer
 
         $factory = $this->delegate->get($name);
         if ($factory instanceof FactoryBuilderInterface) {
-            $factoryResult = $factory->build($this->delegate, $className);
+            $factory = $factory->build($this->delegate, $className);
         }
 
         if ($factory instanceof FactoryInterface) {
