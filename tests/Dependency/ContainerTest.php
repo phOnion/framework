@@ -2,12 +2,12 @@
 namespace Tests\Dependency;
 
 use Onion\Framework\Dependency\Container;
-use Onion\Framework\Dependency\DelegateContainer;
 use Onion\Framework\Dependency\Exception\ContainerErrorException;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use Tests\Dependency\Doubles\DependencyA;
 use Tests\Dependency\Doubles\DependencyB;
 use Tests\Dependency\Doubles\DependencyC;
 use Tests\Dependency\Doubles\DependencyD;
@@ -237,17 +237,18 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         $container->get(\SplFixedArray::class);
     }
 
-    public function testExceptionWhenConstructingWithBadArgument()
-    {
-        $this->expectException(\TypeError::class);
-
-        new Container(null);
-    }
-
     public function testDependencyResolutionFromReflection()
     {
         $container = new Container([], Container::REFLECTION_RESOLUTION);
         $this->assertInstanceOf(DependencyD::class, $container->get(DependencyD::class));
+    }
+
+    public function testDependencyResolutionFromReflectionException()
+    {
+        $this->expectException(ContainerErrorException::class);
+        $this->expectExceptionMessage('Unable to find match for type: "c (' . DependencyC::class . ')');
+        $container = new Container([], Container::REFLECTION_RESOLUTION);
+        $this->assertInstanceOf(DependencyD::class, $container->get(DependencyA::class));
     }
 
     public function testDependencyLookupWhenBoundToInterface()
@@ -340,7 +341,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
     public function testExceptionOnGetInvalidKey()
     {
         $container = new Container([]);
-        $this->assertFalse($container->get(new \stdClass));
+        $container->get(new \stdClass);
     }
 
     public function testKeyIsStringCompatible()

@@ -164,7 +164,7 @@ final class Container implements AttachableContainer
     private function retrieveFromReflection(string $className): object
     {
         if (!class_exists($className)) {
-            throw new \InvalidArgumentException("Provided '{$className}' does not exist");
+            throw new UnknownDependency("Provided '{$className}' does not exist");
         }
         $classReflection = new \ReflectionClass($className);
         $constructorRef = $classReflection->getConstructor();
@@ -195,10 +195,10 @@ final class Container implements AttachableContainer
         );
 
         try {
-            $type = $parameter->hasType() ? $parameter->getType() : null;
-            if ($type !== null) {
-                if (!$type->isBuiltin() && $this->has((string) $type)) {
-                    return $this->get((string) $parameter->getType());
+            $type = $parameter->hasType() ? ((string) $parameter->getType()) : null;
+            if (is_string($type)) {
+                if ($this->has($type)) {
+                    return $this->get($type);
                 }
 
                 if (!$parameter->isOptional()) {

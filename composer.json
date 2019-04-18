@@ -16,7 +16,8 @@
         "onion/interfaces": "dev-master",
         "onion/common": "dev-master",
         "psr/simple-cache": "^1.0",
-        "psr/log": "^1.0"
+        "psr/log": "^1.0",
+        "guzzlehttp/streams": "^3.0"
     },
     "require-dev": {
         "roave/security-advisories": "dev-master",
@@ -43,5 +44,19 @@
     "suggest": {
         "onion/rest": "A small library to return REST-compliant responses",
         "onion/swoole": "A compatibility layer to add support for SWOOLE app-server"
+    },
+    "scripts": {
+        "fix": "phpcbf --standard=psr2 src/",
+        "lint": "phpcs --standard=psr2 src/",
+        "test": "phpunit --coverage-text --coverage-html=build/",
+        "psalm": "psalm --show-info=false",
+        "infect": "infection -j4 --min-msi=85 --min-covered-msi=95",
+        "qa": [
+            "@fix",
+            "@lint",
+            "@test",
+            "@psalm",
+            "@infect"
+        ]
     }
 }

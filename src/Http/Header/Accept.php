@@ -44,6 +44,11 @@ class Accept implements Interfaces\AcceptInterface
         return $this->value;
     }
 
+    public function getTypes(): array
+    {
+        return $this->types;
+    }
+
     /**
      * Check whether or not the current content-type
      * is supported by the client. Not that this
@@ -84,6 +89,6 @@ class Accept implements Interfaces\AcceptInterface
 
     public function __toString(): string
     {
-        return "{$this->getName()}: {$this->getRawValue()}";
+        return $this->getRawValue();
     }
 }

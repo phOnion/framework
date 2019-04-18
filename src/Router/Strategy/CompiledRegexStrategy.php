@@ -15,7 +15,7 @@ class CompiledRegexStrategy implements ResolverInterface
      * @var RouteInterface[] $routes List of defined routes
      * @var int $maxGroupCount Maximum number of groups
      */
-    public function __construct(iterable $routes, int $maxGroupCount = 10)
+    public function __construct(iterable $routes, int $maxGroupCount)
     {
         $compiledRoutes = [];
         foreach ($routes as $route) {
@@ -31,9 +31,7 @@ class CompiledRegexStrategy implements ResolverInterface
                 $compiledRoutes[$pattern] = [$route, $params];
             }
         }
-        $sections = round(count($compiledRoutes)/$maxGroupCount)+1;
-
-        for ($i=0; $i<$sections; $i++) {
+        while (!empty($compiledRoutes)) {
             $segments = [];
             $handlers = [];
             $length = $maxGroupCount;
@@ -45,7 +43,7 @@ class CompiledRegexStrategy implements ResolverInterface
 
                 $length--;
                 unset($compiledRoutes[$key]);
-                if ($length === 0) {
+                if (!$length) {
                     break;
                 }
             }
@@ -58,6 +56,7 @@ class CompiledRegexStrategy implements ResolverInterface
 
     public function resolve(string $method, string $path): RouteInterface
     {
+        $params = [];
         $route = $this->match($path, $params);
 
         if ($route === null) {
@@ -80,7 +79,7 @@ class CompiledRegexStrategy implements ResolverInterface
 
         foreach ($segments as $segment) {
             if (preg_match(self::PARAM_REGEX, $segment, $matches)) {
-                if (isset($matches['conditional']) && $matches['conditional'] !== '') {
+                if (isset($matches['conditional'])) {
                     $patterns[!empty($path) ? $path : '/'] = $params;
                 }
 
@@ -99,11 +98,10 @@ class CompiledRegexStrategy implements ResolverInterface
         return array_reverse($patterns);
     }
 
-    private function match(string $path, ?array &$params = []): ?RouteInterface
+    private function match(string $path, array &$params = []): ?RouteInterface
     {
-        $params = $params ?? [];
         foreach ($this->routes as $pattern => $definition) {
-            if (!preg_match('~^'.$pattern.'$~', $path, $matches)) {
+            if (!preg_match('~^'.$pattern.'$~', $path, $matches, PREG_OFFSET_CAPTURE)) {
                 continue;
             }
 
@@ -111,15 +109,11 @@ class CompiledRegexStrategy implements ResolverInterface
             $index = count($matches);
 
             $matches = array_filter($matches, function ($value) {
-                return $value !== '';
+                return $value[0] !== '';
             });
 
             foreach ($matches as $i => $match) {
-                if ($match === '') {
-                    continue;
-                }
-
-                $params[$definition[$index][1][$i]] = $match;
+                $params[$definition[$index][1][$i]] = $match[0];
             }
 
             return $definition[$index][0];

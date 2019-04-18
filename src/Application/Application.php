@@ -2,6 +2,7 @@
 namespace Onion\Framework\Application;
 
 use Onion\Framework\Application\Interfaces\ApplicationInterface;
+use Onion\Framework\Http\Emitter\Interfaces\EmitterInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -14,12 +15,15 @@ class Application implements ApplicationInterface
 {
     /** @var RequestHandlerInterface */
     private $middleware;
+
+    private $emitter;
     /**
      * Application constructor.
      */
-    public function __construct(RequestHandlerInterface $middleware)
+    public function __construct(RequestHandlerInterface $middleware, EmitterInterface $emitter)
     {
         $this->middleware = $middleware;
+        $this->emitter = $emitter;
     }
 
     /**
@@ -35,6 +39,8 @@ class Application implements ApplicationInterface
      */
     public function run(ServerRequestInterface $request): void
     {
-        $this->middleware->handle($request);
+        $this->emitter->emit(
+            $this->middleware->handle($request)
+        );
     }
 }

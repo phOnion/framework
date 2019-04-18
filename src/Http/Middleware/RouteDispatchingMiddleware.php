@@ -19,17 +19,20 @@ class RouteDispatchingMiddleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $response = $handler->handle($request);
-
         $route = $this->resolver->resolve(
             $request->getMethod(),
             $request->getUri()->getPath()
         );
 
         $resolution = $route->handle($request->withAttribute('route', $route));
+        $response = $handler->handle($request);
 
         foreach ($resolution->getHeaders() as $header => $value) {
-            $response = $response->withHeader($header, $value);
+            if ($response->hasHeader($header)) {
+                $response->withAddedHeader($header, $value);
+            } else {
+                $response = $response->withHeader($header, $value);
+            }
         }
 
         return $response->withStatus($resolution->getStatusCode())

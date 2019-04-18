@@ -1,6 +1,7 @@
 <?php
 namespace Onion\Framework\Router\Strategy\Factory;
 
+use function Onion\Framework\Common\generator;
 use GuzzleHttp\Psr7\Response;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Onion\Framework\Http\RequestHandler\RequestHandler;
@@ -12,8 +13,7 @@ class CompiledRegexStrategyFactory implements FactoryInterface
     public function build(\Psr\Container\ContainerInterface $container)
     {
         $routes = $container->get('routes');
-        /** @var iterable $generator */
-        $generator = function () use ($routes, $container) {
+        $generator = generator(function () use ($routes, $container) {
             foreach ($routes as $route) {
                 assert(
                     isset($route['pattern']),
@@ -30,13 +30,6 @@ class CompiledRegexStrategyFactory implements FactoryInterface
                     ->withMethods($route['methods'] ?? ['GET', 'HEAD'])
                     ->withHeaders($route['headers'] ?? []);
 
-                foreach ($route['consumes'] ?? [] as $kind => $types) {
-                    $object = $object->withConsumed($kind, $types);
-                }
-
-                foreach ($route['produces'] ?? [] as $kind => $types) {
-                    $object = $object->withProduced($kind, $types);
-                }
                 $middleware = function () use ($route, $container) {
                     foreach ($route['middleware'] as $class) {
                         yield $container->get($class);
@@ -47,10 +40,10 @@ class CompiledRegexStrategyFactory implements FactoryInterface
 
                 yield $object->withRequestHandler($handler);
             }
-        };
+        });
 
         return new CompiledRegexStrategy(
-            $generator(),
+            $generator,
             $container->has('router.groupCount') ? $container->get('router.groupCount') : 10
         );
     }
