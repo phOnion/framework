@@ -27,7 +27,7 @@ class TreeStrategy implements ResolverInterface
 
     public function resolve(string $method, string $path): RouteInterface
     {
-        $route = $this->match($this->routes, explode('/', $path), $params);
+        $route = $this->match($this->routes, explode('/', trim($path, '/')), $params);
 
         if ($route === null) {
             throw new NotFoundException("No match for '{$path}' found");
@@ -52,10 +52,9 @@ class TreeStrategy implements ResolverInterface
             foreach ($compiled as $segment => $param) {
                 $segment = trim($segment, '/');
                 if (preg_match("~^{$segment}$~i", $part, $matches, PREG_OFFSET_CAPTURE) > 0) {
-                    if (!empty($param)) {
-                        $matches[$param[0]] = $matches[0][0];
+                    foreach ($param as $index => $key) {
+                        $params[$key] = $matches[$index][0];
                     }
-                    $params = merge($params ?? [], $matches);
 
                     if ($remaining instanceof RouteInterface) {
                         return $remaining;
@@ -77,19 +76,16 @@ class TreeStrategy implements ResolverInterface
         $path = '';
 
         foreach ($segments as $segment) {
-            if (preg_match(self::PARAM_REGEX, $segment, $matches)) {
-                if (isset($matches['conditional']) && $matches['conditional'] !== '') {
-                    $patterns[$path ?: '/'] = $params;
-                }
-
+            $matched = preg_match(self::PARAM_REGEX, $segment, $matches);
+            if ($matched) {
                 $params[] = trim($matches['name']);
-                $path .= '/(' . (!empty($matches['pattern']) ? $matches['pattern'] : '[^/]+') . ')';
+                $path = "{$path}/(" . (!empty($matches['pattern']) ? $matches['pattern'] : '[^/]+') . ')';
                 $patterns[$path] = $params;
-
-                continue;
             }
 
-            $path .= "/{$segment}";
+            if (!$matched) {
+                $path = "{$path}/{$segment}";
+            }
         }
 
         $patterns[$path] = $params;

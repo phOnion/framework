@@ -9,6 +9,26 @@ use PHPUnit\Framework\TestCase;
 
 class CompiledRegexStrategyTest extends TestCase
 {
+    public function testSimpleResolve()
+    {
+        $route = $this->prophesize(RouteInterface::class);
+        $route->getPattern()->willReturn('/foo/bar/{arg}');
+        $route->getName()->willReturn('/foo/bar/{arg}');
+        $route->hasMethod('GET')->willReturn(true);
+
+        $route->withParameters(['arg' => "baz"])
+            ->willReturn($route->reveal())
+            ->shouldBeCalledOnce();
+        $strategy = new CompiledRegexStrategy([
+            $route->reveal()
+        ], 5);
+
+        $this->assertInstanceOf(
+            RouteInterface::class,
+            $strategy->resolve('GET', '/foo/bar/baz')
+        );
+    }
+
     public function testSuccessfulResolve()
     {
         $routes = [];
@@ -37,7 +57,6 @@ class CompiledRegexStrategyTest extends TestCase
             }
         }
     }
-
 
     public function testUnsuccessfulResolve()
     {

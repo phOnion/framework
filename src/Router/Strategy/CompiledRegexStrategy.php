@@ -17,40 +17,32 @@ class CompiledRegexStrategy implements ResolverInterface
      */
     public function __construct(iterable $routes, int $maxGroupCount)
     {
-        $compiledRoutes = [];
         foreach ($routes as $route) {
+            $length = $maxGroupCount;
+            $segments = [];
+            $handlers = [];
             foreach ($this->compile($route->getPattern()) as $pattern => $params) {
                 assert(
-                    !isset($compiledRoutes[$pattern]),
+                    !isset($this->routes[$pattern]),
                     new \LogicException(sprintf(
                         'Compilation of %s duplicates an already existing pattern',
                         $route->getName()
                     ))
                 );
 
-                $compiledRoutes[$pattern] = [$route, $params];
-            }
-        }
-        while (!empty($compiledRoutes)) {
-            $segments = [];
-            $handlers = [];
-            $length = $maxGroupCount;
-            foreach ($compiledRoutes as $key => $route) {
                 $expansion = str_repeat('()', $length);
-                $segments[] = "{$key}{$expansion}";
-                $index = ($length + count($route[1]));
-                $handlers[$index] = $route;
+                $segments[] = "{$pattern}{$expansion}";
+                $index = ($length + count($params));
+                $handlers[$index] = [$route, $params];
 
-                $length--;
-                unset($compiledRoutes[$key]);
-                if (!$length) {
-                    break;
+                if (--$length) {
+                    continue;
                 }
+
+                $this->routes['(?|' . implode('|', $segments) . ')'] = $handlers;
             }
 
-            $pattern = '(?|' . implode('|', $segments) . ')';
-
-            $this->routes[$pattern] = $handlers;
+            $this->routes['(?|' . implode('|', $segments) . ')'] = $handlers;
         }
     }
 

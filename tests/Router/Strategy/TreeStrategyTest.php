@@ -9,19 +9,36 @@ use PHPUnit\Framework\TestCase;
 
 class TreeStrategyTest extends TestCase
 {
+    public function testSimpleResolve()
+    {
+        $route = $this->prophesize(RouteInterface::class);
+        $route->getPattern()->willReturn('/foo/bar/{arg}');
+        $route->getName()->willReturn('/foo/bar/{arg}');
+        $route->hasMethod('GET')->willReturn(true);
+
+        $route->withParameters(['arg' => "baz"])
+            ->willReturn($route->reveal())
+            ->shouldBeCalledOnce();
+        $strategy = new TreeStrategy([
+            $route->reveal()
+        ], 5);
+
+        $this->assertInstanceOf(
+            RouteInterface::class,
+            $strategy->resolve('GET', '/foo/bar/baz')
+        );
+    }
+
     public function testSuccessfulResolve()
     {
         $routes = [];
         for ($i=0; $i<20; $i++) {
-            $param = "/{$i}/{x}/{arg}?";
+            $param = "/{$i}/{x:\d+}/{arg:test{$i}}";
             $route = $this->prophesize(RouteInterface::class);
             $route->getPattern()->willReturn($param);
             $route->getName()->willReturn($i);
             $route->hasMethod('GET')->willReturn(true);
 
-            $route->withParameters(['x' => "{$i}"])
-                ->willReturn($route->reveal())
-                ->shouldBeCalled(1);
             $route->withParameters(['x' => "{$i}", 'arg' => "test{$i}"])
                 ->willReturn($route->reveal())
                 ->shouldBeCalled(1);
@@ -30,7 +47,6 @@ class TreeStrategyTest extends TestCase
 
             $strategy = new TreeStrategy($routes);
 
-            $this->assertInstanceOf(RouteInterface::class, $strategy->resolve('GET', "/{$i}/{$i}"));
             $this->assertInstanceOf(RouteInterface::class, $strategy->resolve('GET', "/{$i}/{$i}/test{$i}"));
         }
     }
@@ -42,6 +58,31 @@ class TreeStrategyTest extends TestCase
         $this->expectException(NotFoundException::class);
 
         $strategy->resolve('GET', '/');
+    }
+
+    public function testSuccessfulComplexResolve()
+    {
+        $route = $this->prophesize(RouteInterface::class);
+            $route->getPattern()->willReturn(
+                '/test/{arg1:foo}/simple/{example:yes}/mate/{name:Baz}'
+            );
+            $route->getName()->willReturn('test');
+            $route->hasMethod('GET')->willReturn(true);
+
+            $route->withParameters([
+                'arg1' => "foo",
+                'example' => "yes",
+                'name' => 'Baz',
+            ])->willReturn($route->reveal())
+                ->shouldBeCalledOnce();
+
+            $routes[] = $route->reveal();
+
+        $strategy = new TreeStrategy($routes);
+        $this->assertInstanceOf(
+            RouteInterface::class,
+            $strategy->resolve('GET', '/test/foo/simple/yes/mate/Baz')
+        );
     }
 
     public function testMethodNotAllowed()
