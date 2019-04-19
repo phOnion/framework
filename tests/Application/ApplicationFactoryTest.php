@@ -32,7 +32,7 @@ class ApplicationFactoryTest extends \PHPUnit\Framework\TestCase
         $container->get(RequestHandlerInterface::class)->willReturn($requestHandler->reveal());
 
         $emitter = $this->prophesize(EmitterInterface::class);
-        $emitter->emit(new AnyValueToken())->shouldBeCalled();
+        $emitter->emit(new AnyValueToken())->shouldBeCalledOnce();
         $container->get(EmitterInterface::class)->willReturn($emitter->reveal());
 
         $factory = new ApplicationFactory();

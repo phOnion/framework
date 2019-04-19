@@ -17,7 +17,7 @@ class StreamEmitterTest extends TestCase
         $stream->write("accept: text/html\r\n")->shouldBeCalledOnce();
         $stream->write("x-custom: foo\r\n")->shouldBeCalledOnce();
         $stream->write("Hello, World\r\n")->shouldBeCalledOnce();
-        $stream->write("\r\n")->shouldBeCalled(2);
+        $stream->write("\r\n")->shouldBeCalledTimes(2);
 
         $body = $this->prophesize(HttpStream::class);
         $body->getContents()->willReturn('Hello, World');

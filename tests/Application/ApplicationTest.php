@@ -37,9 +37,9 @@ class ApplicationTest extends \PHPUnit\Framework\TestCase
         $requestHandler = $this->prophesize(RequestHandlerInterface::class);
         $requestHandler->handle(new \Prophecy\Argument\Token\TypeToken(ServerRequestInterface::class))
             ->willReturn($this->prophesize(ResponseInterface::class)->reveal())
-            ->shouldBeCalled(1);
+            ->shouldBeCalledTimes(1);
         $emitter = $this->prophesize(EmitterInterface::class);
-        $emitter->emit(new AnyValueToken())->shouldBeCalled(1);
+        $emitter->emit(new AnyValueToken())->shouldBeCalledTimes(1);
 
         (new Application($requestHandler->reveal(), $emitter->reveal()))->run($this->request->reveal());
     }

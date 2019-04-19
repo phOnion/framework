@@ -43,10 +43,10 @@ class CompiledRegexStrategyTest extends TestCase
 
                 $route->withParameters(['x' => "{$i}"])
                     ->willReturn($route->reveal())
-                    ->shouldBeCalled(1);
+                    ->shouldBeCalledOnce();
                 $route->withParameters(['x' => "{$i}", 'arg' => "test{$i}"])
                     ->willReturn($route->reveal())
-                    ->shouldBeCalled(1);
+                    ->shouldBeCalledOnce();
 
                 $routes[] = $route->reveal();
 

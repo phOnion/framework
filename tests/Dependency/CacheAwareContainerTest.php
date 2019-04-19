@@ -84,7 +84,7 @@ class CacheAwareContainerTest extends \PHPUnit\Framework\TestCase
     {
         $this->cache->has('bar')->willReturn(false);
         $this->cache->set('bar', 'baz')->willReturn(true)
-            ->shouldBeCalled();
+            ->shouldBeCalledOnce();
 
         $cacheContainer = new CacheAwareContainer(
             $this->factory,

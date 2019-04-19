@@ -15,13 +15,13 @@ class ResponseEmitterMiddlewareTest extends TestCase
     {
         $emitter = $this->prophesize(EmitterInterface::class);
         $emitter->emit(new TypeToken(ResponseInterface::class))
-            ->shouldBeCalled(1);
+            ->shouldBeCalledOnce();
         $request = $this->prophesize(ServerRequestInterface::class);
 
         $handler = $this->prophesize(RequestHandlerInterface::class);
         $handler->handle(new TypeToken(ServerRequestInterface::class))
             ->willReturn($this->prophesize(ResponseInterface::class)->reveal())
-            ->shouldBeCalled(1);
+            ->shouldBeCalledOnce();
 
         $middleware = new ResponseEmitterMiddleware($emitter->reveal());
         $this->assertInstanceOf(ResponseInterface::class, $middleware->process(

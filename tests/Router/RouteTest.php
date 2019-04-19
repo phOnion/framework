@@ -67,12 +67,12 @@ class RouteTest extends TestCase
 
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getMethod()->willReturn('get');
-        $request->hasHeader('accept')->willReturn(true)->shouldBeCalled();
-        $request->getHeaderLine('accept')->willReturn('application/json')->shouldBeCalled();
-        $request->hasHeader('accept-encoding')->willReturn(true)->shouldBeCalled();
-        $request->getHeaderLine('accept-encoding')->willReturn('gzip')->shouldBeCalled();
-        $request->hasHeader('accept-charset')->willReturn(true)->shouldBeCalled();
-        $request->getHeaderLine('accept-charset')->willReturn('utf-8')->shouldBeCalled();
+        $request->hasHeader('accept')->willReturn(true)->shouldBeCalledOnce();
+        $request->getHeaderLine('accept')->willReturn('application/json')->shouldBeCalledOnce();
+        $request->hasHeader('accept-encoding')->willReturn(true)->shouldBeCalledOnce();
+        $request->getHeaderLine('accept-encoding')->willReturn('gzip')->shouldBeCalledOnce();
+        $request->hasHeader('accept-charset')->willReturn(true)->shouldBeCalledOnce();
+        $request->getHeaderLine('accept-charset')->willReturn('utf-8')->shouldBeCalledOnce();
         $request->hasHeader('accept-language')->wilLReturn(true);
         $request->getHeaderLine('accept-language')->willReturn('en, en-us;q=0.5');
         $request->withAttribute(new AnyValueToken, new AnyValueToken)->willReturn($request->reveal());
@@ -93,15 +93,6 @@ class RouteTest extends TestCase
         $request->getMethod()->willReturn('get');
         $request->hasHeader('x-foo')->willReturn(false);
         $request->hasHeader('x-test')->willReturn(false);
-        // $request->hasHeader('accept')->willReturn(true)->shouldBeCalled();
-        // $request->getHeaderLine('accept')->willReturn('application/json')->shouldBeCalled();
-        // $request->hasHeader('accept-encoding')->willReturn(true)->shouldBeCalled();
-        // $request->getHeaderLine('accept-encoding')->willReturn('gzip')->shouldBeCalled();
-        // $request->hasHeader('accept-charset')->willReturn(true)->shouldBeCalled();
-        // $request->getHeaderLine('accept-charset')->willReturn('utf-8')->shouldBeCalled();
-        // $request->hasHeader('accept-language')->wilLReturn(true);
-        // $request->getHeaderLine('accept-language')->willReturn('en, en-us;q=0.5');
-        // $request->withAttribute(new AnyValueToken, new AnyValueToken)->willReturn($request->reveal());
 
         $this->expectException(MissingHeaderException::class);
         $this->expectExceptionMessage("Missing header 'x-test'");
@@ -123,17 +114,6 @@ class RouteTest extends TestCase
 
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getMethod()->willReturn('get');
-        // $request->hasHeader('x-foo')->willReturn(false);
-        // $request->hasHeader('x-test')->willReturn(false);
-        // $request->hasHeader('accept')->willReturn(true)->shouldBeCalled();
-        // $request->getHeaderLine('accept')->willReturn('application/json')->shouldBeCalled();
-        // $request->hasHeader('accept-encoding')->willReturn(true)->shouldBeCalled();
-        // $request->getHeaderLine('accept-encoding')->willReturn('gzip')->shouldBeCalled();
-        // $request->hasHeader('accept-charset')->willReturn(true)->shouldBeCalled();
-        // $request->getHeaderLine('accept-charset')->willReturn('utf-8')->shouldBeCalled();
-        // $request->hasHeader('accept-language')->wilLReturn(true);
-        // $request->getHeaderLine('accept-language')->willReturn('en, en-us;q=0.5');
-        // $request->withAttribute(new AnyValueToken, new AnyValueToken)->willReturn($request->reveal());
 
         $this->expectException(MethodNotAllowedException::class);
 

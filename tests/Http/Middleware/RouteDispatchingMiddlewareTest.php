@@ -26,19 +26,19 @@ class RouteDispatchingMiddlewareTest extends TestCase
 
         $response->withStatus(200)
             ->willReturn($response->reveal())
-            ->shouldBeCalled(1);
+            ->shouldBeCalledOnce();
         $response->withBody(new TypeToken(StreamInterface::class))
             ->willReturn($response->reveal())
-            ->shouldBeCalled(1);
+            ->shouldBeCalledOnce();
         $response->withProtocolVersion('1.1')
             ->willReturn($response->reveal())
-            ->shouldBeCalled(1);
+            ->shouldBeCalledOnce();
         $response->withHeader('foo', 'bar')
             ->willReturn($response->reveal())
-            ->shouldBeCalled(1);
+            ->shouldBeCalledOnce();
         $response->withAddedHeader('bar', 'baz')
             ->willReturn($response->reveal())
-            ->shouldBeCalled(1);
+            ->shouldBeCalledOnce();
 
         $route = $this->prophesize(RouteInterface::class);
         $route->handle(new TypeToken(ServerRequestInterface::class))
@@ -53,7 +53,7 @@ class RouteDispatchingMiddlewareTest extends TestCase
 
         $request->withAttribute('route', new TypeToken(RouteInterface::class))
             ->willReturn($request->reveal())
-            ->shouldBeCalled(1);
+            ->shouldBeCalledOnce();
 
         $resolver = $this->prophesize(ResolverInterface::class);
         $resolver->resolve('GET', '/')
