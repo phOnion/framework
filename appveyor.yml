@@ -14,7 +14,7 @@ environment:
 branches:
   only:
     - master
-    - develop`
+    - develop
 
 skip_commits:
     message: /\[ci skip\]/
