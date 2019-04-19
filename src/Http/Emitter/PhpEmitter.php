@@ -4,6 +4,9 @@ namespace Onion\Framework\Http\Emitter;
 use Onion\Framework\Http\Emitter\Interfaces\EmitterInterface;
 use Psr\Http\Message\ResponseInterface;
 
+/**
+ * @codeCoverageIgnore
+ */
 class PhpEmitter implements EmitterInterface
 {
     public function emit(ResponseInterface $response): void

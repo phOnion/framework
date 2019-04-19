@@ -1,6 +1,7 @@
 <?php
 namespace Onion\Framework\Router\Strategy\Factory;
 
+use function Onion\Framework\Common\generator;
 use GuzzleHttp\Psr7\Response;
 use Onion\Framework\Dependency\Interfaces\FactoryBuilderInterface;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
@@ -8,7 +9,7 @@ use Onion\Framework\Http\RequestHandler\RequestHandler;
 use Onion\Framework\Router\Route;
 use Onion\Framework\Router\Strategy\CompiledRegexStrategy;
 use Psr\Container\ContainerInterface;
-use function Onion\Framework\Common\generator;
+use Psr\Http\Message\ResponseInterface;
 
 class RouteStrategyFactory implements FactoryBuilderInterface
 {
@@ -20,6 +21,10 @@ class RouteStrategyFactory implements FactoryBuilderInterface
 
             public function __construct(string $target)
             {
+                assert(class_exists($target), new \InvalidArgumentException(
+                    "Provided '{$target}' does not exist."
+                ));
+
                 $this->target = $target;
             }
 
@@ -43,13 +48,14 @@ class RouteStrategyFactory implements FactoryBuilderInterface
                             ->withMethods($route['methods'] ?? ['GET', 'HEAD'])
                             ->withHeaders($route['headers'] ?? []);
 
-                        $middleware = function () use ($route, $container) {
+                        $responseTemplate = $container->has(ResponseInterface::class) ?
+                            $container->get(ResponseInterface::class) : new Response();
+
+                        $handler = new RequestHandler(generator(function () use ($route, $container) {
                             foreach ($route['middleware'] as $class) {
                                 yield $container->get($class);
                             }
-                        };
-
-                        $handler = new RequestHandler($middleware(), new Response());
+                        }), $responseTemplate);
 
                         yield $object->withRequestHandler($handler);
                     }
@@ -57,7 +63,10 @@ class RouteStrategyFactory implements FactoryBuilderInterface
 
                 $target = $this->target;
 
-                return new $target($generator);
+                return new $target(
+                    $generator,
+                    $container->has('router.count') ? $container->get('router.count') : null
+                );
             }
         };
     }

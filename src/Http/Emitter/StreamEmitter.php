@@ -1,7 +1,7 @@
 <?php
 namespace Onion\Framework\Http\Emitter;
 
-use GuzzleHttp\Stream\Stream;
+use GuzzleHttp\Stream\StreamInterface;
 use Onion\Framework\Http\Emitter\Interfaces\EmitterInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -9,9 +9,9 @@ class StreamEmitter implements EmitterInterface
 {
     private $stream;
 
-    public function __construct($stream)
+    public function __construct(StreamInterface $stream)
     {
-        $this->stream = Stream::factory($stream);
+        $this->stream = $stream;
     }
 
     public function emit(ResponseInterface $response): void

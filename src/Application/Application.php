@@ -13,9 +13,9 @@ use Psr\Http\Server\RequestHandlerInterface;
  */
 class Application implements ApplicationInterface
 {
-    /** @var RequestHandlerInterface */
+    /** @var RequestHandlerInterface $middleware */
     private $middleware;
-
+    /** @var EmitterInterface $emitter */
     private $emitter;
     /**
      * Application constructor.
