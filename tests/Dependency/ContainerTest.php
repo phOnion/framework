@@ -300,9 +300,6 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         $container->get(DependencyG::class);
     }
 
-    /**
-     * @expectedExceptionMessage No factory available
-     */
     public function testCreationFromFactoryWithInvalidResut()
     {
         $class = new class implements FactoryInterface {
@@ -321,26 +318,23 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         ]);
         $this->assertTrue($container->has(\StdClass::class));
         $this->expectException(ContainerErrorException::class);
+        $this->expectExceptionMessage('No factory available');
         $container->get(\StdClass::class);
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage Provided key must be a string
-     */
     public function testExceptionOnHasInvalidKey()
     {
         $container = new Container([]);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Provided key must be a string');
         $this->assertFalse($container->has(new \stdClass));
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage Provided key must be a string
-     */
     public function testExceptionOnGetInvalidKey()
     {
         $container = new Container([]);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Provided key must be a string');
         $container->get(new \stdClass);
     }
 

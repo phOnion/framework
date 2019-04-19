@@ -14,7 +14,7 @@ class RequestHandlerFactoryTest extends \PHPUnit\Framework\TestCase
 {
     /** @var FactoryInterface */
     private $factory;
-    public function setUp()
+    public function setUp(): void
     {
         $this->factory = new RequestHandlerFactory();
     }

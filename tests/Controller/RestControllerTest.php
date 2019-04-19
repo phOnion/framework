@@ -13,7 +13,7 @@ class RestControllerTest extends TestCase
     private $request;
     private $handler;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->request = $this->prophesize(ServerRequestInterface::class);
         $this->handler = $this->prophesize(RequestHandlerInterface::class);
@@ -46,10 +46,6 @@ class RestControllerTest extends TestCase
         $this->assertSame($headers, $response->getHeaders());
     }
 
-    /**
-     * @expectedException \BadMethodCallException
-     * @expectedExceptionMessage Method not implemented
-     */
     public function testExceptionOnNotImplemented()
     {
         $controller = new class extends RestController {
@@ -57,6 +53,8 @@ class RestControllerTest extends TestCase
                 return new Response(200);
             }
         };
+        $this->expectException(\BadMethodCallException::class);
+        $this->expectExceptionMessage('Method not implemented');
 
         $this->request->getMethod()->willReturn('post');
         $controller->process($this->request->reveal(), $this->handler->reveal());

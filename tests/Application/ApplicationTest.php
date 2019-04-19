@@ -17,7 +17,7 @@ class ApplicationTest extends \PHPUnit\Framework\TestCase
     protected $route;
     protected $request;
 
-    public function setUp()
+    public function setUp():void
     {
         $this->route = $this->prophesize(RouteInterface::class);
         $this->route->getParameters()->willReturn([]);

@@ -16,7 +16,7 @@ class HttpErrorMiddlewareTest extends \PHPUnit\Framework\TestCase
     private $middleware;
     private $request;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->handler = $this->prophesize(RequestHandlerInterface::class);
         $this->middleware = new HttpErrorMiddleware();

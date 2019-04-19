@@ -11,7 +11,7 @@ class CacheAwareContainerTest extends \PHPUnit\Framework\TestCase
 {
     private $cache;
     private $factory;
-    public function setUp()
+    public function setUp(): void
     {
         $this->cache = $this->prophesize(CacheInterface::class);
         $mock = $this->prophesize(ContainerInterface::class);
@@ -104,13 +104,11 @@ class CacheAwareContainerTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($container->get('bar'), 'baz');
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage Invalid factory result
-     */
     public function testInvalidContainerResult()
     {
         $this->cache->has('foo')->willReturn(false);
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Invalid factory result');
         $container = new CacheAwareContainer($this->fakeFactory, $this->cache->reveal());
         $container->get('foo');
     }
