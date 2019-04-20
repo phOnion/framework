@@ -31,10 +31,7 @@
     "autoload": {
         "psr-4": {
             "Onion\\Framework\\": "src/"
-        },
-        "files": [
-            "src/functions.php"
-        ]
+        }
     },
     "autoload-dev": {
         "psr-4": {
