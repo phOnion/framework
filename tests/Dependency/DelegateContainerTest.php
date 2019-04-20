@@ -50,6 +50,7 @@ class DelegateContainerTest extends \PHPUnit\Framework\TestCase
         $c->get('list')->willReturn([
             'foo' => 'bar',
         ]);
+        $c->has('foo')->willReturn(false);
         $c->attach(new AnyValueToken())->willReturn(null)->shouldBeCalledOnce();
 
         $c1 = $this->prophesize(Container::class);
@@ -57,6 +58,8 @@ class DelegateContainerTest extends \PHPUnit\Framework\TestCase
         $c1->get('list')->willReturn([
             'bar' => 'baz',
         ]);
+        $c1->has('foo')->willReturn(true);
+        $c1->get('foo')->willReturn('bar');
         $c1->attach(new AnyValueToken())->willReturn(null)->shouldBeCalledOnce();
 
         $container = new DelegateContainer([$c->reveal(), $c1->reveal()]);
@@ -65,6 +68,7 @@ class DelegateContainerTest extends \PHPUnit\Framework\TestCase
             'foo' => 'bar',
             'bar' => 'baz',
         ], $container->get('list'));
+        $this->assertSame('bar', $container->get('foo'));
     }
 
     public function testRetrievalExceptionWithoutContainers()

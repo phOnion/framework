@@ -186,14 +186,6 @@ final class Container implements AttachableContainer
      */
     private function resolveReflectionParameter(\ReflectionParameter $parameter)
     {
-        assert(
-            $parameter->hasType() || $parameter->isOptional() || $this->has($parameter->getName()),
-            new ContainerErrorException(sprintf(
-                'Unable to resolve a class parameter "%s" without type.',
-                $parameter->getName()
-            ))
-        );
-
         try {
             $type = $parameter->hasType() ? ((string) $parameter->getType()) : null;
             if (is_string($type)) {
@@ -217,6 +209,11 @@ final class Container implements AttachableContainer
                 $parameter->getType() ?? ''
             ));
         }
+
+        throw new ContainerErrorException(sprintf(
+            'Unable to resolve a class parameter "%s" without type.',
+            $parameter->getName()
+        ));
     }
 
     /**
@@ -265,10 +262,6 @@ final class Container implements AttachableContainer
 
         $result = $this->enforceReturnType($className, $factoryResult);
         if (in_array($className, $this->shared, true)) {
-            if (!isset($this->invokables)) {
-                $this->invokables = [];
-            }
-
             $this->invokables[$className] = $result;
         }
 

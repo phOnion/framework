@@ -1,12 +1,13 @@
 <?php
 namespace Tests\Controller;
 
+use GuzzleHttp\Psr7\Response;
+use Onion\Framework\Controller\RestController;
+use Onion\Framework\Router\Interfaces\RouteInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Tests\Controller\Stub\DummyController;
-use Onion\Framework\Controller\RestController;
-use GuzzleHttp\Psr7\Response;
 
 class RestControllerTest extends TestCase
 {
@@ -29,6 +30,7 @@ class RestControllerTest extends TestCase
             ['patch', [], ' patch 5'],
             ['delete', [], 'delete 6'],
             ['options', ['allow' => ['PATCH']], 'options 7'],
+            ['custom', [], 'happy-custom-method'],
         ];
     }
 
@@ -60,7 +62,7 @@ class RestControllerTest extends TestCase
         $controller->process($this->request->reveal(), $this->handler->reveal());
     }
 
-    public function testGetAndHeadInterop()
+    public function testInterchangeableGetAndHead()
     {
         $controller = new class extends RestController {
             public function get() {
@@ -95,6 +97,13 @@ class RestControllerTest extends TestCase
     public function testAllowHeaderOptions()
     {
         $this->request->getMethod()->willReturn('options');
+
+        $route = $this->prophesize(RouteInterface::class);
+        $route->getMethods()->willReturn([
+            'get', 'head', 'post', 'put', 'patch', 'options', 'delete', 'custom'
+        ])->shouldBeCalledOnce();
+
+        $this->request->getAttribute('route')->willReturn($route->reveal());
         $controller = new DummyController(200, [], 'Options 1 2 3');
         $response = $controller->process(
             $this->request->reveal(),
@@ -103,7 +112,7 @@ class RestControllerTest extends TestCase
 
         $this->assertTrue($response->hasHeader('allow'));
         $this->assertSame(
-            ['get, head, post, put, patch, options, delete'],
+            ['get, head, post, put, patch, options, delete, custom'],
             $response->getHeader('allow')
         );
     }

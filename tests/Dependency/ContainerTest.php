@@ -4,8 +4,10 @@ namespace Tests\Dependency;
 use Onion\Framework\Dependency\Container;
 use Onion\Framework\Dependency\Exception\ContainerErrorException;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
+use Onion\Framework\Dependency\Interfaces\FactoryBuilderInterface;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Tests\Dependency\Doubles\DependencyA;
 use Tests\Dependency\Doubles\DependencyB;
@@ -300,7 +302,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         $container->get(DependencyG::class);
     }
 
-    public function testCreationFromFactoryWithInvalidResut()
+    public function testCreationFromFactoryWithInvalidReslut()
     {
         $class = new class implements FactoryInterface {
             public function build(\Psr\Container\ContainerInterface $container)
@@ -351,5 +353,32 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
 
         $this->expectException(UnknownDependency::class);
         (new Container([]))->get($key);
+    }
+
+    public function testFactoryBuilderCreation()
+    {
+        $class = new class implements FactoryBuilderInterface {
+            public function build(\Psr\Container\ContainerInterface $container, string $key): FactoryInterface
+            {
+                return new class ($key) implements FactoryInterface {
+                    private $key;
+                    public function __construct(string $name)
+                    {
+                        $this->key = $name;
+                    }
+
+                    public function build(ContainerInterface $container) {
+                        return $container->get("Tests\\Dependency\\Doubles\\Dependency{$this->key}");
+                    }
+                };
+            }
+        };
+        $container = new Container([
+            'factories' => [
+                'D' => get_class($class),
+            ],
+        ], Container::REFLECTION_RESOLUTION | Container::FACTORY_RESOLUTION);
+        $this->assertTrue($container->has('D'));
+        $this->assertInstanceOf(DependencyD::class, $container->get('D'));
     }
 }
