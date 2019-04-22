@@ -3,6 +3,9 @@
     "source": {
         "directories": [
             "src"
+        ],
+        "excludes": [
+            "/RouteStrategyFactory\\.php/"
         ]
     },
     "logs": {
