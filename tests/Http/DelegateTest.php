@@ -1,13 +1,13 @@
 <?php
 namespace Tests\Http;
 
-use Psr\Http\Server\MiddlewareInterface;
-use Onion\Framework\Http\Middleware\RequestHandler as Delegate;
+use Onion\Framework\Http\RequestHandler\RequestHandler as Delegate;
 use Prophecy\Argument;
 use Prophecy\Argument\Token\AnyValueToken;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
+use Psr\Http\Server\MiddlewareInterface;
 
 class DelegateTest extends \PHPUnit\Framework\TestCase
 {

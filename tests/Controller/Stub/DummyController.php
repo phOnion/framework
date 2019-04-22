@@ -1,10 +1,10 @@
 <?php
 namespace Tests\Controller\Stub;
 
+use GuzzleHttp\Psr7\Response;
 use Onion\Framework\Controller\RestController;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use GuzzleHttp\Psr7\Response;
 
 class DummyController extends RestController
 {
@@ -50,6 +50,11 @@ class DummyController extends RestController
     }
 
     public function head(ServerRequestInterface $request, RequestHandlerInterface $handler)
+    {
+        return new Response($this->statusCode, $this->headers, "{$this->body}");
+    }
+
+    public function custom(ServerRequestInterface $request, RequestHandlerInterface $handler)
     {
         return new Response($this->statusCode, $this->headers, "{$this->body}");
     }
