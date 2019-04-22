@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Tests\Dependency;
 
-use Psr\Container\ContainerInterface;
 use Onion\Framework\Dependency\DelegateContainer;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
 use Onion\Framework\Dependency\Interfaces\AttachableContainer as Container;
@@ -21,7 +20,7 @@ class DelegateContainerTest extends \PHPUnit\Framework\TestCase
     public function testExistanceInNthContainer()
     {
         $c = $this->prophesize(Container::class);
-        $c->attach(new AnyValueToken())->willReturn(null)->shouldBeCalled();
+        $c->attach(new AnyValueToken())->willReturn(null)->shouldBeCalledTimes(4);
         $c1 = $c->reveal();
         $c->has('foo')->willReturn(true);
 
@@ -34,7 +33,7 @@ class DelegateContainerTest extends \PHPUnit\Framework\TestCase
     {
         $c = $this->prophesize(Container::class);
         $c->has('foo')->willReturn(false);
-        $c->attach(new AnyValueToken())->willReturn(null)->shouldBeCalled();
+        $c->attach(new AnyValueToken())->willReturn(null)->shouldBeCalledTimes(2);
 
         $delegate = new DelegateContainer([$c->reveal(), $c->reveal()]);
         $this->assertFalse($delegate->has('foo'));
@@ -51,14 +50,17 @@ class DelegateContainerTest extends \PHPUnit\Framework\TestCase
         $c->get('list')->willReturn([
             'foo' => 'bar',
         ]);
-        $c->attach(new AnyValueToken())->willReturn(null)->shouldBeCalled();
+        $c->has('foo')->willReturn(false);
+        $c->attach(new AnyValueToken())->willReturn(null)->shouldBeCalledOnce();
 
         $c1 = $this->prophesize(Container::class);
         $c1->has('list')->willReturn(true);
         $c1->get('list')->willReturn([
             'bar' => 'baz',
         ]);
-        $c1->attach(new AnyValueToken())->willReturn(null)->shouldBeCalled();
+        $c1->has('foo')->willReturn(true);
+        $c1->get('foo')->willReturn('bar');
+        $c1->attach(new AnyValueToken())->willReturn(null)->shouldBeCalledOnce();
 
         $container = new DelegateContainer([$c->reveal(), $c1->reveal()]);
 
@@ -66,6 +68,7 @@ class DelegateContainerTest extends \PHPUnit\Framework\TestCase
             'foo' => 'bar',
             'bar' => 'baz',
         ], $container->get('list'));
+        $this->assertSame('bar', $container->get('foo'));
     }
 
     public function testRetrievalExceptionWithoutContainers()
