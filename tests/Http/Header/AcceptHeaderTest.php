@@ -14,7 +14,10 @@ class AcceptHeaderTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($header->supports('application/json'));
         $this->assertSame($header->getPriority('application/json'), 1.0);
         $this->assertSame('Accept', $header->getName());
-        $this->assertSame('Accept: application/json', (string) $header);
+        $this->assertSame('application/json', (string) $header);
+        $this->assertSame([
+            'application/json' => 1.0,
+        ], $header->getTypes());
     }
 
     public function testWithSingleValueWithWeight()

@@ -4,22 +4,31 @@ namespace tests\Dependency;
 use Onion\Framework\Dependency\CacheAwareContainer;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Psr\Container\ContainerInterface as Container;
+use Psr\Container\ContainerInterface;
 use Psr\SimpleCache\CacheInterface;
 
 class CacheAwareContainerTest extends \PHPUnit\Framework\TestCase
 {
     private $cache;
     private $factory;
-    public function setUp()
+    public function setUp(): void
     {
         $this->cache = $this->prophesize(CacheInterface::class);
-        $this->factory = new class implements FactoryInterface
+        $mock = $this->prophesize(ContainerInterface::class);
+        $mock->get('bar')->willReturn('baz');
+        $mock->has('bar')->willReturn(true);
+        $mock->has('test')->willReturn(false);
+
+        $this->factory = new class ($mock->reveal()) implements FactoryInterface
         {
+            private $container;
+            public function __construct($mock)
+            {
+                $this->container = $mock;
+            }
             public function build(Container $container)
             {
-                return new \Onion\Framework\Dependency\Container([
-                    'bar' => 'baz'
-                ]);
+                return $this->container;
             }
         };
 
@@ -75,7 +84,7 @@ class CacheAwareContainerTest extends \PHPUnit\Framework\TestCase
     {
         $this->cache->has('bar')->willReturn(false);
         $this->cache->set('bar', 'baz')->willReturn(true)
-            ->shouldBeCalled();
+            ->shouldBeCalledOnce();
 
         $cacheContainer = new CacheAwareContainer(
             $this->factory,
@@ -95,13 +104,11 @@ class CacheAwareContainerTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($container->get('bar'), 'baz');
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage Invalid factory result
-     */
     public function testInvalidContainerResult()
     {
         $this->cache->has('foo')->willReturn(false);
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Invalid factory result');
         $container = new CacheAwareContainer($this->fakeFactory, $this->cache->reveal());
         $container->get('foo');
     }
