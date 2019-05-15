@@ -22,7 +22,9 @@ class CompiledRegexStrategy implements ResolverInterface
         }
 
         if (!$routes instanceof \Iterator) {
-            throw new \InvalidArgumentException('Expected value should be either an array or an \Iterator implementation');
+            throw new \InvalidArgumentException(
+                'Expected value should be either an array or an \Iterator implementation'
+            );
         }
 
         $length = $maxGroupCount;
