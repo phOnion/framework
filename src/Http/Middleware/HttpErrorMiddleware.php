@@ -27,7 +27,7 @@ class HttpErrorMiddleware implements MiddlewareInterface
             return $handler->handle($request);
         } catch (MissingHeaderException $ex) {
             $headers = [];
-            switch (strtolower($ex->getHeaderName())) {
+            switch ($ex->getHeaderName()) {
                 case 'authorization':
                     $status = 401;
                     $headers['WWW-Authenticate'] =
