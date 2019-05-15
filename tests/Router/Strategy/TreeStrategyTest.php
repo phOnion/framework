@@ -114,7 +114,7 @@ class TreeStrategyTest extends TestCase
         $strategy = new TreeStrategy([$route->reveal()]);
         $this->assertInstanceOf(
             RouteInterface::class,
-            $strategy->resolve('GET', '/test/foo/bar')
+            $strategy->resolve('GET', '/test/foo/bar/')
         );
     }
 }

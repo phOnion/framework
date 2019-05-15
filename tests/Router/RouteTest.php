@@ -34,8 +34,8 @@ class RouteTest extends TestCase
     {
         $route = (new Route('/'))->withMethods(['head', 'get']);
         $this->assertSame(['head', 'get'], $route->getMethods());
-        $this->assertTrue($route->hasMethod('head'));
-        $this->assertFalse($route->hasMethod('put'));
+        $this->assertTrue($route->hasMethod('HEAD'));
+        $this->assertFalse($route->hasMethod('PUT'));
     }
 
     public function testEmptyRequestHandler()
@@ -100,8 +100,8 @@ class RouteTest extends TestCase
         $route = (new Route('/'))
             ->withRequestHandler($requestHandler->reveal())
             ->withHeaders([
-                'x-foo' => false,
-                'x-test' => true,
+                'X-FOO' => false,
+                'X-TEST' => true,
             ]);
         $route->handle($request->reveal());
     }
