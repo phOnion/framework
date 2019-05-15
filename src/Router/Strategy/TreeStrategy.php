@@ -37,7 +37,7 @@ class TreeStrategy implements ResolverInterface
             throw new MethodNotAllowedException($route->getMethods());
         }
 
-        return $route->withParameters(array_filter($params ?? [], function ($key) {
+        return $route->withParameters(array_filter($params, function ($key) {
             return !is_integer($key);
         }, ARRAY_FILTER_USE_KEY));
     }
@@ -70,7 +70,7 @@ class TreeStrategy implements ResolverInterface
 
     private function compile(string $pattern): array
     {
-        $segments = explode('/', trim($pattern, '/'));
+        $segments = explode('/', $pattern);
         $params = [];
         $patterns = [];
         $path = '';

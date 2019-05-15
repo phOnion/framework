@@ -14,15 +14,19 @@ class DelegateContainer implements ContainerInterface, \Countable
     /** @var ContainerInterface[] */
     public function __construct(array $containers)
     {
+        assert(count(array_filter($containers, function (object $container): bool {
+            return ($container instanceof ContainerInterface);
+        })) === count($containers), new \UnexpectedValueException(
+            'Provided array contains non-compliant values - expected ContainerInterface instances'
+        ));
+
         $this->containers = new \ArrayIterator(array_map(function (ContainerInterface $container): ContainerInterface {
             if ($container instanceof AttachableContainer) {
                 $container->attach($this);
             }
 
             return $container;
-        }, array_filter($containers, function (object $container): bool {
-            return ($container instanceof ContainerInterface);
-        })));
+        }, $containers));
     }
 
     public function count(): int

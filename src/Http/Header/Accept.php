@@ -28,8 +28,8 @@ class Accept implements Interfaces\AcceptInterface
                 trim($pair),
                 $matches
             )) {
-                $this->types[strtolower(trim($matches['type']))] =
-                    (float) (isset($matches['priority']) ? trim($matches['priority']) : 1);
+                $this->types[$matches['type']] =
+                    (float) (isset($matches['priority']) ? $matches['priority'] : 1);
             }
         }
     }
@@ -61,7 +61,7 @@ class Accept implements Interfaces\AcceptInterface
     public function supports(string $contentType): bool
     {
         foreach (array_keys($this->types) as $pattern) {
-            $pattern = str_replace(['*', '.', '/', '+'], ['(.*)', '.', '\/', '\+'], $pattern);
+            $pattern = str_replace(['.', '*', '/', '+'], ['\.', '(.*)', '\/', '\+'], $pattern);
             if (preg_match("#^$pattern$#i", $contentType) > 0) {
                 return true;
             }

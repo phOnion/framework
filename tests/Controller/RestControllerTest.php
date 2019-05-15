@@ -23,14 +23,14 @@ class RestControllerTest extends TestCase
     public function httpMethodProvider()
     {
         return [
-            ['get', [], 'get 1'],
-            ['head', [], ''],
-            ['post', [], 'post 3'],
-            ['put', [], 'put 4'],
-            ['patch', [], ' patch 5'],
-            ['delete', [], 'delete 6'],
-            ['options', ['allow' => ['PATCH']], 'options 7'],
-            ['custom', [], 'happy-custom-method'],
+            ['GET', [], 'get 1'],
+            ['HEAD', [], ''],
+            ['POST', [], 'post 3'],
+            ['PUT', [], 'put 4'],
+            ['PATCH', [], ' patch 5'],
+            ['DELETE', [], 'delete 6'],
+            ['OPTIONS', ['allow' => ['PATCH']], 'options 7'],
+            ['CUSTOM', [], 'happy-custom-method'],
         ];
     }
 
@@ -70,7 +70,7 @@ class RestControllerTest extends TestCase
             }
         };
 
-        $this->request->getMethod()->willReturn('head');
+        $this->request->getMethod()->willReturn('HEAD');
         $response = $controller->process($this->request->reveal(), $this->handler->reveal());
 
         $this->assertSame(200, $response->getStatusCode());
@@ -88,7 +88,7 @@ class RestControllerTest extends TestCase
             }
         };
 
-        $this->request->getMethod()->willReturn('head');
+        $this->request->getMethod()->willReturn('HEAD');
         $response = $controller->process($this->request->reveal(), $this->handler->reveal());
 
         $this->assertSame(204, $response->getStatusCode());
@@ -96,7 +96,7 @@ class RestControllerTest extends TestCase
 
     public function testAllowHeaderOptions()
     {
-        $this->request->getMethod()->willReturn('options');
+        $this->request->getMethod()->willReturn('OPTIONS');
 
         $route = $this->prophesize(RouteInterface::class);
         $route->getMethods()->willReturn([
