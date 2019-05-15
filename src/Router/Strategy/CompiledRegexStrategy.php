@@ -21,6 +21,10 @@ class CompiledRegexStrategy implements ResolverInterface
             $routes = new \ArrayIterator($routes);
         }
 
+        if (!$routes instanceof \Iterator) {
+            throw new \InvalidArgumentException('Expected value should be either an array or an \Iterator implementation');
+        }
+
         $length = $maxGroupCount;
         $segments = [];
         $handlers = [];
