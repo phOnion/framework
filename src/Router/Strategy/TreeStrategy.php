@@ -56,11 +56,11 @@ class TreeStrategy implements ResolverInterface
                         $params[$key] = $matches[$index][0];
                     }
 
-                    if ($remaining instanceof RouteInterface) {
-                        return $remaining;
+                    if (is_array($remaining)) {
+                        return $this->match($remaining, $parts, $params);
                     }
 
-                    return $this->match($remaining, $parts, $params);
+                    return $remaining;
                 }
             }
         }
@@ -81,7 +81,7 @@ class TreeStrategy implements ResolverInterface
             }
             $matched = preg_match(self::PARAM_REGEX, $segment, $matches);
             if ($matched) {
-                $params[] = trim($matches['name']);
+                $params[] = $matches['name'];
                 $path = "{$path}/(" . (!empty($matches['pattern']) ? $matches['pattern'] : '[^/]+') . ')';
                 $patterns[$path] = $params;
             }
