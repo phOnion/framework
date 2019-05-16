@@ -27,6 +27,7 @@ class TreeStrategy implements ResolverInterface
 
     public function resolve(string $method, string $path): RouteInterface
     {
+        $params = [];
         $route = $this->match($this->routes, explode('/', trim($path, '/')), $params);
 
         if ($route === null) {
@@ -37,12 +38,12 @@ class TreeStrategy implements ResolverInterface
             throw new MethodNotAllowedException($route->getMethods());
         }
 
-        return $route->withParameters(array_filter($params ?? [], function ($key) {
+        return $route->withParameters(array_filter($params, function ($key) {
             return !is_integer($key);
         }, ARRAY_FILTER_USE_KEY));
     }
 
-    private function match(array $routes, array $parts, ?array &$params = []): ?RouteInterface
+    private function match(array $routes, array $parts, array &$params = []): ?RouteInterface
     {
         $part = array_shift($parts);
 
@@ -56,11 +57,11 @@ class TreeStrategy implements ResolverInterface
                         $params[$key] = $matches[$index][0];
                     }
 
-                    if ($remaining instanceof RouteInterface) {
-                        return $remaining;
+                    if (is_array($remaining)) {
+                        return $this->match($remaining, $parts, $params);
                     }
 
-                    return $this->match($remaining, $parts, $params);
+                    return $remaining;
                 }
             }
         }
@@ -70,7 +71,7 @@ class TreeStrategy implements ResolverInterface
 
     private function compile(string $pattern): array
     {
-        $segments = explode('/', trim($pattern, '/'));
+        $segments = explode('/', $pattern);
         $params = [];
         $patterns = [];
         $path = '';
@@ -81,7 +82,7 @@ class TreeStrategy implements ResolverInterface
             }
             $matched = preg_match(self::PARAM_REGEX, $segment, $matches);
             if ($matched) {
-                $params[] = trim($matches['name']);
+                $params[] = $matches['name'];
                 $path = "{$path}/(" . (!empty($matches['pattern']) ? $matches['pattern'] : '[^/]+') . ')';
                 $patterns[$path] = $params;
             }

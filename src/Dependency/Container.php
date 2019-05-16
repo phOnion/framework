@@ -98,7 +98,7 @@ final class Container implements AttachableContainer
                 return $this->retrieveFromReflection($key);
             }
         } catch (\RuntimeException | \InvalidArgumentException $ex) {
-            throw new ContainerErrorException($ex->getMessage());
+            throw new ContainerErrorException($ex->getMessage(), 0, $ex);
         }
 
         throw new UnknownDependency(sprintf('Unable to resolve "%s"', $key));
@@ -207,7 +207,7 @@ final class Container implements AttachableContainer
                 'Unable to find match for type: "%s (%s)". Consider using a factory',
                 $parameter->getName(),
                 $parameter->getType() ?? ''
-            ));
+            ), 0, $ex);
         }
 
         throw new ContainerErrorException(sprintf(

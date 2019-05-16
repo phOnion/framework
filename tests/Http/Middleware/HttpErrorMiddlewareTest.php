@@ -95,7 +95,7 @@ class HttpErrorMiddlewareTest extends \PHPUnit\Framework\TestCase
     {
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new \BadMethodCallException());
-        $this->request->getMethod()->willReturn('get');
+        $this->request->getMethod()->willReturn('GET');
 
         $response = $this->middleware->process($this->request->reveal(), $this->handler->reveal());
 

@@ -56,7 +56,7 @@ class AcceptHeaderTest extends \PHPUnit\Framework\TestCase
     {
         $header = new \Onion\Framework\Http\Header\Accept(
             'accept-language',
-            'en, en-gb;q=0.8, bg;q=0.5'
+            'en, en-GB;q=0.8, bg;q=0.5'
         );
 
         $this->assertTrue($header->supports('en'));

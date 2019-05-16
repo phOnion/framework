@@ -17,10 +17,22 @@ class CompiledRegexStrategy implements ResolverInterface
      */
     public function __construct(iterable $routes, int $maxGroupCount)
     {
-        foreach ($routes as $route) {
-            $length = $maxGroupCount;
-            $segments = [];
-            $handlers = [];
+        if (is_array($routes)) {
+            $routes = new \ArrayIterator($routes);
+        }
+
+        if (!$routes instanceof \Iterator) {
+            throw new \InvalidArgumentException(
+                'Expected value should be either an array or an \Iterator implementation'
+            );
+        }
+
+        $length = $maxGroupCount;
+        $segments = [];
+        $handlers = [];
+
+        while ($routes->valid()) {
+            $route = $routes->current();
             foreach ($this->compile($route->getPattern()) as $pattern => $params) {
                 assert(
                     !isset($this->routes[$pattern]),
@@ -30,18 +42,22 @@ class CompiledRegexStrategy implements ResolverInterface
                     ))
                 );
 
-                $expansion = str_repeat('()', $length);
+                $expansion = str_repeat('()', --$length);
                 $segments[] = "{$pattern}{$expansion}";
                 $index = ($length + count($params));
                 $handlers[$index] = [$route, $params];
 
-                if (--$length) {
-                    continue;
+                if ($length === 0) {
+                    $this->routes['(?|' . implode('|', $segments) . ')'] = $handlers;
+                    $segments = [];
+                    $handlers = [];
+                    $length = $maxGroupCount;
                 }
-
-                $this->routes['(?|' . implode('|', $segments) . ')'] = $handlers;
             }
 
+            $routes->next();
+        }
+        if ($segments !== []) {
             $this->routes['(?|' . implode('|', $segments) . ')'] = $handlers;
         }
     }
@@ -72,10 +88,10 @@ class CompiledRegexStrategy implements ResolverInterface
         foreach ($segments as $segment) {
             if (preg_match(self::PARAM_REGEX, $segment, $matches)) {
                 if (isset($matches['conditional'])) {
-                    $patterns[!empty($path) ? $path : '/'] = $params;
+                    $patterns[$path] = $params;
                 }
 
-                $params[] = trim($matches['name']);
+                $params[] = $matches['name'];
                 $path .= '/(' . (!empty($matches['pattern']) ? $matches['pattern'] : '[^/]+') . ')';
                 $patterns[$path] = $params;
 
@@ -87,7 +103,7 @@ class CompiledRegexStrategy implements ResolverInterface
 
         $patterns[$path] = $params;
 
-        return array_reverse($patterns);
+        return $patterns;
     }
 
     private function match(string $path, array &$params = []): ?RouteInterface

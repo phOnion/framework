@@ -34,7 +34,7 @@ class CompiledRegexStrategyTest extends TestCase
         $routes = [];
         foreach (range(1, 10) as $count) {
             $routes = [];
-            for ($i=0; $i<10; $i++) {
+            for ($i=0; $i<11; $i++) {
                 $param = "/{$i}/{x}/{arg}?";
                 $route = $this->prophesize(RouteInterface::class);
                 $route->getPattern()->willReturn($param);
