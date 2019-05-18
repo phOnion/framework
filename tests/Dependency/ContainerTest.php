@@ -36,7 +36,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
             'invokables' =>  [
                 \stdClass::class => \stdClass::class
             ]
-        ], Container::INVOKABLE_RESOLUTION);
+        ]);
 
         $this->assertTrue($container->has(\stdClass::class));
         $this->assertInstanceOf(\stdClass::class, $container->get(\stdClass::class));
@@ -49,7 +49,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
             'invokables' =>  [
                 \stdClass::class => 1
             ]
-        ], Container::INVOKABLE_RESOLUTION);
+        ]);
 
         $this->expectExceptionMessage('Unable to resolve');
         $this->expectException(ContainerExceptionInterface::class);
@@ -62,7 +62,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
             'factories' =>  [
                 \stdClass::class => FactoryStub::class
             ]
-        ], Container::REFLECTION_RESOLUTION | Container::INVOKABLE_RESOLUTION);
+        ]);
 
         $this->assertTrue($container->has(\stdClass::class));
         $this->assertInstanceOf(\stdClass::class, $container->get(\stdClass::class));
@@ -71,17 +71,14 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
 
     public function testRetrievalOfSharedDependenciesFromFactory()
     {
-        $container = new Container(
-             [
-                'factories' =>  [
-                    \stdClass::class => FactoryStub::class,
-                ],
-                'shared' => [
-                    \stdClass::class
-                ]
+        $container = new Container([
+            'factories' =>  [
+                \stdClass::class => FactoryStub::class,
             ],
-            Container::REFLECTION_RESOLUTION | Container::INVOKABLE_RESOLUTION | Container::FACTORY_RESOLUTION
-        );
+            'shared' => [
+                \stdClass::class
+            ]
+        ]);
 
         $this->assertTrue($container->has(\stdClass::class));
         $this->assertInstanceOf(
@@ -141,7 +138,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
                 'bar',
                 \stdClass::class
             ]
-        ], Container::FACTORY_RESOLUTION | Container::INVOKABLE_RESOLUTION | Container::REFLECTION_RESOLUTION);
+        ]);
         $std = $container->get(\stdClass::class);
         $foo = $container->get('foo');
         $bar = $container->get('bar');
@@ -171,7 +168,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
 
         $this->expectExceptionMessage('Registered factory for \'stdClass\' must be a valid FQCN');
         $this->expectException(ContainerExceptionInterface::class);
-        $container = new Container( [
+        $container = new Container([
             'factories' =>  [
                 \stdClass::class => function () {
                 }
@@ -228,20 +225,18 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
 
         $this->expectExceptionMessage('Unable to verify that "stdClass" is of type "SplFixedArray"');
         $this->expectException(ContainerExceptionInterface::class);
-        $container = new Container(
-             [
-                'invokables' =>  [
-                    \SplFixedArray::class => \stdClass::class
-                ]
+        $container = new Container([
+            'invokables' =>  [
+                \SplFixedArray::class => \stdClass::class
             ]
-        );
+        ]);
 
         $container->get(\SplFixedArray::class);
     }
 
     public function testDependencyResolutionFromReflection()
     {
-        $container = new Container([], Container::REFLECTION_RESOLUTION);
+        $container = new Container([]);
         $this->assertInstanceOf(DependencyD::class, $container->get(DependencyD::class));
     }
 
@@ -249,7 +244,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
     {
         $this->expectException(ContainerErrorException::class);
         $this->expectExceptionMessage('Unable to find match for type: "c (' . DependencyC::class . ')');
-        $container = new Container([], Container::REFLECTION_RESOLUTION);
+        $container = new Container([]);
         $this->assertInstanceOf(DependencyD::class, $container->get(DependencyA::class));
     }
 
@@ -259,7 +254,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
             'invokables' =>  [
                 DependencyC::class => DependencyD::class
             ]
-        ], Container::REFLECTION_RESOLUTION | Container::INVOKABLE_RESOLUTION);
+        ]);
 
         $this->assertInstanceOf(DependencyB::class, $container->get(DependencyB::class));
     }
@@ -281,7 +276,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
 
     public function testExceptionOnConstructorParameterNotAvailable()
     {
-        $container = new Container([], Container::REFLECTION_RESOLUTION);
+        $container = new Container([]);
         $this->expectException(ContainerExceptionInterface::class);
         $this->expectExceptionMessage(
             'Unable to resolve a class parameter "foo"'
@@ -291,13 +286,13 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
 
     public function testRetrievalOfEmptyConstructorArgs()
     {
-        $container = new Container([], Container::REFLECTION_RESOLUTION);
+        $container = new Container([]);
         $this->assertInstanceOf(DependencyI::class, $container->get(DependencyI::class));
     }
 
     public function testExceptionWhenKeyDoesNotExist()
     {
-        $container = new Container([], Container::REFLECTION_RESOLUTION);
+        $container = new Container([]);
         $this->expectException(ContainerErrorException::class);
         $container->get(DependencyG::class);
     }
@@ -377,7 +372,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
             'factories' => [
                 'D' => get_class($class),
             ],
-        ], Container::REFLECTION_RESOLUTION | Container::FACTORY_RESOLUTION);
+        ]);
         $this->assertTrue($container->has('D'));
         $this->assertInstanceOf(DependencyD::class, $container->get('D'));
     }
