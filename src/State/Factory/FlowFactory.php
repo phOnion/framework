@@ -12,8 +12,7 @@ class FlowFactory implements FactoryBuilderInterface
 {
     public function build(ContainerInterface $container, string $key): FactoryInterface
     {
-        return new class ($key, $container->get("states.{$key}")) implements FactoryInterface
-        {
+        return new class($key, $container->get("states.{$key}")) implements FactoryInterface {
             private $name;
             private $states;
             public function __construct(string $name, Container $states)
