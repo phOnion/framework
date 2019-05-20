@@ -1,6 +1,7 @@
 <?php
 namespace Onion\Framework\State;
 
+use Onion\Framework\State\Exceptions\TransitionException;
 use Onion\Framework\State\Interfaces\FlowInterface;
 use Onion\Framework\State\Interfaces\HistoricalFlowInterface;
 use Onion\Framework\State\Interfaces\TransitionInterface;
@@ -17,8 +18,6 @@ class SeekableFlow implements HistoricalFlowInterface
 
     public function apply(string $state, object $target, ...$arguments): bool
     {
-        $this->history[] = [$state, $target, $arguments];
-
         return $this->wrapped->apply($state, $target, ...$arguments);
     }
 
@@ -49,21 +48,15 @@ class SeekableFlow implements HistoricalFlowInterface
 
     public function reply(): void
     {
+        $history = $this->getHistory();
         $this->reset();
-        foreach ($this->history as $status) {
+        foreach ($history as $index => $status) {
             list($state, $target, $args)=$status;
 
-            try {
-                if (!$this->apply($state, $target, ...$args)) {
-                    throw new \RuntimeException(
-                        "Transition from '{$this->getState()}' to '{$state}' failed"
-                    );
-                }
-            } catch (\Throwable $ex) {
-                throw new \RuntimeException(
-                    "Failed to reply transition '{$this->getState()}' -> '{$state}'",
-                    (int) $ex->getCode(),
-                    $ex
+            if (!$this->apply($state, $target, ...$args)) {
+                throw new TransitionException(
+                    "Transition #{$index} from '{$this->getState()}' to '{$state}' did not succeed",
+                    $history
                 );
             }
         }
@@ -71,6 +64,6 @@ class SeekableFlow implements HistoricalFlowInterface
 
     public function getHistory(): array
     {
-        return $this->history;
+        return $this->wrapped->getHistory();
     }
 }

@@ -8,6 +8,7 @@ interface FlowInterface
     public function addTransition(TransitionInterface $transition): void;
     public function getState(): string;
     public function getName(): string;
+    public function getHistory(): array;
 
     public function apply(string $state, object $target, ...$arguments): bool;
     public function can(string $state): bool;

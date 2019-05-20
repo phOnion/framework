@@ -3,6 +3,7 @@ namespace Onion\Framework\State;
 
 use Onion\Framework\State\Interfaces\FlowInterface;
 use Onion\Framework\State\Interfaces\TransitionInterface;
+use Onion\Framework\State\Exceptions\TransitionException;
 
 class Flow implements Interfaces\FlowInterface
 {
@@ -15,6 +16,8 @@ class Flow implements Interfaces\FlowInterface
 
     /** @var Transition[] $transitions */
     private $transitions;
+
+    private $history = [];
 
     public function __construct(string $name, string $state)
     {
@@ -56,10 +59,15 @@ class Flow implements Interfaces\FlowInterface
 
     public function apply(string $state, object $target, ...$arguments): bool
     {
+        $target = clone $target;
+
+        $this->history[] = [$state, $target, $arguments];
+
         $key = "{$this->getState()}:{$state}";
         if (!isset($this->transitions[$key])) {
-            throw new \LogicException(
-                "Moving from '{$this->getState()}' to '{$state}' is not part of the defined flow"
+            throw new TransitionException(
+                "Moving from '{$this->getState()}' to '{$state}' is not part of the defined flow",
+                $this->getHistory()
             );
         }
 
@@ -77,9 +85,9 @@ class Flow implements Interfaces\FlowInterface
 
             return false;
         } catch (\Throwable $ex) {
-            throw new \RuntimeException(
+            throw new TransitionException(
                 "Transition from '{$this->getState()}' to '{$state}' failed",
-                (int) $ex->getCode(),
+                $this->getHistory(),
                 $ex
             );
         }
@@ -89,6 +97,15 @@ class Flow implements Interfaces\FlowInterface
 
     public function reset(): FlowInterface
     {
-        return new self($this->getName(), $this->initialState);
+        $self = new self($this->getName(), $this->initialState);
+        array_map([$self, 'addTransition'], $this->transitions);
+
+        return $self;
+    }
+
+
+    public function getHistory(): array
+    {
+        return $this->history;
     }
 }
