@@ -31,4 +31,9 @@ class Transition implements TransitionInterface
     {
         return $this->handler;
     }
+
+    public function hasHandler(): bool
+    {
+        return $this->handler === null;
+    }
 }
