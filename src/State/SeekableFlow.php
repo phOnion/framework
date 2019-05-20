@@ -9,7 +9,6 @@ use Onion\Framework\State\Interfaces\TransitionInterface;
 class SeekableFlow implements HistoricalFlowInterface
 {
     private $wrapped;
-    private $history = [];
 
     public function __construct(FlowInterface $flow)
     {

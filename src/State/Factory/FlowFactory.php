@@ -15,6 +15,7 @@ class FlowFactory implements FactoryBuilderInterface
         return new class($key, $container->get("states.{$key}")) implements FactoryInterface {
             private $name;
             private $states;
+
             public function __construct(string $name, Container $states)
             {
                 $this->name = $name;
