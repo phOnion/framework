@@ -14,8 +14,8 @@ class Transition implements TransitionInterface
 
     public function __construct(string $source, string $destination, ?callable $handler = null)
     {
-        $this->source = $source;
-        $this->destination = $destination;
+        $this->source = strtolower($source);
+        $this->destination = strtolower($destination);
         $this->handler = $handler;
     }
 

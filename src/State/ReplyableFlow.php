@@ -2,11 +2,12 @@
 namespace Onion\Framework\State;
 
 use Onion\Framework\State\Exceptions\TransitionException;
+use Onion\Framework\State\Interfaces\FlowInterface;
+use Onion\Framework\State\Interfaces\HistoryInterface;
 use Onion\Framework\State\Interfaces\ReplyableFlowInterface;
 use Onion\Framework\State\Interfaces\TransitionInterface;
-use Onion\Framework\State\Interfaces\HistoryInterface;
 
-class ReplyableFlow implements ReplyableFlowInterface, FlowInterface
+class ReplyableFlow implements ReplyableFlowInterface
 {
     private $wrapped;
 
@@ -49,12 +50,13 @@ class ReplyableFlow implements ReplyableFlowInterface, FlowInterface
     {
         $history = $this->getHistory();
         $this->reset();
+        $historyCount = count($history);
         foreach ($history as $index => $status) {
             list($state, $target, $args)=$status;
 
             if (!$this->apply($state, $target, ...$args)) {
                 throw new TransitionException(
-                    "Transition #{$index} from '{$this->getState()}' to '{$state}' did not succeed",
+                    "Transition #{$index} of {$historyCount}: '{$this->getState()}' to '{$state}' did not succeed",
                     $history
                 );
             }

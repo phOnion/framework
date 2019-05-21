@@ -4,7 +4,7 @@ namespace Onion\Framework\State;
 use Onion\Framework\State\Interfaces\TransitionInterface;
 use Onion\Framework\State\Interfaces\HistoryInterface;
 
-class History implements \IteratorAggregate, HistoryInterface
+class History implements \IteratorAggregate, HistoryInterface, \Countable
 {
     private $transitions = [];
 
@@ -16,5 +16,10 @@ class History implements \IteratorAggregate, HistoryInterface
     public function getIterator()
     {
         return new \ArrayIterator($this->transitions);
+    }
+
+    public function count()
+    {
+        return count($this->transitions);
     }
 }

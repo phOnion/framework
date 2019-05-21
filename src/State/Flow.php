@@ -16,7 +16,7 @@ class Flow implements Interfaces\FlowInterface
     private $initialState;
 
     /** @var Transition[] $transitions */
-    private $transitions;
+    private $transitions = [];
 
     private $history = [];
 
@@ -50,12 +50,12 @@ class Flow implements Interfaces\FlowInterface
         return isset($this->transitions["{$this->getState()}:{$state}"]);
     }
 
-    public function getMigrations(): array
+    public function getPossibleTransitions(): array
     {
         $values = [];
         foreach (array_keys($this->transitions) as $states) {
             if (stripos($states, "{$this->getState()}:") === 0) {
-                $values[] = substr($states, strlen($this->getState())+1);
+                $values[] = substr($states, strlen($this->getState()) + 1);
             }
         }
 
