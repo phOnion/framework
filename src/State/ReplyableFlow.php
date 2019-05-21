@@ -4,6 +4,7 @@ namespace Onion\Framework\State;
 use Onion\Framework\State\Exceptions\TransitionException;
 use Onion\Framework\State\Interfaces\ReplyableFlowInterface;
 use Onion\Framework\State\Interfaces\TransitionInterface;
+use Onion\Framework\State\Interfaces\HistoryInterface;
 
 class ReplyableFlow implements ReplyableFlowInterface, FlowInterface
 {
@@ -60,7 +61,7 @@ class ReplyableFlow implements ReplyableFlowInterface, FlowInterface
         }
     }
 
-    public function getHistory(): array
+    public function getHistory(): HistoryInterface
     {
         return $this->wrapped->getHistory();
     }

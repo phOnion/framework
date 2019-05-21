@@ -8,6 +8,8 @@ class Transition implements TransitionInterface
     private $source;
     private $destination;
 
+    private $arguments = [];
+
     private $handler;
 
     public function __construct(string $source, string $destination, ?callable $handler = null)
@@ -32,8 +34,30 @@ class Transition implements TransitionInterface
         return $this->handler;
     }
 
+    public function getArguments(): array
+    {
+        return $this->arguments;
+    }
+
+    public function withArguments(...$arguments): TransitionInterface
+    {
+        $self = clone $this;
+        $self->arguments = $arguments;
+
+        return $self;
+    }
+
     public function hasHandler(): bool
     {
-        return $this->handler === null;
+        return $this->handler !== null;
+    }
+
+    public function __invoke(): bool
+    {
+        if (!$this->hasHandler()) {
+            return true;
+        }
+
+        return call_user_func($this->getHandler(), ...$this->getArguments());
     }
 }

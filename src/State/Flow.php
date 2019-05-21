@@ -4,6 +4,7 @@ namespace Onion\Framework\State;
 use Onion\Framework\State\Interfaces\FlowInterface;
 use Onion\Framework\State\Interfaces\TransitionInterface;
 use Onion\Framework\State\Exceptions\TransitionException;
+use Onion\Framework\State\Interfaces\HistoryInterface;
 
 class Flow implements Interfaces\FlowInterface
 {
@@ -19,10 +20,14 @@ class Flow implements Interfaces\FlowInterface
 
     private $history = [];
 
-    public function __construct(string $name, string $state)
+    public function __construct(string $name, string $state, HistoryInterface $history = null)
     {
         $this->name = $name;
         $this->state = $this->initialState = $state;
+        if ($history === null) {
+            $history = new History();
+        }
+        $this->history = $history;
     }
 
     public function getName(): string
@@ -61,24 +66,24 @@ class Flow implements Interfaces\FlowInterface
     {
         $target = clone $target;
 
-        $this->history[] = [$state, $target, $arguments];
-
         $key = "{$this->getState()}:{$state}";
+
         if (!isset($this->transitions[$key])) {
+            $this->getHistory()
+                ->add((new Transition($this->getState(), $state))->withArguments($target, ...$arguments));
+
             throw new TransitionException(
                 "Moving from '{$this->getState()}' to '{$state}' is not part of the defined flow",
                 $this->getHistory()
             );
         }
 
-        $handler = $this->transitions[$key]->getHandler();
 
-        if ($handler === null) {
-            return true;
-        }
+        $transition = $this->transitions[$key]->withArguments($target, ...$arguments);
+        $this->getHistory()->add($transition);
 
         try {
-            if (call_user_func($handler, $target, ...$arguments)) {
+            if ($transition($target, ...$arguments)) {
                 $this->state = $state;
                 return true;
             }
@@ -104,7 +109,7 @@ class Flow implements Interfaces\FlowInterface
     }
 
 
-    public function getHistory(): array
+    public function getHistory(): HistoryInterface
     {
         return $this->history;
     }
