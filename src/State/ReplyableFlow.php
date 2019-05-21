@@ -2,11 +2,10 @@
 namespace Onion\Framework\State;
 
 use Onion\Framework\State\Exceptions\TransitionException;
-use Onion\Framework\State\Interfaces\FlowInterface;
-use Onion\Framework\State\Interfaces\HistoricalFlowInterface;
+use Onion\Framework\State\Interfaces\ReplyableFlowInterface;
 use Onion\Framework\State\Interfaces\TransitionInterface;
 
-class SeekableFlow implements HistoricalFlowInterface
+class ReplyableFlow implements ReplyableFlowInterface, FlowInterface
 {
     private $wrapped;
 

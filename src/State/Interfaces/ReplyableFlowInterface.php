@@ -1,7 +1,7 @@
 <?php
 namespace Onion\Framework\State\Interfaces;
 
-interface HistoricalFlowInterface extends FlowInterface
+interface ReplyableFlowInterface extends FlowInterface
 {
     public function reply(): void;
 }
