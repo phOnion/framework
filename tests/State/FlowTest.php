@@ -26,7 +26,7 @@ class FlowTest extends TestCase
         $t1 = $this->prophesize(TransitionInterface::class);
         $t1->getSource()->willReturn('bar')->shouldBeCalledOnce();
         $t1->getDestination()->willReturn('baz')->shouldBeCalledOnce();
-        $t1->__invoke(new TypeToken(\stdClass::class))->willReturn(true)->shouldBeCalledOnce();
+        $t1->__invoke()->willReturn(true)->shouldBeCalledOnce();
         $t1->withArguments(new TypeToken(\stdClass::class))->willReturn($t1->reveal())->shouldBeCalledOnce();
 
         $flow = new Flow('foo', 'bar');
@@ -46,7 +46,7 @@ class FlowTest extends TestCase
         $t1 = $this->prophesize(TransitionInterface::class);
         $t1->getSource()->willReturn('bar')->shouldBeCalledOnce();
         $t1->getDestination()->willReturn('baz')->shouldBeCalledOnce();
-        $t1->__invoke(new TypeToken(\stdClass::class))->willReturn(false)->shouldBeCalledOnce();
+        $t1->__invoke()->willReturn(false)->shouldBeCalledOnce();
         $t1->withArguments(new TypeToken(\stdClass::class))->willReturn($t1->reveal())->shouldBeCalledOnce();
 
         $flow = new Flow('foo', 'bar');
@@ -84,7 +84,7 @@ class FlowTest extends TestCase
         $t1 = $this->prophesize(TransitionInterface::class);
         $t1->getSource()->willReturn('foo')->shouldBeCalledOnce();
         $t1->getDestination()->willReturn('bar')->shouldBeCalledOnce();
-        $t1->__invoke(new TypeToken(\stdClass::class))->willThrow(new \Exception('OK'))->shouldBeCalledOnce();
+        $t1->__invoke()->willThrow(new \Exception('OK'))->shouldBeCalledOnce();
         $t1->withArguments(new TypeToken(\stdClass::class))->willReturn($t1->reveal())->shouldBeCalledOnce();
 
         $flow = new Flow('test', 'foo');

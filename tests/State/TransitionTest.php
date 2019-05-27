@@ -12,7 +12,6 @@ class TransitionTest extends TestCase
         $this->assertSame('foo', $transition->getSource());
         $this->assertSame('bar', $transition->getDestination());
         $this->assertFalse($transition->hasHandler());
-        $this->assertNull($transition->getHandler());
         $this->assertEmpty($transition->getArguments());
         $this->assertTrue($transition());
     }
