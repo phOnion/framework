@@ -36,7 +36,7 @@ class Transition implements TransitionInterface
         return $this->destination;
     }
 
-    public function getHandler(): ?callable
+    public function getHandler(): callable
     {
         return $this->handler;
     }

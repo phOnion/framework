@@ -15,7 +15,7 @@ class Flow implements Interfaces\FlowInterface
     /** @var string $initialState */
     private $initialState;
 
-    /** @var Transition[] $transitions */
+    /** @var TransitionInterface[] $transitions */
     private $transitions = [];
 
     private $history = [];
@@ -83,7 +83,7 @@ class Flow implements Interfaces\FlowInterface
         $this->getHistory()->add($transition);
 
         try {
-            if ($transition($target, ...$arguments)) {
+            if ($transition()) {
                 $this->state = $state;
                 return true;
             }

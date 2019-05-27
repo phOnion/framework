@@ -50,13 +50,12 @@ class ReplyableFlow implements ReplyableFlowInterface
     {
         $history = $this->getHistory();
         $this->reset();
-        $historyCount = count($history);
         foreach ($history as $index => $status) {
             list($state, $target, $args)=$status;
 
             if (!$this->apply($state, $target, ...$args)) {
                 throw new TransitionException(
-                    "Transition #{$index} of {$historyCount}: '{$this->getState()}' to '{$state}' did not succeed",
+                    "Transition #{$index}: '{$this->getState()}' to '{$state}' did not succeed",
                     $history
                 );
             }
