@@ -108,7 +108,6 @@ class Flow implements Interfaces\FlowInterface
         return $self;
     }
 
-
     public function getHistory(): HistoryInterface
     {
         return $this->history;

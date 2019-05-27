@@ -13,8 +13,12 @@ class Transition implements TransitionInterface
     private $handler;
     private $rollback;
 
-    public function __construct(string $source, string $destination, ?callable $handler = null, ?callable $rollback = null)
-    {
+    public function __construct(
+        string $source,
+        string $destination,
+        ?callable $handler = null,
+        ?callable $rollback = null
+    ) {
         $this->source = strtolower($source);
         $this->destination = strtolower($destination);
         $this->handler = $handler;
