@@ -18,7 +18,8 @@ class Transition implements TransitionInterface
         $this->source = strtolower($source);
         $this->destination = strtolower($destination);
         $this->handler = $handler;
-        $this->rollback = $rollback ?? function () {};
+        $this->rollback = $rollback ?? function () {
+        };
     }
 
     public function getSource(): string
