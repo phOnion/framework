@@ -78,7 +78,6 @@ class Flow implements Interfaces\FlowInterface
             );
         }
 
-
         $transition = $this->transitions[$key]->withArguments($target, ...$arguments);
         $this->getHistory()->add($transition);
 
