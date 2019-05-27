@@ -40,4 +40,29 @@ class TransitionTest extends TestCase
         $this->assertNotSame($transition, $transition->withArguments('baz'));
         $this->assertFalse(($transition->withArguments('baz'))());
     }
+
+    public function testRollbackFromHandlerResult()
+    {
+        $this->expectOutputString('OK');
+        $transition = (new Transition('foo', 'bar', function () {
+            return false;
+        }, function () {
+            echo 'OK';
+        }));
+
+        $this->assertFalse($transition->withArguments('foo')());
+    }
+
+    public function testRollbackFromHandlerException()
+    {
+        $this->expectOutputString('OK');
+        $transition = (new Transition('foo', 'bar', function () {
+            throw new \RuntimeException('ok');
+            return false;
+        }, function () {
+            echo 'OK';
+        }));
+
+        $this->assertFalse($transition->withArguments('foo')());
+    }
 }
