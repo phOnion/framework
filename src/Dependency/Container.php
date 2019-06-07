@@ -177,19 +177,17 @@ final class Container implements AttachableContainer
     {
         try {
             $type = $parameter->hasType() ? ((string) $parameter->getType()) : null;
-            if (is_string($type)) {
-                if ($this->has($type)) {
-                    return $this->get($type);
-                }
+            if (is_string($type) && $this->has($type)) {
+                return $this->delegate->get($type);
+            }
 
-                if (!$parameter->isOptional()) {
-                    return $this->get($this->convertVariableName($parameter->getName()));
-                }
+            if (!$parameter->isOptional()) {
+                return $this->delegate->get($this->convertVariableName($parameter->getName()));
             }
 
             if ($parameter->isOptional()) {
-                return $this->has($parameter->getName()) ?
-                    $this->get($parameter->getName()) : $parameter->getDefaultValue();
+                return $this->delegate->has($parameter->getName()) ?
+                    $this->delegate->get($parameter->getName()) : $parameter->getDefaultValue();
             }
         } catch (UnknownDependency $ex) {
             throw new ContainerErrorException(sprintf(
