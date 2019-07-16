@@ -9,6 +9,7 @@ use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use ReflectionType;
 
 /**
  * Class Container
@@ -176,13 +177,15 @@ final class Container implements AttachableContainer
     private function resolveReflectionParameter(\ReflectionParameter $parameter)
     {
         try {
-            $type = $parameter->hasType() ? ((string) $parameter->getType()) : null;
-            if (is_string($type) && $this->has($type)) {
-                return $this->delegate->get($type);
-            }
+            $type = $parameter->hasType() ? trim($this->formatType($parameter->getType()), '?') : null;
+            if (is_string($type)) {
+                if ($this->has($type)) {
+                    return $this->get($type);
+                }
 
-            if (!$parameter->isOptional()) {
-                return $this->delegate->get($this->convertVariableName($parameter->getName()));
+                if (!$parameter->isOptional()) {
+                    return $this->get($this->convertVariableName($parameter->getName()));
+                }
             }
 
             if ($parameter->isOptional()) {
@@ -294,5 +297,14 @@ final class Container implements AttachableContainer
     {
         return is_string($key) || is_scalar($key) ||
             (is_object($key) && method_exists($key, '__toString'));
+    }
+
+    private function formatType(?ReflectionType $type): string
+    {
+        if ($type === null) {
+            return 'any';
+        }
+
+        return $type->allowsNull() ? "?{$type}" : (string) $type;
     }
 }
