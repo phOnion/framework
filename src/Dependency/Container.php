@@ -176,11 +176,12 @@ final class Container implements AttachableContainer
      */
     private function resolveReflectionParameter(\ReflectionParameter $parameter)
     {
+        $type = $parameter->hasType() ? $this->formatType($parameter->getType()) : null;
         try {
-            $type = $parameter->hasType() ? trim($this->formatType($parameter->getType()), '?') : null;
             if (is_string($type)) {
-                if ($this->has($type)) {
-                    return $this->get($type);
+                $typeKey = trim($type, '?');
+                if ($this->has($typeKey)) {
+                    return $this->get($typeKey);
                 }
 
                 if (!$parameter->isOptional()) {
@@ -196,7 +197,7 @@ final class Container implements AttachableContainer
             throw new ContainerErrorException(sprintf(
                 'Unable to find match for type: "%s (%s)". Consider using a factory',
                 $parameter->getName(),
-                $parameter->getType() ?? ''
+                $type
             ), (int) $ex->getCode(), $ex);
         }
 
