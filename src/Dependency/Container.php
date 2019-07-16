@@ -9,6 +9,7 @@ use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use ReflectionType;
 
 /**
  * Class Container
@@ -17,10 +18,6 @@ use Psr\Container\NotFoundExceptionInterface;
  */
 final class Container implements AttachableContainer
 {
-    public const INVOKABLE_RESOLUTION = 1;
-    public const FACTORY_RESOLUTION = 2;
-    public const REFLECTION_RESOLUTION = 4;
-
     /** @var string[]|object[] $invokables */
     public $invokables = [];
     /** @var string[] $factories */
@@ -28,9 +25,6 @@ final class Container implements AttachableContainer
 
     /** @var string[] $shared */
     private $shared = [];
-
-    /** @var int $mode */
-    private $mode;
 
     /** @var ContainerInterface */
     private $delegate;
@@ -40,10 +34,8 @@ final class Container implements AttachableContainer
      *
      * @param array $dependencies
      */
-    public function __construct(array $dependencies, int $mode = self::INVOKABLE_RESOLUTION | self::FACTORY_RESOLUTION)
+    public function __construct(array $dependencies)
     {
-        $this->mode = $mode;
-
         $this->invokables = $dependencies['invokables'] ?? [];
         $this->factories = $dependencies['factories'] ?? [];
 
@@ -84,21 +76,19 @@ final class Container implements AttachableContainer
 
         $key = (string) $key;
         try {
-            if (($this->mode & self::INVOKABLE_RESOLUTION) === self::INVOKABLE_RESOLUTION &&
-                isset($this->invokables[$key])) {
+            if (isset($this->invokables[$key])) {
                 return $this->retrieveInvokable($key);
             }
 
-            if (($this->mode & self::FACTORY_RESOLUTION) === self::FACTORY_RESOLUTION &&
-                isset($this->factories[$key])) {
+            if (isset($this->factories[$key])) {
                 return $this->retrieveFromFactory($key);
             }
 
-            if (($this->mode & self::REFLECTION_RESOLUTION) === self::REFLECTION_RESOLUTION) {
+            if (class_exists($key)) {
                 return $this->retrieveFromReflection($key);
             }
         } catch (\RuntimeException | \InvalidArgumentException $ex) {
-            throw new ContainerErrorException($ex->getMessage(), 0, $ex);
+            throw new ContainerErrorException($ex->getMessage(), (int) $ex->getCode(), $ex);
         }
 
         throw new UnknownDependency(sprintf('Unable to resolve "%s"', $key));
@@ -186,11 +176,12 @@ final class Container implements AttachableContainer
      */
     private function resolveReflectionParameter(\ReflectionParameter $parameter)
     {
+        $type = $parameter->hasType() ? $this->formatType($parameter->getType()) : 'mixed';
         try {
-            $type = $parameter->hasType() ? ((string) $parameter->getType()) : null;
             if (is_string($type)) {
-                if ($this->has($type)) {
-                    return $this->get($type);
+                $typeKey = trim($type, '?');
+                if ($this->has($typeKey)) {
+                    return $this->get($typeKey);
                 }
 
                 if (!$parameter->isOptional()) {
@@ -199,15 +190,15 @@ final class Container implements AttachableContainer
             }
 
             if ($parameter->isOptional()) {
-                return $this->has($parameter->getName()) ?
-                    $this->get($parameter->getName()) : $parameter->getDefaultValue();
+                return $this->delegate->has($parameter->getName()) ?
+                    $this->delegate->get($parameter->getName()) : $parameter->getDefaultValue();
             }
         } catch (UnknownDependency $ex) {
             throw new ContainerErrorException(sprintf(
                 'Unable to find match for type: "%s (%s)". Consider using a factory',
                 $parameter->getName(),
-                $parameter->getType() ?? ''
-            ), 0, $ex);
+                $type
+            ), (int) $ex->getCode(), $ex);
         }
 
         throw new ContainerErrorException(sprintf(
@@ -307,5 +298,14 @@ final class Container implements AttachableContainer
     {
         return is_string($key) || is_scalar($key) ||
             (is_object($key) && method_exists($key, '__toString'));
+    }
+
+    private function formatType(?ReflectionType $type): string
+    {
+        if ($type === null) {
+            return 'mixed';
+        }
+
+        return $type->allowsNull() ? "?{$type}" : (string) $type;
     }
 }
