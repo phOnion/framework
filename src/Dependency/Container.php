@@ -176,7 +176,7 @@ final class Container implements AttachableContainer
      */
     private function resolveReflectionParameter(\ReflectionParameter $parameter)
     {
-        $type = $parameter->hasType() ? $this->formatType($parameter->getType()) : null;
+        $type = $parameter->hasType() ? $this->formatType($parameter->getType()) : 'mixed';
         try {
             if (is_string($type)) {
                 $typeKey = trim($type, '?');
@@ -303,7 +303,7 @@ final class Container implements AttachableContainer
     private function formatType(?ReflectionType $type): string
     {
         if ($type === null) {
-            return 'any';
+            return 'mixed';
         }
 
         return $type->allowsNull() ? "?{$type}" : (string) $type;
