@@ -279,7 +279,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         $container = new Container([]);
         $this->expectException(ContainerExceptionInterface::class);
         $this->expectExceptionMessage(
-            'Unable to resolve a class parameter "foo"'
+            'Unable to find match for type: "foo (mixed)"'
         );
         $container->get(DependencyH::class);
     }
