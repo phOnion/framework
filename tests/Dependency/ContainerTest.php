@@ -170,8 +170,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         $this->expectException(ContainerExceptionInterface::class);
         $container = new Container([
             'factories' =>  [
-                \stdClass::class => function () {
-                }
+                \stdClass::class => true,
             ]
         ]);
         $container->get(\stdClass::class);
@@ -373,6 +372,20 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
                 'D' => get_class($class),
             ],
         ]);
+        $this->assertTrue($container->has('D'));
+        $this->assertInstanceOf(DependencyD::class, $container->get('D'));
+    }
+
+    public function testClosureFactory()
+    {
+        $container = new Container([
+            'factories' => [
+                'D' => function () {
+                    return new DependencyD;
+                }
+            ]
+        ]);
+
         $this->assertTrue($container->has('D'));
         $this->assertInstanceOf(DependencyD::class, $container->get('D'));
     }

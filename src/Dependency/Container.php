@@ -215,11 +215,20 @@ final class Container implements AttachableContainer
     {
         $name = $this->factories[$className];
         assert(
-            is_string($name),
+            is_string($name) || is_callable($name),
             new ContainerErrorException(
                 "Registered factory for '{$className}' must be a valid FQCN, " . gettype($className) . ' given'
             )
         );
+
+        if (is_callable($name)) {
+            $result = $this->enforceReturnType($className, call_user_func($name, $this));
+            if (in_array($className, $this->shared, true)) {
+                $this->invokables[$className] = $result;
+            }
+
+            return $result;
+        }
 
         assert(
             class_exists($name),
