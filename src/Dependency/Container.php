@@ -87,6 +87,10 @@ final class Container implements AttachableContainer
             if (class_exists($key)) {
                 return $this->retrieveFromReflection($key);
             }
+
+            if ($this->delegate->has($key)) {
+                return $this->delegate->get($key);
+            }
         } catch (\RuntimeException | \InvalidArgumentException $ex) {
             throw new ContainerErrorException($ex->getMessage(), (int) $ex->getCode(), $ex);
         }
