@@ -221,7 +221,7 @@ final class Container implements AttachableContainer
         assert(
             is_string($name) || is_callable($name),
             new ContainerErrorException(
-                "Registered factory for '{$className}' must be a valid FQCN, " . gettype($className) . ' given'
+                "Registered factory for '{$className}' must be a valid FQCN, " . gettype($name) . ' given'
             )
         );
 
