@@ -4,10 +4,10 @@ namespace Onion\Framework\Dependency;
 use Psr\Container\ContainerInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
-use function Onion\merge;
 use Onion\Framework\Dependency\Interfaces\DelegateContainerInterface;
 use Onion\Framework\Dependency\Traits\ContainerTrait;
 use Onion\Framework\Dependency\Traits\DelegateContainerTrait;
+use function Onion\Framework\Common\merge;
 
 class ProxyContainer implements ContainerInterface, DelegateContainerInterface, \Countable
 {
