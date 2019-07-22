@@ -39,7 +39,6 @@ class ProxyContainer implements ContainerInterface, DelegateContainerInterface, 
                 }
 
                 $result = merge(($result ?? []), $r);
-
             } catch (ContainerExceptionInterface $ex) {
                 echo "{$ex->getMessage()}\n{$ex->getTraceAsString()}\n";
                 throw $ex;
