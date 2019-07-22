@@ -1,10 +1,12 @@
 <?php declare(strict_types=1);
 namespace Onion\Framework\Dependency;
 
-use Onion\Framework\Dependency\Exception\ContainerErrorException;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Psr\Container\ContainerInterface;
 use Psr\SimpleCache\CacheInterface;
+use Onion\Framework\Dependency\Interfaces\WrappingContainerInterface;
+use Onion\Framework\Dependency\Traits\WrappingContainerTrait;
+use Onion\Framework\Dependency\Traits\ContainerTrait;
 
 /**
  * Class CacheAwareContainer
@@ -16,22 +18,8 @@ use Psr\SimpleCache\CacheInterface;
  *
  * @package Onion\Framework\Dependency
  */
-class CacheAwareContainer implements ContainerInterface
+class CacheContainer implements ContainerInterface, WrappingContainerInterface
 {
-    /**
-     * A container which holds the dependencies
-     *
-     * @var ContainerInterface|null
-     */
-    private $container = null;
-
-    /**
-     * Factory for lazy initializing the container
-     *
-     * @var FactoryInterface
-     */
-    private $containerFactory;
-
     /**
      * The cache backend in which to store the dependencies
      *
@@ -49,6 +37,8 @@ class CacheAwareContainer implements ContainerInterface
      */
     private $blacklist;
 
+    use ContainerTrait, WrappingContainerTrait;
+
     /**
      * CacheAwareContainer constructor.
      * This is a composition-based extension to the regular container,
@@ -61,33 +51,11 @@ class CacheAwareContainer implements ContainerInterface
      * @param CacheInterface $cache Cache in which to store resolved deps
      * @param array $blacklist List of keys to not include in the cache
      */
-    public function __construct(FactoryInterface $factory, CacheInterface $cache, array $blacklist = [])
+    public function __construct(ContainerInterface $container, CacheInterface $cache, array $blacklist = [])
     {
-        $this->containerFactory = $factory;
+        $this->wrap($container);
         $this->cache = $cache;
         $this->blacklist = $blacklist;
-    }
-
-    /**
-     * Instantiate the container if not and return it
-     *
-     * @return ContainerInterface
-     */
-    private function resolveContainer(): ContainerInterface
-    {
-        if ($this->container === null) {
-            $container = $this->containerFactory->build($this);
-
-            if (!$container instanceof ContainerInterface) {
-                throw new \RuntimeException(
-                    "Invalid factory result, expected ContainerInterface"
-                );
-            }
-
-            $this->container = $container;
-        }
-
-        return $this->container;
     }
 
     /**
@@ -101,7 +69,7 @@ class CacheAwareContainer implements ContainerInterface
             return $this->cache->get($key);
         }
 
-        $dependency = $this->resolveContainer()->get($key);
+        $dependency = $this->getWrappedContainer()->get($key);
         if (!in_array($key, $this->blacklist, true)) {
             $this->cache->set($key, $dependency);
         }
@@ -115,6 +83,6 @@ class CacheAwareContainer implements ContainerInterface
      */
     public function has($key): bool
     {
-        return $this->cache->has($key) || $this->resolveContainer()->has($key);
+        return $this->cache->has($key) || $this->getWrappedContainer()->has($key);
     }
 }
