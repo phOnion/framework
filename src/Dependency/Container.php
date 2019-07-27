@@ -1,23 +1,23 @@
 <?php declare(strict_types=1);
 namespace Onion\Framework\Dependency;
 
+use Onion\Framework\Common\Dependency\Traits\AttachableContainerTrait;
+use Onion\Framework\Common\Dependency\Traits\ContainerTrait;
 use Onion\Framework\Dependency\Exception\ContainerErrorException;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
 use Onion\Framework\Dependency\Interfaces\AttachableContainer;
 use Onion\Framework\Dependency\Interfaces\FactoryBuilderInterface;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
-use Onion\Framework\Dependency\Traits\ContainerTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use Onion\Framework\Dependency\Traits\AttachableContainerTrait;
 
 /**
  * Class Container
  *
  * @package Onion\Framework\Dependency
  */
-final class Container implements AttachableContainer, ContainerInterface
+final class Container extends ReflectionContainer implements AttachableContainer, ContainerInterface
 {
     /** @var string[]|object[] $invokables */
     private $invokables = [];
@@ -27,9 +27,6 @@ final class Container implements AttachableContainer, ContainerInterface
 
     /** @var string[] $shared */
     private $shared = [];
-
-    /** @var ContainerInterface */
-    private $delegate;
 
     use ContainerTrait, AttachableContainerTrait;
 
@@ -42,12 +39,6 @@ final class Container implements AttachableContainer, ContainerInterface
     {
         $this->invokables = $dependencies['invokables'] ?? [];
         $this->factories = $dependencies['factories'] ?? [];
-
-        if (isset($dependencies['shared'])) {
-            $this->shared = $dependencies['shared'] ?? [];
-        }
-
-        $this->delegate = $this;
     }
 
     /**
@@ -80,8 +71,12 @@ final class Container implements AttachableContainer, ContainerInterface
                 return $this->retrieveFromFactory($key);
             }
 
-            if ($this->delegate->has($key)) {
-                return $this->delegate->get($key);
+            if (parent::has($key)) {
+                return parent::get($key);
+            }
+
+            if ($this->getDelegate()->has($key)) {
+                return $this->getDelegate()->get($key);
             }
         } catch (\RuntimeException | \InvalidArgumentException $ex) {
             throw new ContainerErrorException($ex->getMessage(), (int) $ex->getCode(), $ex);
@@ -108,7 +103,7 @@ final class Container implements AttachableContainer, ContainerInterface
         }
 
         $key = (string) $key;
-        return (isset($this->invokables[$key]) || isset($this->factories[$key]));
+        return (isset($this->invokables[$key]) || isset($this->factories[$key])) ?: parent::has($key);
     }
 
     /**
@@ -124,18 +119,13 @@ final class Container implements AttachableContainer, ContainerInterface
             return $this->enforceReturnType($className, $dependency);
         }
 
-        if (!$this->has($dependency)) {
+        if (!$this->has($dependency) && !parent::has($dependency)) {
             throw new UnknownDependency(
                 "Unable to resolve '{$dependency}'. Consider using a factory"
             );
         }
 
-        $result = $this->delegate->get($dependency);
-        if (in_array($className, $this->shared, true)) {
-            $this->invokables[$className] = $result;
-        }
-
-        return $this->enforceReturnType($className, $result);
+        return $this->enforceReturnType($className, parent::get($dependency));
     }
 
     /**
@@ -153,12 +143,7 @@ final class Container implements AttachableContainer, ContainerInterface
         );
 
         if (is_callable($name)) {
-            $result = $this->enforceReturnType($className, call_user_func($name, $this));
-            if (in_array($className, $this->shared, true)) {
-                $this->invokables[$className] = $result;
-            }
-
-            return $result;
+            return $this->enforceReturnType($className, call_user_func($name, $this));
         }
 
         assert(
@@ -176,13 +161,13 @@ final class Container implements AttachableContainer, ContainerInterface
             )
         );
 
-        $factory = $this->delegate->get($name);
+        $factory = $this->get($name);
         if ($factory instanceof FactoryBuilderInterface) {
-            $factory = $factory->build($this->delegate, $className);
+            $factory = $factory->build($this->getDelegate(), $className);
         }
 
         if ($factory instanceof FactoryInterface) {
-            $factoryResult = $factory->build($this->delegate);
+            $factoryResult = $factory->build($this->getDelegate());
         }
 
         if (!isset($factoryResult)) {
@@ -191,11 +176,6 @@ final class Container implements AttachableContainer, ContainerInterface
             );
         }
 
-        $result = $this->enforceReturnType($className, $factoryResult);
-        if (in_array($className, $this->shared, true)) {
-            $this->invokables[$className] = $result;
-        }
-
-        return $result;
+        return $this->enforceReturnType($className, $factoryResult);
     }
 }

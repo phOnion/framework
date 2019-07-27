@@ -1,19 +1,21 @@
 <?php
 namespace Onion\Framework\Dependency;
 
+use Onion\Framework\Common\Dependency\Traits\AttachableContainerTrait;
+use Onion\Framework\Common\Dependency\Traits\ContainerTrait;
+use Onion\Framework\Common\Dependency\Traits\WrappingContainerTrait;
 use Onion\Framework\Dependency\Inflector\Inflector;
 use Onion\Framework\Dependency\Inflector\Invocation;
-use Psr\Container\ContainerInterface;
+use Onion\Framework\Dependency\Interfaces\AttachableContainer;
 use Onion\Framework\Dependency\Interfaces\WrappingContainerInterface;
-use Onion\Framework\Dependency\Traits\WrappingContainerTrait;
-use Onion\Framework\Dependency\Traits\ContainerTrait;
+use Psr\Container\ContainerInterface;
 
-class InflectorContainer implements ContainerInterface, WrappingContainerInterface
+class InflectorContainer implements ContainerInterface, WrappingContainerInterface, AttachableContainer
 {
     /** @var Inflector[] */
     private $inflections = [];
 
-    use ContainerTrait, WrappingContainerTrait;
+    use ContainerTrait, WrappingContainerTrait, AttachableContainerTrait;
 
     public function inflect(string $key): Inflector
     {
@@ -33,6 +35,8 @@ class InflectorContainer implements ContainerInterface, WrappingContainerInterfa
             $result = $this->doInflect($result, $this->inflections[$id]);
         } else {
             foreach ($this->inflections as $id => $values) {
+                $id = (string) $id;
+
                 if ($result instanceof $id) {
                     $result = $this->doInflect($result, $values);
                 }

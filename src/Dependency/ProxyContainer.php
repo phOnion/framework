@@ -1,13 +1,14 @@
 <?php declare(strict_types=1);
 namespace Onion\Framework\Dependency;
 
-use Psr\Container\ContainerInterface;
-use Psr\Container\ContainerExceptionInterface;
+use function Onion\Framework\Common\merge;
+use Onion\Framework\Common\Dependency\Traits\ContainerTrait;
+use Onion\Framework\Common\Dependency\Traits\DelegateContainerTrait;
+use Onion\Framework\Dependency\Exception\ContainerErrorException;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
 use Onion\Framework\Dependency\Interfaces\DelegateContainerInterface;
-use Onion\Framework\Dependency\Traits\ContainerTrait;
-use Onion\Framework\Dependency\Traits\DelegateContainerTrait;
-use function Onion\Framework\Common\merge;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
 
 class ProxyContainer implements ContainerInterface, DelegateContainerInterface, \Countable
 {
@@ -28,7 +29,7 @@ class ProxyContainer implements ContainerInterface, DelegateContainerInterface, 
 
         $result = null;
         if (empty($resolvers)) {
-            throw new UnknownDependency("Unable to resolve dependency '{$id}'");
+            throw new UnknownDependency("Unable to resolve '{$id}'");
         }
 
         foreach ($resolvers as $resolver) {
@@ -40,9 +41,12 @@ class ProxyContainer implements ContainerInterface, DelegateContainerInterface, 
 
                 $result = merge(($result ?? []), $r);
             } catch (ContainerExceptionInterface $ex) {
-                echo "{$ex->getMessage()}\n{$ex->getTraceAsString()}\n";
-                throw $ex;
+                //
             }
+        }
+
+        if ($result === null) {
+            throw new ContainerErrorException("Unable to resolve '{$id}'");
         }
 
         return $result;
