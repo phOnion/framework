@@ -7,6 +7,7 @@ use Onion\Framework\Http\RequestHandler\RequestHandler;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\MiddlewareInterface;
+use function Onion\Framework\Common\generator;
 
 class RequestHandlerFactory implements FactoryInterface
 {
@@ -32,7 +33,7 @@ class RequestHandlerFactory implements FactoryInterface
         };
 
         return new RequestHandler(
-            $middlewareGenerator(),
+            generator($middlewareGenerator),
             $container->has(ResponseInterface::class) ?
                 $container->get(ResponseInterface::class) : new Response()
         );
