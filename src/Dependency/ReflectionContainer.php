@@ -6,7 +6,6 @@ use Onion\Framework\Common\Dependency\Traits\ContainerTrait;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
 use Onion\Framework\Dependency\Interfaces\AttachableContainer;
 use Psr\Container\ContainerInterface;
-use ReflectionClass;
 
 class ReflectionContainer implements ContainerInterface, AttachableContainer
 {
@@ -19,7 +18,7 @@ class ReflectionContainer implements ContainerInterface, AttachableContainer
             new \InvalidArgumentException("Provided key, '{$class}' is invalid")
         );
 
-        $reflection = new ReflectionClass($class);
+        $reflection = new \ReflectionClass($class);
         $constructor = $reflection->getConstructor();
 
         if ($constructor === null) {
@@ -33,33 +32,29 @@ class ReflectionContainer implements ContainerInterface, AttachableContainer
 
             $type = trim($rawType, '?');
             $name = (string) $parameter->getName();
-            $transformedType = $this->convertVariableName($type);
             $transformedName = $this->convertVariableName($name);
-
-            if ($this->has($type) && !$parameter->getType()->isBuiltin()) {
-                try {
-                    $parameters[$parameter->getPosition()] = $this->get($type);
-                } catch (UnknownDependency $ex) {
-                    if ($parent->has($type) && !$parameter->getType()->isBuiltin()) {
+            try {
+                if ($this->has($type) && !$parameter->getType()->isBuiltin()) {
+                    try {
+                        $parameters[$parameter->getPosition()] = $this->get($type);
+                    } catch (UnknownDependency $ex) {
                         $parameters[$parameter->getPosition()] = $parent->get($type);
-                    } elseif ($parent->has($transformedType) && !$parameter->getType()->isBuiltin()) {
-                        $parameters[$parameter->getPosition()] = $parent->get($transformedType);
-                    } elseif ($parent->has($name)) {
-                        $parameters[$parameter->getPosition()] = $parent->get($name);
-                    } elseif ($parent->has($transformedName)) {
-                        $parameters[$parameter->getPosition()] = $parent->get($transformedName);
-                    } elseif ($parameter->isOptional()) {
-                        $parameters[$parameter->getPosition()] = $parameter->getDefaultValue();
-                    } else {
-                        throw new UnknownDependency("Unable to resolve parameter {$parameter->getName()} ({$rawType}) of {$class}");
                     }
+                } elseif ($parent->has($type) && !$parameter->getType()->isBuiltin()) {
+                    try {
+                        $parameters[$parameter->getPosition()] = $parent->get($type);
+                    } catch (UnknownDependency $ex) {
+                        $parameters[$parameter->getPosition()] = $parent->get($transformedName);
+                    }
+                } elseif ($parent->has($transformedName)) {
+                    $parameters[$parameter->getPosition()] = $parent->get($transformedName);
+                } elseif ($parameter->isOptional()) {
+                    $parameters[$parameter->getPosition()] = $parameter->getDefaultValue();
+                } else {
+                    throw new UnknownDependency("Unable to resolve parameter {$parameter->getName()} ({$rawType}) of {$class}");
                 }
-            } else {
-                if (!$parameter->isOptional()) {
-                    throw new UnknownDependency("Unable to resolve {$class}");
-                }
-
-                $parameters[$parameter->getPosition()] = $parameter->getDefaultValue();
+            } catch (UnknownDependency $ex) {
+                throw new UnknownDependency("Unable to resolve {$class}, missing \${$name}({$type})", 0, $ex);
             }
         }
 
@@ -73,6 +68,7 @@ class ReflectionContainer implements ContainerInterface, AttachableContainer
             new \InvalidArgumentException("Provided key, '{$class}' is invalid")
         );
 
-        return class_exists($class, true) || in_array($class, get_declared_classes());
+        return class_exists($class, true) ||
+            in_array($class, get_declared_classes());
     }
 }
