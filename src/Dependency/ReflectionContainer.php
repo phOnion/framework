@@ -55,7 +55,11 @@ class ReflectionContainer implements ContainerInterface, AttachableContainer
                     }
                 }
             } else {
-                throw new UnknownDependency("Unable to resolve {$class}");
+                if (!$parameter->isOptional()) {
+                    throw new UnknownDependency("Unable to resolve {$class}");
+                }
+
+                $parameters[$parameter->getPosition()] = $parameter->getDefaultValue();
             }
         }
 
