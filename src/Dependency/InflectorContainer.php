@@ -12,7 +12,7 @@ use Psr\Container\ContainerInterface;
 
 class InflectorContainer implements ContainerInterface, WrappingContainerInterface, AttachableContainer
 {
-    /** @var Inflector[] */
+    /** @var Inflector[][] */
     private $inflections = [];
 
     use ContainerTrait, WrappingContainerTrait, AttachableContainerTrait;
