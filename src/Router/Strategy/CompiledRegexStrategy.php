@@ -42,7 +42,7 @@ class CompiledRegexStrategy implements ResolverInterface
                     ))
                 );
 
-                $expansion = str_repeat('()', --$length);
+                $expansion = str_repeat('()', $length++);
                 $segments[] = "{$pattern}{$expansion}";
                 $index = ($length + count($params));
                 $handlers[$index] = [$route, $params];
@@ -93,7 +93,6 @@ class CompiledRegexStrategy implements ResolverInterface
 
                 $params[] = $matches['name'];
                 $path .= '/(' . (!empty($matches['pattern']) ? $matches['pattern'] : '[^/]+') . ')';
-                $patterns[$path] = $params;
 
                 continue;
             }
@@ -113,9 +112,7 @@ class CompiledRegexStrategy implements ResolverInterface
                 continue;
             }
 
-            array_shift($matches);
             $index = count($matches);
-
             $matches = array_filter($matches, function ($value) {
                 return $value[0] !== '';
             });
