@@ -7,7 +7,6 @@ use Onion\Framework\Common\Dependency\Traits\DelegateContainerTrait;
 use Onion\Framework\Dependency\Exception\ContainerErrorException;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
 use Onion\Framework\Dependency\Interfaces\DelegateContainerInterface;
-use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 
 class ProxyContainer implements ContainerInterface, DelegateContainerInterface, \Countable
@@ -40,8 +39,8 @@ class ProxyContainer implements ContainerInterface, DelegateContainerInterface, 
                 }
 
                 $result = merge(($result ?? []), $r);
-            } catch (ContainerExceptionInterface $ex) {
-                //
+            } catch (ContainerErrorException $ex) {
+                continue;
             }
         }
 
