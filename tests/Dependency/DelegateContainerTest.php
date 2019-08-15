@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 namespace Tests\Dependency;
 
-use Onion\Framework\Dependency\DelegateContainer;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
 use Onion\Framework\Dependency\Interfaces\AttachableContainer as Container;
+use Onion\Framework\Dependency\ProxyContainer;
 use Prophecy\Argument\Token\AnyValueToken;
 
 class DelegateContainerTest extends \PHPUnit\Framework\TestCase
@@ -11,31 +11,37 @@ class DelegateContainerTest extends \PHPUnit\Framework\TestCase
     public function testBasicConstruction()
     {
         $c = $this->prophesize(Container::class);
-        $this->assertCount(2, new DelegateContainer([
-            $c->reveal(),
-            $c->reveal()
-        ]));
+        $proxy = new ProxyContainer;
+        $proxy->attach($c->reveal());
+        $proxy->attach($c->reveal());
+        $this->assertCount(2, $proxy);
     }
 
     public function testExistanceInNthContainer()
     {
         $c = $this->prophesize(Container::class);
-        $c->attach(new AnyValueToken())->willReturn(null)->shouldBeCalledTimes(4);
+        $c->attach(new AnyValueToken())->shouldBeCalledTimes(4);
         $c1 = $c->reveal();
         $c->has('foo')->willReturn(true);
 
-        $this->assertTrue((
-            new DelegateContainer([$c1, $c1, $c->reveal(), $c1])
-        )->has('foo'));
+        $delegate = new ProxyContainer;
+        $delegate->attach($c1);
+        $delegate->attach($c1);
+        $delegate->attach($c->reveal());
+        $delegate->attach($c1);
+        $this->assertTrue($delegate->has('foo'));
     }
 
     public function testRetrievalFromNthContainer()
     {
         $c = $this->prophesize(Container::class);
         $c->has('foo')->willReturn(false);
-        $c->attach(new AnyValueToken())->willReturn(null)->shouldBeCalledTimes(2);
+        $c->attach(new AnyValueToken())->shouldBeCalledTimes(2);
 
-        $delegate = new DelegateContainer([$c->reveal(), $c->reveal()]);
+        $delegate = new ProxyContainer;
+        $delegate->attach($c->reveal());
+        $delegate->attach($c->reveal());
+
         $this->assertFalse($delegate->has('foo'));
 
         $this->expectException(UnknownDependency::class);
@@ -51,7 +57,7 @@ class DelegateContainerTest extends \PHPUnit\Framework\TestCase
             'foo' => 'bar',
         ]);
         $c->has('foo')->willReturn(false);
-        $c->attach(new AnyValueToken())->willReturn(null)->shouldBeCalledOnce();
+        $c->attach(new AnyValueToken())->shouldBeCalledOnce();
 
         $c1 = $this->prophesize(Container::class);
         $c1->has('list')->willReturn(true);
@@ -60,9 +66,11 @@ class DelegateContainerTest extends \PHPUnit\Framework\TestCase
         ]);
         $c1->has('foo')->willReturn(true);
         $c1->get('foo')->willReturn('bar');
-        $c1->attach(new AnyValueToken())->willReturn(null)->shouldBeCalledOnce();
+        $c1->attach(new AnyValueToken())->shouldBeCalledOnce();
 
-        $container = new DelegateContainer([$c->reveal(), $c1->reveal()]);
+        $container = new ProxyContainer;
+        $container->attach($c->reveal());
+        $container->attach($c1->reveal());
 
         $this->assertSame([
             'foo' => 'bar',
@@ -73,7 +81,7 @@ class DelegateContainerTest extends \PHPUnit\Framework\TestCase
 
     public function testRetrievalExceptionWithoutContainers()
     {
-        $delegate = new DelegateContainer([]);
+        $delegate = new ProxyContainer();
         $this->assertFalse($delegate->has('foo'));
 
         $this->expectException(UnknownDependency::class);
