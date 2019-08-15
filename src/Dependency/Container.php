@@ -54,14 +54,14 @@ final class Container extends ReflectionContainer implements AttachableContainer
      */
     public function get($key)
     {
-        if (!$this->isKeyValid($key)) {
-            throw new \InvalidArgumentException(sprintf(
+        assert(
+            $this->isKeyValid($key),
+            new \InvalidArgumentException(sprintf(
                 'Provided key must be a string, %s given',
                 gettype($key)
-            ));
-        }
+            ))
+        );
 
-        $key = (string) $key;
         try {
             if (isset($this->invokables[$key])) {
                 return $this->retrieveInvokable($key);
@@ -79,7 +79,7 @@ final class Container extends ReflectionContainer implements AttachableContainer
                 return $this->getDelegate()->get($key);
             }
         } catch (\RuntimeException | \InvalidArgumentException $ex) {
-            throw new ContainerErrorException($ex->getMessage(), (int) $ex->getCode(), $ex);
+            throw new ContainerErrorException($ex->getMessage(), 0, $ex);
         }
 
         throw new UnknownDependency(sprintf('Unable to resolve "%s"', $key));
@@ -102,7 +102,6 @@ final class Container extends ReflectionContainer implements AttachableContainer
             ));
         }
 
-        $key = (string) $key;
         return (isset($this->invokables[$key]) || isset($this->factories[$key])) ?: parent::has($key);
     }
 
@@ -119,7 +118,7 @@ final class Container extends ReflectionContainer implements AttachableContainer
             return $this->enforceReturnType($className, $dependency);
         }
 
-        if (!$this->has($dependency) && !parent::has($dependency)) {
+        if (!$this->has($dependency)) {
             throw new UnknownDependency(
                 "Unable to resolve '{$dependency}'. Consider using a factory"
             );
