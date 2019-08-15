@@ -46,7 +46,6 @@ final class RequestHandler implements RequestHandlerInterface
             throw new \RuntimeException('No base response provided');
         }
 
-        $this->middleware->rewind();
         return $this->response;
     }
 }
