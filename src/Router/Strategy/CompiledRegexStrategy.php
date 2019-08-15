@@ -27,7 +27,7 @@ class CompiledRegexStrategy implements ResolverInterface
             );
         }
 
-        $length = $maxGroupCount;
+        $length = 0;
         $segments = [];
         $handlers = [];
 
@@ -44,10 +44,10 @@ class CompiledRegexStrategy implements ResolverInterface
 
                 $expansion = str_repeat('()', $length++);
                 $segments[] = "{$pattern}{$expansion}";
-                $index = ($length + count($params));
+                $index = ($length + count($params) - 1);
                 $handlers[$index] = [$route, $params];
 
-                if ($length === 0) {
+                if ($length === $maxGroupCount) {
                     $this->routes['(?|' . implode('|', $segments) . ')'] = $handlers;
                     $segments = [];
                     $handlers = [];
@@ -112,6 +112,7 @@ class CompiledRegexStrategy implements ResolverInterface
                 continue;
             }
 
+            array_shift($matches);
             $index = count($matches);
             $matches = array_filter($matches, function ($value) {
                 return $value[0] !== '';
