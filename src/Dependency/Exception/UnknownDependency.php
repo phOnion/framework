@@ -8,6 +8,6 @@ use Psr\Container\NotFoundExceptionInterface;
  *
  * @package Onion\Framework\Dependency\Exception
  */
-class UnknownDependency extends \Exception implements NotFoundExceptionInterface
+class UnknownDependency extends ContainerErrorException implements NotFoundExceptionInterface
 {
 }
