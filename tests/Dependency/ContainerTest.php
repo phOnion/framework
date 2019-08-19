@@ -9,6 +9,7 @@ use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use stdClass;
 use Tests\Dependency\Doubles\DependencyA;
 use Tests\Dependency\Doubles\DependencyB;
 use Tests\Dependency\Doubles\DependencyC;
@@ -161,12 +162,12 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf(DependencyD::class, $container->get(DependencyD::class));
     }
 
-    public function testDependencyResolutionFromReflectionException()
+    public function testDependencyTypeResolutionFromReflectionException()
     {
         $this->expectException(ContainerErrorException::class);
         $this->expectExceptionMessage('c(' . DependencyC::class . ')');
         $container = new Container([]);
-        $this->assertInstanceOf(DependencyD::class, $container->get(DependencyA::class));
+        $container->get(DependencyA::class);
     }
 
     public function testDependencyLookupWhenBoundToInterface()
@@ -295,7 +296,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf(DependencyD::class, $container->get('D'));
     }
 
-    public function testSad()
+    public function testNonExistingDependency()
     {
         $container = new Container([]);
         $this->expectException(ContainerErrorException::class);
