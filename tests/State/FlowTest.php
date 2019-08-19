@@ -1,12 +1,12 @@
 <?php
 namespace Tests\State;
 
-use PHPUnit\Framework\TestCase;
-use Onion\Framework\State\Flow;
-use Onion\Framework\State\Interfaces\TransitionInterface;
-use Prophecy\Argument\Token\TypeToken;
-use Onion\Framework\State\Interfaces\HistoryInterface;
 use Onion\Framework\State\Exceptions\TransitionException;
+use Onion\Framework\State\Flow;
+use Onion\Framework\State\Interfaces\HistoryInterface;
+use Onion\Framework\State\Interfaces\TransitionInterface;
+use PHPUnit\Framework\TestCase;
+use Prophecy\Argument\Token\TypeToken;
 use stdClass;
 
 class FlowTest extends TestCase
@@ -31,6 +31,7 @@ class FlowTest extends TestCase
         $this->assertTrue($flow->apply('baz', new stdClass));
         $this->assertNotSame($flow, $flow->reset());
         $this->assertNotSame($flow->getState(), $flow->reset()->getState());
+        $this->assertTrue($flow->reset()->can('baz'));
     }
 
     public function testBaseTransitioning()

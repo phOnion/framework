@@ -81,8 +81,6 @@ class Transition implements TransitionInterface
 
                 return false;
             }
-
-            return false;
         }, ...$this->getArguments());
     }
 }

@@ -1,8 +1,8 @@
 <?php
 namespace Tests\State;
 
-use PHPUnit\Framework\TestCase;
 use Onion\Framework\State\Transition;
+use PHPUnit\Framework\TestCase;
 
 class TransitionTest extends TestCase
 {
@@ -63,5 +63,11 @@ class TransitionTest extends TestCase
         }));
 
         $this->assertFalse($transition->withArguments('foo')());
+    }
+
+    public function testResultWithNoCallable()
+    {
+        $transition = new Transition('foo', 'bar');
+        $this->assertTrue($transition->withArguments()());
     }
 }

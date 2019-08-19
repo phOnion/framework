@@ -49,13 +49,15 @@ class ReplyableFlow implements ReplyableFlowInterface
     public function reply(): void
     {
         $history = $this->getHistory();
-        $this->reset();
+        $this->wrapped = $this->reset();
         foreach ($history as $index => $status) {
-            list($state, $target, $args)=$status;
+            /** @var TransitionInterface $status */
+            $args = $status->getArguments();
+            $target = array_shift($args);
 
-            if (!$this->apply($state, $target, ...$args)) {
+            if (!$this->apply($status->getDestination(), $target, ...$args)) {
                 throw new TransitionException(
-                    "Transition #{$index}: '{$this->getState()}' to '{$state}' did not succeed",
+                    "Transition #{$index}: '{$this->getState()}' to '{$status->getDestination()}' did not succeed",
                     $history
                 );
             }
