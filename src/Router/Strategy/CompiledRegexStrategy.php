@@ -17,22 +17,11 @@ class CompiledRegexStrategy implements ResolverInterface
      */
     public function __construct(iterable $routes, int $maxGroupCount)
     {
-        if (is_array($routes)) {
-            $routes = new \ArrayIterator($routes);
-        }
-
-        if (!$routes instanceof \Iterator) {
-            throw new \InvalidArgumentException(
-                'Expected value should be either an array or an \Iterator implementation'
-            );
-        }
-
         $length = 0;
         $segments = [];
         $handlers = [];
 
-        while ($routes->valid()) {
-            $route = $routes->current();
+        foreach ($routes as $route) {
             foreach ($this->compile($route->getPattern()) as $pattern => $params) {
                 assert(
                     !isset($this->routes[$pattern]),
@@ -54,9 +43,8 @@ class CompiledRegexStrategy implements ResolverInterface
                     $length = $maxGroupCount;
                 }
             }
-
-            $routes->next();
         }
+
         if ($segments !== []) {
             $this->routes['(?|' . implode('|', $segments) . ')'] = $handlers;
         }
