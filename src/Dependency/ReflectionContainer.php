@@ -43,12 +43,6 @@ class ReflectionContainer implements ContainerInterface, AttachableContainer
                     } catch (UnknownDependency $ex) {
                         $parameters[$parameter->getPosition()] = $parent->get($type);
                     }
-                } elseif ($typeReflection !== null && $parent->has($type) && !$typeReflection->isBuiltin()) {
-                    try {
-                        $parameters[$parameter->getPosition()] = $parent->get($type);
-                    } catch (UnknownDependency $ex) {
-                        $parameters[$parameter->getPosition()] = $parent->get($transformedName);
-                    }
                 } elseif ($parent->has($transformedName)) {
                     $parameters[$parameter->getPosition()] = $parent->get($transformedName);
                 } elseif ($parameter->isOptional()) {
