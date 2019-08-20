@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 namespace Onion\Framework\State\Exceptions;
 
 use Onion\Framework\State\Interfaces\HistoryInterface;

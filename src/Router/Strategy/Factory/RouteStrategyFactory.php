@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 namespace Onion\Framework\Router\Strategy\Factory;
 
 use function Onion\Framework\Common\generator;

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 namespace Onion\Framework\Dependency;
 
 use Onion\Framework\Common\Dependency\Traits\AttachableContainerTrait;
@@ -71,6 +71,6 @@ class ReflectionContainer implements ContainerInterface, AttachableContainer
             new \InvalidArgumentException("Provided key, '{$class}' is invalid")
         );
 
-        return class_exists($class, true);
+        return class_exists((string) $class, true);
     }
 }

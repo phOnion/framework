@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 namespace Onion\Framework\Router\Interfaces;
 
 use Onion\Framework\Router\Interfaces\RouteInterface;

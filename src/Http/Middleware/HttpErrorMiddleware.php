@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 namespace Onion\Framework\Http\Middleware;
 
 use GuzzleHttp\Psr7\Response;

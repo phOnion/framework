@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 namespace Onion\Framework\Http\Middleware;
 
 use Onion\Framework\Http\Emitter\Interfaces\EmitterInterface;

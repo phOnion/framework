@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 namespace Onion\Framework\Router\Strategy;
 
 use function Onion\Framework\Common\merge;
@@ -48,7 +48,7 @@ class TreeStrategy implements ResolverInterface
         $part = array_shift($parts);
 
         foreach ($routes as $segment => $remaining) {
-            $compiled = $this->compile($segment);
+            $compiled = $this->compile((string) $segment);
 
             foreach ($compiled as $segment => $param) {
                 $segment = trim($segment, '/');

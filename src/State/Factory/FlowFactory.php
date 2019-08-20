@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 namespace Onion\Framework\State\Factory;
 
 use Onion\Framework\Common\Config\Container;
