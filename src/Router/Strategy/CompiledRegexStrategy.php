@@ -63,7 +63,7 @@ class CompiledRegexStrategy implements ResolverInterface
             throw new MethodNotAllowedException($route->getMethods());
         }
 
-        return $route->withParameters($params ?? []);
+        return $route->withParameters($params);
     }
 
     private function compile(string $pattern): array
