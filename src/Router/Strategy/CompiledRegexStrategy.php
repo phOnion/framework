@@ -96,7 +96,7 @@ class CompiledRegexStrategy implements ResolverInterface
     private function match(string $path, array &$params = []): ?RouteInterface
     {
         foreach ($this->routes as $pattern => $definition) {
-            if (!preg_match('~^'.$pattern.'$~', $path, $matches, PREG_OFFSET_CAPTURE)) {
+            if (!preg_match('~^' . $pattern . '$~', $path, $matches, PREG_OFFSET_CAPTURE)) {
                 continue;
             }
 

@@ -20,7 +20,7 @@ class Accept implements Interfaces\AcceptInterface
         $this->name = $name;
         $this->value = $headerValue;
 
-        $contentTypes=explode(',', $headerValue);
+        $contentTypes = explode(',', $headerValue);
 
         foreach ($contentTypes as $pair) {
             if (preg_match(
