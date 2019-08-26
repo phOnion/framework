@@ -44,10 +44,10 @@
         "onion/swoole": "A compatibility layer to add support for SWOOLE app-server"
     },
     "scripts": {
-        "fix": "phpcbf --standard=psr2 src/",
-        "lint": "phpcs --standard=psr2 src/",
+        "fix": "phpcbf --standard=psr12 src/",
+        "lint": "phpcs --standard=psr12 src/",
         "test": "phpunit --coverage-text --coverage-html=build/",
-        "psalm": "psalm --show-info=false",
+        "psalm": "psalm",
         "infect": "infection -j4 --min-msi=85 --min-covered-msi=95",
         "qa": [
             "@fix",

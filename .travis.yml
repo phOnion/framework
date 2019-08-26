@@ -17,7 +17,7 @@ install:
  - composer install -o --no-interaction --prefer-dist $EXTRA_COMPOSER_ARGS
 script:
 - vendor/bin/phpunit --bootstrap vendor/autoload.php --coverage-clover=coverage.xml --process-isolation
-- vendor/bin/phpcs src/ --standard=psr2
+- vendor/bin/phpcs src/ --standard=psr12
 - vendor/bin/psalm --show-info=false
 - vendor/bin/infection $EXTRA_INFECTION_OPTIONS --min-msi=85 --min-covered-msi=95
 after_success:
