@@ -26,6 +26,14 @@ final class RequestHandler implements RequestHandlerInterface
         $this->response = $response;
     }
 
+    public function __clone()
+    {
+        $this->middleware = clone $this->middleware;
+        if ($this->response !== null) {
+            $this->response = clone $this->response;
+        }
+    }
+
     /**
      * @param Message\ServerRequestInterface $request
      *
