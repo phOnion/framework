@@ -9,8 +9,6 @@ matrix:
       env: EXTRA_INFECTION_OPTIONS='-q' EXTRA_COMPOSER_ARGS=''
     - php: '7.3'
       env: EXTRA_INFECTION_OPTIONS='-q' EXTRA_COMPOSER_ARGS=''
-    - php: '7.4'
-      env: EXTRA_INFECTION_OPTIONS='-q' EXTRA_COMPOSER_ARGS=''
     - php: 'nightly'
       env: EXTRA_INFECTION_OPTIONS='--show-mutations' EXTRA_COMPOSER_ARGS='--ignore-platform-reqs'
   allow_failures:
