@@ -38,6 +38,9 @@ class RouteStrategyFactory implements FactoryInterface
                 $object = (new Route($route['pattern'], $route['name'] ?? $route['pattern']))
                     ->withMethods($route['methods'] ?? ['GET', 'HEAD'])
                     ->withHeaders($route['headers'] ?? []);
+                foreach ($route['preload'] ?? [] as $link => $kind) {
+                    $object = $object->withPreload($link, $kind);
+                }
 
                 $responseTemplate = $container->has(ResponseInterface::class) ?
                     $container->get(ResponseInterface::class) : new Response();
