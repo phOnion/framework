@@ -1,4 +1,7 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
 namespace Onion\Framework\Router;
 
 use Onion\Framework\Http\Header\Accept;
@@ -162,9 +165,12 @@ class Route implements RouteInterface
             ->handle($request->withAttribute('route', $this));
 
         foreach ($this->preload as $link => $props) {
-            $response = $response->withAddedHeader('Link', "<{$link}>; " . implode('; ', array_map(function ($key) use ($props) {
-                return "{$key}={$props[$key]}";
-            }, array_keys($props))));
+            $response = $response->withAddedHeader(
+                'Link',
+                "<{$link}>; " . implode('; ', array_map(function ($key) use ($props) {
+                    return "{$key}={$props[$key]}";
+                }, array_keys($props)))
+            );
         }
 
         return $response;

@@ -1,4 +1,7 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
 namespace Onion\Framework\Dependency;
 
 use Onion\Framework\Common\Dependency\Traits\AttachableContainerTrait;
@@ -19,6 +22,9 @@ use Psr\Container\NotFoundExceptionInterface;
  */
 final class Container extends ReflectionContainer implements AttachableContainer, ContainerInterface
 {
+    use ContainerTrait;
+    use AttachableContainerTrait;
+
     /** @var string[]|object[] $invokables */
     private $invokables = [];
 
@@ -27,8 +33,6 @@ final class Container extends ReflectionContainer implements AttachableContainer
 
     /** @var string[] $shared */
     private $shared = [];
-
-    use ContainerTrait, AttachableContainerTrait;
 
     /**
      * Container constructor.

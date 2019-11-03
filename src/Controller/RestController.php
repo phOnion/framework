@@ -1,5 +1,8 @@
-<?php declare(strict_types=1);
+<?php
+
 declare(strict_types=1);
+declare(strict_types=1);
+
 namespace Onion\Framework\Controller;
 
 use GuzzleHttp\Psr7\Stream;

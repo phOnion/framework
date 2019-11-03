@@ -1,4 +1,7 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
 namespace Onion\Framework\Application;
 
 use Onion\Framework\Application\Interfaces\ApplicationInterface;

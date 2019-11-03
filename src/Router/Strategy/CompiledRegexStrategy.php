@@ -1,4 +1,7 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
 namespace Onion\Framework\Router\Strategy;
 
 use Onion\Framework\Router\Exceptions\MethodNotAllowedException;

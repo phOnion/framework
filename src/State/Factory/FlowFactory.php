@@ -1,4 +1,7 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
 namespace Onion\Framework\State\Factory;
 
 use Onion\Framework\Common\Config\Container;
@@ -12,7 +15,7 @@ class FlowFactory implements FactoryBuilderInterface
 {
     public function build(ContainerInterface $container, string $key): FactoryInterface
     {
-        return new class($key, $container->get("states.{$key}")) implements FactoryInterface {
+        return new class ($key, $container->get("states.{$key}")) implements FactoryInterface {
             private $name;
             private $states;
 

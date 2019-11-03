@@ -1,7 +1,9 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
 namespace Onion\Framework\Dependency;
 
-use function Onion\Framework\Common\merge;
 use Onion\Framework\Common\Dependency\Traits\ContainerTrait;
 use Onion\Framework\Common\Dependency\Traits\DelegateContainerTrait;
 use Onion\Framework\Dependency\Exception\ContainerErrorException;
@@ -9,9 +11,12 @@ use Onion\Framework\Dependency\Exception\UnknownDependency;
 use Onion\Framework\Dependency\Interfaces\DelegateContainerInterface;
 use Psr\Container\ContainerInterface;
 
+use function Onion\Framework\Common\merge;
+
 class ProxyContainer implements ContainerInterface, DelegateContainerInterface, \Countable
 {
-    use ContainerTrait, DelegateContainerTrait;
+    use ContainerTrait;
+    use DelegateContainerTrait;
 
     public function get($id)
     {

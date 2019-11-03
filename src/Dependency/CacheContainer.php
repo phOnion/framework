@@ -1,4 +1,7 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
 namespace Onion\Framework\Dependency;
 
 use Onion\Framework\Common\Dependency\Traits\ContainerTrait;
@@ -20,6 +23,9 @@ use Psr\SimpleCache\CacheInterface;
  */
 class CacheContainer implements ContainerInterface, WrappingContainerInterface
 {
+    use ContainerTrait;
+    use WrappingContainerTrait;
+
     /**
      * The cache backend in which to store the dependencies
      *
@@ -36,8 +42,6 @@ class CacheContainer implements ContainerInterface, WrappingContainerInterface
      * @var string[]
      */
     private $blacklist;
-
-    use ContainerTrait, WrappingContainerTrait;
 
     /**
      * CacheAwareContainer constructor.

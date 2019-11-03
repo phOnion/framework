@@ -1,4 +1,7 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
 namespace Onion\Framework\Router\Exceptions;
 
 use Onion\Framework\Router\Interfaces\Exception\NotAllowedException;

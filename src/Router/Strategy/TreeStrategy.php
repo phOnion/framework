@@ -1,12 +1,15 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
 namespace Onion\Framework\Router\Strategy;
 
-use function Onion\Framework\Common\merge;
-use function Onion\Framework\Common\normalize_tree_keys;
 use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
 use Onion\Framework\Router\Exceptions\NotFoundException;
 use Onion\Framework\Router\Interfaces\ResolverInterface;
 use Onion\Framework\Router\Interfaces\RouteInterface;
+
+use function Onion\Framework\Common\normalize_tree_keys;
 
 class TreeStrategy implements ResolverInterface
 {

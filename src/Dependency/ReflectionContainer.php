@@ -1,4 +1,7 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
 namespace Onion\Framework\Dependency;
 
 use Onion\Framework\Common\Dependency\Traits\AttachableContainerTrait;
@@ -10,7 +13,8 @@ use Psr\Container\ContainerInterface;
 
 class ReflectionContainer implements ContainerInterface, AttachableContainer
 {
-    use ContainerTrait, AttachableContainerTrait;
+    use ContainerTrait;
+    use AttachableContainerTrait;
 
     public function get($class)
     {
