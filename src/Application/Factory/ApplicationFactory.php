@@ -3,7 +3,6 @@ namespace Onion\Framework\Application\Factory;
 
 use Onion\Framework\Application\Application;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
-use Onion\Framework\Http\Emitter\Interfaces\EmitterInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -24,9 +23,6 @@ final class ApplicationFactory implements FactoryInterface
      */
     public function build(ContainerInterface $container): object
     {
-        return new Application(
-            $container->get(RequestHandlerInterface::class),
-            $container->get(EmitterInterface::class)
-        );
+        return new Application($container->get(RequestHandlerInterface::class));
     }
 }
