@@ -76,7 +76,7 @@ class CompiledRegexStrategy implements ResolverInterface
         foreach ($segments as $segment) {
             if (preg_match(self::PARAM_REGEX, $segment, $matches)) {
                 if (isset($matches['conditional'])) {
-                    $patterns[$path] = $params;
+                    $patterns[$path ?: '/'] = $params;
                 }
 
                 $params[] = $matches['name'];
