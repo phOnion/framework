@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Onion\Framework\State\Interfaces;
 
-interface HistoryInterface
+use Traversable;
+
+interface HistoryInterface extends Traversable
 {
     public function add(TransitionInterface $transition): void;
 }

@@ -19,6 +19,11 @@ class ReplyableFlow implements ReplyableFlowInterface
         $this->wrapped = $flow;
     }
 
+    /**
+     * @param string $state
+     * @param object $target
+     * @param mixed[] $arguments
+     */
     public function apply(string $state, object $target, ...$arguments): bool
     {
         return $this->wrapped->apply($state, $target, ...$arguments);

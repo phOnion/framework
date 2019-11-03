@@ -8,12 +8,19 @@ use Onion\Framework\State\Interfaces\TransitionInterface;
 
 class Transition implements TransitionInterface
 {
+    /** @var string $source */
     private $source;
+
+    /** @var string $destination */
     private $destination;
 
+    /** @var array $arguments */
     private $arguments = [];
 
+    /** @var callable|null $handler */
     private $handler;
+
+    /** @var callable $handler */
     private $rollback;
 
     public function __construct(
@@ -25,7 +32,7 @@ class Transition implements TransitionInterface
         $this->source = strtolower($source);
         $this->destination = strtolower($destination);
         $this->handler = $handler;
-        $this->rollback = $rollback ?? function () {
+        $this->rollback = $rollback ?? function (): void {
         };
     }
 
@@ -41,7 +48,8 @@ class Transition implements TransitionInterface
 
     public function getHandler(): callable
     {
-        return $this->handler;
+        return $this->handler ?? function (): void {
+        };
     }
 
     public function getArguments(): array
@@ -49,6 +57,7 @@ class Transition implements TransitionInterface
         return $this->arguments;
     }
 
+    /** @param mixed $arguments */
     public function withArguments(...$arguments): TransitionInterface
     {
         $self = clone $this;
