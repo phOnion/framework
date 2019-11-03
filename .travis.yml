@@ -14,7 +14,7 @@ matrix:
     - php: 'nightly'
       env: EXTRA_INFECTION_OPTIONS='--show-mutations' EXTRA_COMPOSER_ARGS='--ignore-platform-reqs'
   allow_failures:
-    - php: ['nightly', '7.4']
+    - php: 'nightly'
 install:
  - composer install -o --no-interaction --prefer-dist $EXTRA_COMPOSER_ARGS
 script:
