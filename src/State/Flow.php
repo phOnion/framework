@@ -1,10 +1,13 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Onion\Framework\State;
 
-use Onion\Framework\State\Interfaces\FlowInterface;
-use Onion\Framework\State\Interfaces\TransitionInterface;
 use Onion\Framework\State\Exceptions\TransitionException;
+use Onion\Framework\State\Interfaces\FlowInterface;
 use Onion\Framework\State\Interfaces\HistoryInterface;
+use Onion\Framework\State\Interfaces\TransitionInterface;
 
 class Flow implements Interfaces\FlowInterface
 {
@@ -95,8 +98,6 @@ class Flow implements Interfaces\FlowInterface
                 $ex
             );
         }
-
-        return false;
     }
 
     public function reset(): FlowInterface

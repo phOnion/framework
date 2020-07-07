@@ -9,6 +9,7 @@ use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use stdClass;
 use Tests\Dependency\Doubles\DependencyA;
 use Tests\Dependency\Doubles\DependencyB;
 use Tests\Dependency\Doubles\DependencyC;
@@ -18,6 +19,7 @@ use Tests\Dependency\Doubles\DependencyF;
 use Tests\Dependency\Doubles\DependencyG;
 use Tests\Dependency\Doubles\DependencyH;
 use Tests\Dependency\Doubles\DependencyI;
+use Tests\Dependency\Doubles\DependencyJ;
 use Tests\Dependency\Doubles\FactoryStub;
 
 class ContainerTest extends \PHPUnit\Framework\TestCase
@@ -67,85 +69,6 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($container->has(\stdClass::class));
         $this->assertInstanceOf(\stdClass::class, $container->get(\stdClass::class));
         $this->assertNotSame($container->get(\stdClass::class), $container->get(\stdClass::class));
-    }
-
-    public function testRetrievalOfSharedDependenciesFromFactory()
-    {
-        $container = new Container([
-            'factories' =>  [
-                \stdClass::class => FactoryStub::class,
-            ],
-            'shared' => [
-                \stdClass::class
-            ]
-        ]);
-
-        $this->assertTrue($container->has(\stdClass::class));
-        $this->assertInstanceOf(
-            \stdClass::class,
-            $container->get(\stdClass::class)
-        );
-        $this->assertInstanceOf(
-            \stdClass::class,
-            $container->get(\stdClass::class)
-        );
-        $this->assertSame(
-            $container->get(\stdClass::class),
-            $container->get(\stdClass::class)
-        );
-    }
-
-    public function testRetrievalOfSharedDependenciesFromInvokables()
-    {
-        $container = new Container(
-             [
-                'invokables' =>  [
-                    \stdClass::class => \stdClass::class
-                ],
-                'shared' => [
-                    \stdClass::class
-                ]
-            ]
-        );
-
-        $this->assertTrue($container->has(\stdClass::class));
-        $this->assertInstanceOf(
-            \stdClass::class,
-            $container->get(\stdClass::class)
-        );
-        $this->assertInstanceOf(
-            \stdClass::class,
-            $container->get(\stdClass::class)
-        );
-        $this->assertSame(
-            $container->get(\stdClass::class),
-            $container->get(\stdClass::class)
-        );
-    }
-
-    public function testMultipleSharedDependencies()
-    {
-        $container = new Container([
-            'invokables' => [
-                \stdClass::class => \stdClass::class
-            ],
-            'factories' => [
-                'foo' => FactoryStub::class,
-                'bar' => FactoryStub::class,
-            ],
-            'shared' => [
-                'foo',
-                'bar',
-                \stdClass::class
-            ]
-        ]);
-        $std = $container->get(\stdClass::class);
-        $foo = $container->get('foo');
-        $bar = $container->get('bar');
-
-        $this->assertSame($std, $container->get(\stdClass::class));
-        $this->assertSame($foo, $container->get('foo'));
-        $this->assertSame($bar, $container->get('bar'));
     }
 
     public function testExceptionOnNonExistingEntry()
@@ -239,12 +162,12 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf(DependencyD::class, $container->get(DependencyD::class));
     }
 
-    public function testDependencyResolutionFromReflectionException()
+    public function testDependencyTypeResolutionFromReflectionException()
     {
         $this->expectException(ContainerErrorException::class);
-        $this->expectExceptionMessage('Unable to find match for type: "c (' . DependencyC::class . ')');
+        $this->expectExceptionMessage('c(' . DependencyC::class . ')');
         $container = new Container([]);
-        $this->assertInstanceOf(DependencyD::class, $container->get(DependencyA::class));
+        $container->get(DependencyA::class);
     }
 
     public function testDependencyLookupWhenBoundToInterface()
@@ -277,9 +200,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
     {
         $container = new Container([]);
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage(
-            'Unable to find match for type: "foo (mixed)"'
-        );
+        $this->expectExceptionMessage('foo(mixed)');
         $container->get(DependencyH::class);
     }
 
@@ -334,21 +255,6 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         $container->get(new \stdClass);
     }
 
-    public function testKeyIsStringCompatible()
-    {
-        $key = new class {
-            public function __toString()
-            {
-                return 'key';
-            }
-        };
-
-        $this->assertFalse((new Container([]))->has($key));
-
-        $this->expectException(UnknownDependency::class);
-        (new Container([]))->get($key);
-    }
-
     public function testFactoryBuilderCreation()
     {
         $class = new class implements FactoryBuilderInterface {
@@ -388,5 +294,12 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
 
         $this->assertTrue($container->has('D'));
         $this->assertInstanceOf(DependencyD::class, $container->get('D'));
+    }
+
+    public function testNonExistingDependency()
+    {
+        $container = new Container([]);
+        $this->expectException(ContainerErrorException::class);
+        $container->get(DependencyJ::class);
     }
 }

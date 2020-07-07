@@ -40,5 +40,6 @@
         <RawObjectIteration errorLevel="info" />
 
         <InvalidStringClass errorLevel="info" />
+        <InvalidThrow errorLevel="info" />
     </issueHandlers>
 </psalm>

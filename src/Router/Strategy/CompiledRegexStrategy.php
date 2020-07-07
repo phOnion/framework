@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Onion\Framework\Router\Strategy;
 
 use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
@@ -17,22 +20,11 @@ class CompiledRegexStrategy implements ResolverInterface
      */
     public function __construct(iterable $routes, int $maxGroupCount)
     {
-        if (is_array($routes)) {
-            $routes = new \ArrayIterator($routes);
-        }
-
-        if (!$routes instanceof \Iterator) {
-            throw new \InvalidArgumentException(
-                'Expected value should be either an array or an \Iterator implementation'
-            );
-        }
-
-        $length = $maxGroupCount;
+        $length = 0;
         $segments = [];
         $handlers = [];
 
-        while ($routes->valid()) {
-            $route = $routes->current();
+        foreach ($routes as $route) {
             foreach ($this->compile($route->getPattern()) as $pattern => $params) {
                 assert(
                     !isset($this->routes[$pattern]),
@@ -42,21 +34,20 @@ class CompiledRegexStrategy implements ResolverInterface
                     ))
                 );
 
-                $expansion = str_repeat('()', --$length);
+                $expansion = str_repeat('()', $length++);
                 $segments[] = "{$pattern}{$expansion}";
-                $index = ($length + count($params));
+                $index = ($length + count($params) - 1);
                 $handlers[$index] = [$route, $params];
 
-                if ($length === 0) {
+                if ($length === $maxGroupCount) {
                     $this->routes['(?|' . implode('|', $segments) . ')'] = $handlers;
                     $segments = [];
                     $handlers = [];
                     $length = $maxGroupCount;
                 }
             }
-
-            $routes->next();
         }
+
         if ($segments !== []) {
             $this->routes['(?|' . implode('|', $segments) . ')'] = $handlers;
         }
@@ -75,7 +66,7 @@ class CompiledRegexStrategy implements ResolverInterface
             throw new MethodNotAllowedException($route->getMethods());
         }
 
-        return $route->withParameters($params ?? []);
+        return $route->withParameters($params);
     }
 
     private function compile(string $pattern): array
@@ -88,12 +79,11 @@ class CompiledRegexStrategy implements ResolverInterface
         foreach ($segments as $segment) {
             if (preg_match(self::PARAM_REGEX, $segment, $matches)) {
                 if (isset($matches['conditional'])) {
-                    $patterns[$path] = $params;
+                    $patterns[$path ?: '/'] = $params;
                 }
 
                 $params[] = $matches['name'];
                 $path .= '/(' . (!empty($matches['pattern']) ? $matches['pattern'] : '[^/]+') . ')';
-                $patterns[$path] = $params;
 
                 continue;
             }
@@ -109,13 +99,12 @@ class CompiledRegexStrategy implements ResolverInterface
     private function match(string $path, array &$params = []): ?RouteInterface
     {
         foreach ($this->routes as $pattern => $definition) {
-            if (!preg_match('~^'.$pattern.'$~', $path, $matches, PREG_OFFSET_CAPTURE)) {
+            if (!preg_match('~^' . $pattern . '$~', $path, $matches, PREG_OFFSET_CAPTURE)) {
                 continue;
             }
 
             array_shift($matches);
             $index = count($matches);
-
             $matches = array_filter($matches, function ($value) {
                 return $value[0] !== '';
             });

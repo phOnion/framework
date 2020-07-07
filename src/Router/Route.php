@@ -1,4 +1,7 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
 namespace Onion\Framework\Router;
 
 use Onion\Framework\Http\Header\Accept;
@@ -21,6 +24,8 @@ class Route implements RouteInterface
     private $methods = [];
     /** @var bool[] $headers*/
     private $headers = [];
+    /** @var string[][] $preload */
+    private $preload = [];
 
     /** @var string[] $parameters */
     private $parameters = [];
@@ -116,6 +121,14 @@ class Route implements RouteInterface
         return $self;
     }
 
+    public function withPreload(string $link, array $params): RouteInterface
+    {
+        $self = clone $this;
+        $self->preload[$link] = $params;
+
+        return $self;
+    }
+
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         foreach ($this->getHeaders() as $header => $required) {
@@ -148,7 +161,18 @@ class Route implements RouteInterface
             $request = $request->withAttribute('language', $accept);
         }
 
-        return $this->getRequestHandler()
+        $response = $this->getRequestHandler()
             ->handle($request->withAttribute('route', $this));
+
+        foreach ($this->preload as $link => $props) {
+            $response = $response->withAddedHeader(
+                'Link',
+                "<{$link}>; " . implode('; ', array_map(function ($key) use ($props) {
+                    return "{$key}={$props[$key]}";
+                }, array_keys($props)))
+            );
+        }
+
+        return $response;
     }
 }

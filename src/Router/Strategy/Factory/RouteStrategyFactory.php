@@ -1,7 +1,9 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Onion\Framework\Router\Strategy\Factory;
 
-use function Onion\Framework\Common\generator;
 use GuzzleHttp\Psr7\Response;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Onion\Framework\Http\RequestHandler\RequestHandler;
@@ -9,6 +11,8 @@ use Onion\Framework\Router\Route;
 use Onion\Framework\Router\Strategy\CompiledRegexStrategy;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
+
+use function Onion\Framework\Common\generator;
 
 class RouteStrategyFactory implements FactoryInterface
 {
@@ -38,6 +42,9 @@ class RouteStrategyFactory implements FactoryInterface
                 $object = (new Route($route['pattern'], $route['name'] ?? $route['pattern']))
                     ->withMethods($route['methods'] ?? ['GET', 'HEAD'])
                     ->withHeaders($route['headers'] ?? []);
+                foreach ($route['preload'] ?? [] as $link => $kind) {
+                    $object = $object->withPreload($link, $kind);
+                }
 
                 $responseTemplate = $container->has(ResponseInterface::class) ?
                     $container->get(ResponseInterface::class) : new Response();

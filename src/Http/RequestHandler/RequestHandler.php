@@ -1,4 +1,7 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
 namespace Onion\Framework\Http\RequestHandler;
 
 use Psr\Http\Message;
@@ -24,6 +27,14 @@ final class RequestHandler implements RequestHandlerInterface
 
         $this->middleware = $middleware;
         $this->response = $response;
+    }
+
+    public function __clone()
+    {
+        $this->middleware = clone $this->middleware;
+        if ($this->response !== null) {
+            $this->response = clone $this->response;
+        }
     }
 
     /**

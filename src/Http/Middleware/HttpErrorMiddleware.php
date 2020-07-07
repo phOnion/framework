@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Onion\Framework\Http\Middleware;
 
 use GuzzleHttp\Psr7\Response;
@@ -15,7 +18,7 @@ class HttpErrorMiddleware implements MiddlewareInterface
     private $baseAuthorization;
     private $proxyAuthorization;
 
-    public function __construct($baseAuth = 'bearer', $proxyAuth = 'basic')
+    public function __construct(string $baseAuth = 'bearer', string $proxyAuth = 'basic')
     {
         $this->baseAuthorization = $baseAuth;
         $this->proxyAuthorization = $proxyAuth;

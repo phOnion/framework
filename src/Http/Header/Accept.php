@@ -1,4 +1,7 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
 namespace Onion\Framework\Http\Header;
 
 class Accept implements Interfaces\AcceptInterface
@@ -20,14 +23,17 @@ class Accept implements Interfaces\AcceptInterface
         $this->name = $name;
         $this->value = $headerValue;
 
-        $contentTypes=explode(',', $headerValue);
+        $contentTypes = explode(',', $headerValue);
 
         foreach ($contentTypes as $pair) {
-            if (preg_match(
-                '~^(?P<type>[a-z0-9+-/.*]+)(?:[a-z0-9=\-;]+)?(?:;q=(?P<priority>[0-9.]{1,3}))?(?:[a-z0-9=\-;]+)?$~i',
-                trim($pair),
-                $matches
-            )) {
+            if (
+                preg_match(
+                    '~^(?P<type>[a-z0-9+-/.*]+)(?:[a-z0-9=\-;]+)?' .
+                        '(?:;q=(?P<priority>[0-9.]{1,3}))?(?:[a-z0-9=\-;]+)?$~i',
+                    trim($pair),
+                    $matches
+                )
+            ) {
                 $this->types[$matches['type']] =
                     (float) (isset($matches['priority']) ? $matches['priority'] : 1);
             }

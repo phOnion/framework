@@ -1,24 +1,37 @@
 <?php
 namespace Tests\State;
 
-use PHPUnit\Framework\TestCase;
-use Onion\Framework\State\Flow;
-use Onion\Framework\State\Interfaces\TransitionInterface;
-use Prophecy\Argument\Token\TypeToken;
-use Onion\Framework\State\Interfaces\HistoryInterface;
 use Onion\Framework\State\Exceptions\TransitionException;
+use Onion\Framework\State\Flow;
+use Onion\Framework\State\Interfaces\HistoryInterface;
+use Onion\Framework\State\Interfaces\TransitionInterface;
+use PHPUnit\Framework\TestCase;
+use Prophecy\Argument\Token\TypeToken;
+use stdClass;
 
 class FlowTest extends TestCase
 {
     public function testBaseFunctionality()
     {
+        $transition = $this->prophesize(TransitionInterface::class);
+        $transition->getSource()->willReturn('bar');
+        $transition->getDestination()->willReturn('baz');
+        $transition->withArguments(new stdClass)
+            ->willReturn($transition->reveal())
+            ->shouldBeCalledOnce();
+        $transition->__invoke()->willReturn(true);
+
         $flow = new Flow('foo', 'bar');
+        $flow->addTransition($transition->reveal());
         $this->assertSame('bar', $flow->getState());
         $this->assertSame('foo', $flow->getName());
         $this->assertCount(0, $flow->getHistory());
         $this->assertFalse($flow->can('test'));
-        $this->assertEmpty($flow->getPossibleTransitions());
+        $this->assertNotEmpty($flow->getPossibleTransitions());
+        $this->assertTrue($flow->apply('baz', new stdClass));
         $this->assertNotSame($flow, $flow->reset());
+        $this->assertNotSame($flow->getState(), $flow->reset()->getState());
+        $this->assertTrue($flow->reset()->can('baz'));
     }
 
     public function testBaseTransitioning()

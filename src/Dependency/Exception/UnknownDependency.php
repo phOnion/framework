@@ -1,4 +1,7 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
 namespace Onion\Framework\Dependency\Exception;
 
 use Psr\Container\NotFoundExceptionInterface;
@@ -8,6 +11,6 @@ use Psr\Container\NotFoundExceptionInterface;
  *
  * @package Onion\Framework\Dependency\Exception
  */
-class UnknownDependency extends \Exception implements NotFoundExceptionInterface
+class UnknownDependency extends ContainerErrorException implements NotFoundExceptionInterface
 {
 }

@@ -35,7 +35,7 @@ init:
 install:
     - ps: |
         if (!(Test-Path c:\tools\php)) {
-            appveyor-retry cinst --params '""/InstallDir:C:\tools\php""' --ignore-checksums -y php --version ((choco search php --exact --all-versions -r | select-string -pattern $env:php | sort { [version]($_ -split '\|' | select -last 1) } -Descending | Select-Object -first 1) -replace '[php|]','')
+            appveyor-retry choco install php --params '""/InstallDir:C:\tools\php""' --ignore-checksums --version ((choco search php --exact --all-versions -r | select-string -pattern $env:php | sort { [version]($_ -split '\|' | select -last 1) } -Descending | Select-Object -first 1) -replace '[php|]','')
             Get-ChildItem -Path c:\tools\php
             cd c:\tools\php
 
@@ -74,6 +74,6 @@ install:
 test_script:
     - cd c:\phonion\framework
     - vendor\bin\phpunit.bat --bootstrap vendor/autoload.php
-    - vendor\bin\phpcs.bat src\ --standard=psr2
+    - vendor\bin\phpcs.bat src\ --standard=psr12
     - vendor\bin\psalm.bat --show-info=false
     - vendor\bin\infection.bat -j4 --min-msi=85 --min-covered-msi=95

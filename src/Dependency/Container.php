@@ -1,6 +1,11 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
 namespace Onion\Framework\Dependency;
 
+use Onion\Framework\Common\Dependency\Traits\AttachableContainerTrait;
+use Onion\Framework\Common\Dependency\Traits\ContainerTrait;
 use Onion\Framework\Dependency\Exception\ContainerErrorException;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
 use Onion\Framework\Dependency\Interfaces\AttachableContainer;
@@ -9,25 +14,25 @@ use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use ReflectionType;
 
 /**
  * Class Container
  *
  * @package Onion\Framework\Dependency
  */
-final class Container implements AttachableContainer
+final class Container extends ReflectionContainer implements AttachableContainer, ContainerInterface
 {
+    use ContainerTrait;
+    use AttachableContainerTrait;
+
     /** @var string[]|object[] $invokables */
-    public $invokables = [];
+    private $invokables = [];
+
     /** @var string[] $factories */
-    public $factories = [];
+    private $factories = [];
 
     /** @var string[] $shared */
     private $shared = [];
-
-    /** @var ContainerInterface */
-    private $delegate;
 
     /**
      * Container constructor.
@@ -38,20 +43,6 @@ final class Container implements AttachableContainer
     {
         $this->invokables = $dependencies['invokables'] ?? [];
         $this->factories = $dependencies['factories'] ?? [];
-
-        if (isset($dependencies['shared'])) {
-            $this->shared = $dependencies['shared'] ?? [];
-        }
-
-        $this->delegate = $this;
-    }
-
-    /**
-     * @codeCoverageIgnore
-     */
-    public function attach(ContainerInterface $container): void
-    {
-        $this->delegate = $container;
     }
 
     /**
@@ -67,14 +58,14 @@ final class Container implements AttachableContainer
      */
     public function get($key)
     {
-        if (!$this->isKeyValid($key)) {
-            throw new \InvalidArgumentException(sprintf(
+        assert(
+            $this->isKeyValid($key),
+            new \InvalidArgumentException(sprintf(
                 'Provided key must be a string, %s given',
                 gettype($key)
-            ));
-        }
+            ))
+        );
 
-        $key = (string) $key;
         try {
             if (isset($this->invokables[$key])) {
                 return $this->retrieveInvokable($key);
@@ -84,11 +75,15 @@ final class Container implements AttachableContainer
                 return $this->retrieveFromFactory($key);
             }
 
-            if (class_exists($key)) {
-                return $this->retrieveFromReflection($key);
+            if (parent::has($key)) {
+                return parent::get($key);
+            }
+
+            if ($this->getDelegate()->has($key)) {
+                return $this->getDelegate()->get($key);
             }
         } catch (\RuntimeException | \InvalidArgumentException $ex) {
-            throw new ContainerErrorException($ex->getMessage(), (int) $ex->getCode(), $ex);
+            throw new ContainerErrorException($ex->getMessage(), 0, $ex);
         }
 
         throw new UnknownDependency(sprintf('Unable to resolve "%s"', $key));
@@ -111,12 +106,7 @@ final class Container implements AttachableContainer
             ));
         }
 
-        $key = (string) $key;
-        return (
-            isset($this->invokables[$key]) ||
-            isset($this->factories[$key]) ||
-            class_exists($key)
-        );
+        return (isset($this->invokables[$key]) || isset($this->factories[$key])) ?: parent::has($key);
     }
 
     /**
@@ -134,77 +124,11 @@ final class Container implements AttachableContainer
 
         if (!$this->has($dependency)) {
             throw new UnknownDependency(
-                "Unable to resolve '$dependency'. Consider using a factory"
+                "Unable to resolve '{$dependency}'. Consider using a factory"
             );
         }
 
-        $result = $this->retrieveFromReflection($dependency);
-        if (in_array($className, $this->shared, true)) {
-            $this->invokables[$className] = $result;
-        }
-
-        return $this->enforceReturnType($className, $result);
-    }
-
-    /**
-     * @param string $className
-     * @return object
-     * @throws ContainerErrorException
-     */
-    private function retrieveFromReflection(string $className): object
-    {
-        if (!class_exists($className)) {
-            throw new UnknownDependency("Provided '{$className}' does not exist");
-        }
-        $classReflection = new \ReflectionClass($className);
-        $constructorRef = $classReflection->getConstructor();
-
-        if ($constructorRef === null) {
-            return $classReflection->newInstanceWithoutConstructor();
-        }
-
-        $parameters = [];
-        foreach ($constructorRef->getParameters() as $parameter) {
-            $parameters[$parameter->getPosition()] = $this->resolveReflectionParameter($parameter);
-        }
-
-        return $this->enforceReturnType($className, $classReflection->newInstance(...$parameters));
-    }
-
-    /**
-     * @return mixed
-     */
-    private function resolveReflectionParameter(\ReflectionParameter $parameter)
-    {
-        $type = $parameter->hasType() ? $this->formatType($parameter->getType()) : 'mixed';
-        try {
-            if (is_string($type)) {
-                $typeKey = trim($type, '?');
-                if ($this->has($typeKey)) {
-                    return $this->get($typeKey);
-                }
-
-                if (!$parameter->isOptional()) {
-                    return $this->get($this->convertVariableName($parameter->getName()));
-                }
-            }
-
-            if ($parameter->isOptional()) {
-                return $this->delegate->has($parameter->getName()) ?
-                    $this->delegate->get($parameter->getName()) : $parameter->getDefaultValue();
-            }
-        } catch (UnknownDependency $ex) {
-            throw new ContainerErrorException(sprintf(
-                'Unable to find match for type: "%s (%s)". Consider using a factory',
-                $parameter->getName(),
-                $type
-            ), (int) $ex->getCode(), $ex);
-        }
-
-        throw new ContainerErrorException(sprintf(
-            'Unable to resolve a class parameter "%s" without type.',
-            $parameter->getName()
-        ));
+        return $this->enforceReturnType($className, parent::get($dependency));
     }
 
     /**
@@ -217,17 +141,12 @@ final class Container implements AttachableContainer
         assert(
             is_string($name) || is_callable($name),
             new ContainerErrorException(
-                "Registered factory for '{$className}' must be a valid FQCN, " . gettype($className) . ' given'
+                "Registered factory for '{$className}' must be a valid FQCN, " . gettype($name) . ' given'
             )
         );
 
         if (is_callable($name)) {
-            $result = $this->enforceReturnType($className, call_user_func($name, $this));
-            if (in_array($className, $this->shared, true)) {
-                $this->invokables[$className] = $result;
-            }
-
-            return $result;
+            return $this->enforceReturnType($className, call_user_func($name, $this));
         }
 
         assert(
@@ -245,13 +164,13 @@ final class Container implements AttachableContainer
             )
         );
 
-        $factory = $this->delegate->get($name);
+        $factory = $this->get($name);
         if ($factory instanceof FactoryBuilderInterface) {
-            $factory = $factory->build($this->delegate, $className);
+            $factory = $factory->build($this->getDelegate(), $className);
         }
 
         if ($factory instanceof FactoryInterface) {
-            $factoryResult = $factory->build($this->delegate);
+            $factoryResult = $factory->build($this->getDelegate());
         }
 
         if (!isset($factoryResult)) {
@@ -260,61 +179,6 @@ final class Container implements AttachableContainer
             );
         }
 
-        $result = $this->enforceReturnType($className, $factoryResult);
-        if (in_array($className, $this->shared, true)) {
-            $this->invokables[$className] = $result;
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param string $name
-     * @return string
-     */
-    private function convertVariableName(string $name): string
-    {
-        return str_replace('\\', '', strtolower(preg_replace('/(?<!^)[A-Z]/', '.$0', $name)));
-    }
-
-    /**
-     * Helper to verify that the result is instance of
-     * the identifier (if it is a class/interface)
-     *
-     * @param string $identifier
-     * @param object  $result
-     *
-     * @return object
-     * @throws ContainerErrorException
-     */
-    private function enforceReturnType(string $identifier, object $result): object
-    {
-        if (interface_exists($identifier) || class_exists($identifier)) {
-            assert(
-                $result instanceof $identifier,
-                new ContainerErrorException(sprintf(
-                    'Unable to verify that "%s" is of type "%s"',
-                    get_class($result),
-                    $identifier
-                ))
-            );
-        }
-
-        return $result;
-    }
-
-    private function isKeyValid($key): bool
-    {
-        return is_string($key) || is_scalar($key) ||
-            (is_object($key) && method_exists($key, '__toString'));
-    }
-
-    private function formatType(?ReflectionType $type): string
-    {
-        if ($type === null) {
-            return 'mixed';
-        }
-
-        return $type->allowsNull() ? "?{$type}" : (string) $type;
+        return $this->enforceReturnType($className, $factoryResult);
     }
 }
