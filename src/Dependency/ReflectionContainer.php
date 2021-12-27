@@ -10,6 +10,8 @@ use Onion\Framework\Dependency\Exception\ContainerErrorException;
 use Onion\Framework\Dependency\Exception\UnknownDependency;
 use Onion\Framework\Dependency\Interfaces\AttachableContainer;
 use Psr\Container\ContainerInterface;
+use ReflectionNamedType;
+use ReflectionUnionType;
 
 class ReflectionContainer implements ContainerInterface, AttachableContainer
 {
@@ -41,7 +43,7 @@ class ReflectionContainer implements ContainerInterface, AttachableContainer
 
             $typeReflection = $parameter->getType();
             try {
-                if ($typeReflection !== null && $this->has($type) && !$typeReflection->isBuiltin()) {
+                if ($typeReflection !== null && $this->has($type) && ($typeReflection instanceof ReflectionUnionType || ($typeReflection instanceof ReflectionNamedType && !$typeReflection->isBuiltin()))) {
                     try {
                         $parameters[$parameter->getPosition()] = $this->get($type);
                     } catch (UnknownDependency $ex) {
