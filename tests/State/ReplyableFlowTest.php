@@ -1,4 +1,5 @@
 <?php
+
 namespace Tests\State;
 
 use Onion\Framework\State\Exceptions\TransitionException;
@@ -10,9 +11,12 @@ use Onion\Framework\State\ReplyableFlow;
 use Onion\Framework\State\Transition;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument\Token\TypeToken;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class ReplyableFlowTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testWrappedMethods()
     {
         $wrapped = $this->prophesize(FlowInterface::class);

@@ -1,9 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
 namespace Tests\Http;
 
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Onion\Framework\Http\RequestHandler\Factory\RequestHandlerFactory;
 use Prophecy\Argument\Token\AnyValueToken;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -14,6 +18,9 @@ class RequestHandlerFactoryTest extends \PHPUnit\Framework\TestCase
 {
     /** @var FactoryInterface */
     private $factory;
+
+    use ProphecyTrait;
+
     public function setUp(): void
     {
         $this->factory = new RequestHandlerFactory();

@@ -56,7 +56,7 @@ final class Container extends ReflectionContainer implements AttachableContainer
      *
      * @return mixed Entry.
      */
-    public function get($key)
+    public function get($key): mixed
     {
         assert(
             $this->isKeyValid($key),

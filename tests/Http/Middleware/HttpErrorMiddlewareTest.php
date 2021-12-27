@@ -1,4 +1,5 @@
 <?php
+
 namespace Tests\Http\Middleware;
 
 use Onion\Framework\Http\Middleware\HttpErrorMiddleware;
@@ -6,6 +7,7 @@ use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
 use Onion\Framework\Router\Exceptions\MissingHeaderException;
 use Onion\Framework\Router\Exceptions\NotFoundException;
 use Prophecy\Argument\Token\AnyValueToken;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -15,6 +17,8 @@ class HttpErrorMiddlewareTest extends \PHPUnit\Framework\TestCase
     private $handler;
     private $middleware;
     private $request;
+
+    use ProphecyTrait;
 
     public function setUp(): void
     {

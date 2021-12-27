@@ -121,10 +121,10 @@ class Route implements RouteInterface
         return $self;
     }
 
-    public function withPreload(string $link, array $params): RouteInterface
+    public function withPreload(string $uri, array $params): RouteInterface
     {
         $self = clone $this;
-        $self->preload[$link] = $params;
+        $self->preload[$uri] = $params;
 
         return $self;
     }

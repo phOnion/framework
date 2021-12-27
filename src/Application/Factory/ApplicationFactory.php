@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Onion\Framework\Application\Factory;
 
 use Onion\Framework\Application\Application;
+use Onion\Framework\Application\Interfaces\ApplicationInterface;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -19,12 +20,7 @@ use Psr\Http\Server\RequestHandlerInterface;
  */
 final class ApplicationFactory implements FactoryInterface
 {
-    /**
-     * @param ContainerInterface $container
-     *
-     * @return Application
-     */
-    public function build(ContainerInterface $container): object
+    public function build(ContainerInterface $container): ApplicationInterface
     {
         return new Application($container->get(RequestHandlerInterface::class));
     }

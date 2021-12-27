@@ -16,7 +16,7 @@ class ReflectionContainer implements ContainerInterface, AttachableContainer
     use ContainerTrait;
     use AttachableContainerTrait;
 
-    public function get($class)
+    public function get($class): mixed
     {
         assert(
             $this->isKeyValid($class) && class_exists($class),
@@ -68,7 +68,7 @@ class ReflectionContainer implements ContainerInterface, AttachableContainer
         return $this->enforceReturnType($class, $reflection->newInstanceArgs($parameters));
     }
 
-    public function has($class)
+    public function has($class): bool
     {
         assert(
             $this->isKeyValid($class),

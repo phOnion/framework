@@ -1,10 +1,12 @@
 <?php
+
 namespace Tests;
 
 use Onion\Framework\Application\Application;
 use Onion\Framework\Http\Emitter\Interfaces\EmitterInterface;
 use Onion\Framework\Router\Interfaces\RouteInterface;
 use Prophecy\Argument\Token\AnyValueToken;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
@@ -15,7 +17,9 @@ class ApplicationTest extends \PHPUnit\Framework\TestCase
     protected $route;
     protected $request;
 
-    public function setUp():void
+    use ProphecyTrait;
+
+    public function setUp(): void
     {
         $this->route = $this->prophesize(RouteInterface::class);
         $this->route->getParameters()->willReturn([]);

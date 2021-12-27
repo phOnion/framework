@@ -16,12 +16,12 @@ class History implements \IteratorAggregate, HistoryInterface, \Countable
         $this->transitions[] = $transition;
     }
 
-    public function getIterator()
+    public function getIterator(): \Iterator
     {
         return new \ArrayIterator($this->transitions);
     }
 
-    public function count()
+    public function count(): int
     {
         return count($this->transitions);
     }

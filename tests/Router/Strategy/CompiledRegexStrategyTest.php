@@ -1,4 +1,5 @@
 <?php
+
 namespace Tests\Router\Strategy;
 
 use Onion\Framework\Router\Interfaces\Exception\NotAllowedException;
@@ -6,9 +7,12 @@ use Onion\Framework\Router\Interfaces\Exception\NotFoundException;
 use Onion\Framework\Router\Interfaces\RouteInterface;
 use Onion\Framework\Router\Strategy\CompiledRegexStrategy;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class CompiledRegexStrategyTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testSimpleResolve()
     {
         $route = $this->prophesize(RouteInterface::class);
@@ -34,7 +38,7 @@ class CompiledRegexStrategyTest extends TestCase
         $routes = [];
         foreach (range(1, 10) as $count) {
             $routes = [];
-            for ($i=0; $i<11; $i++) {
+            for ($i = 0; $i < 11; $i++) {
                 $param = "/{$i}/{x}/{arg}?";
                 $route = $this->prophesize(RouteInterface::class);
                 $route->getPattern()->willReturn($param);

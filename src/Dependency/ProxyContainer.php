@@ -18,7 +18,7 @@ class ProxyContainer implements ContainerInterface, DelegateContainerInterface, 
     use ContainerTrait;
     use DelegateContainerTrait;
 
-    public function get($id)
+    public function get($id): mixed
     {
         if (count($this) === 0) {
             throw new UnknownDependency("No containers provided, can't retrieve '{$id}'");

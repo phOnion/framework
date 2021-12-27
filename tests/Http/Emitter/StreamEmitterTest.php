@@ -1,14 +1,18 @@
 <?php
+
 namespace Tests\Http\Emitter;
 
 use GuzzleHttp\Stream\StreamInterface;
 use Onion\Framework\Http\Emitter\StreamEmitter;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface as HttpStream;
 
 class StreamEmitterTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testEmitting()
     {
         $stream = $this->prophesize(StreamInterface::class);

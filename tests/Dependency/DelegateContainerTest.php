@@ -1,4 +1,7 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
 namespace Tests\Dependency;
 
 use Onion\Framework\Dependency\Container as OnionContainer;
@@ -9,6 +12,7 @@ use Onion\Framework\Dependency\ProxyContainer;
 use Onion\Framework\Dependency\ReflectionContainer;
 use Prophecy\Argument\Token\AnyValueToken;
 use Prophecy\Argument\Token\TypeToken;
+use Prophecy\PhpUnit\ProphecyTrait;
 use stdClass;
 use Tests\Dependency\Doubles\DependencyA;
 use Tests\Dependency\Doubles\DependencyC;
@@ -19,6 +23,8 @@ use Tests\Dependency\Doubles\DependencyJ;
 
 class DelegateContainerTest extends \PHPUnit\Framework\TestCase
 {
+    use ProphecyTrait;
+
     public function testBasicConstruction()
     {
         $c = $this->prophesize(Container::class);
@@ -194,5 +200,4 @@ class DelegateContainerTest extends \PHPUnit\Framework\TestCase
         $this->expectExceptionMessage('stdClass given');
         $this->assertInstanceOf(DependencyA::class, $container->get(DependencyJ::class));
     }
-
 }

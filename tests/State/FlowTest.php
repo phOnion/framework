@@ -1,4 +1,5 @@
 <?php
+
 namespace Tests\State;
 
 use Onion\Framework\State\Exceptions\TransitionException;
@@ -7,10 +8,13 @@ use Onion\Framework\State\Interfaces\HistoryInterface;
 use Onion\Framework\State\Interfaces\TransitionInterface;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument\Token\TypeToken;
+use Prophecy\PhpUnit\ProphecyTrait;
 use stdClass;
 
 class FlowTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testBaseFunctionality()
     {
         $transition = $this->prophesize(TransitionInterface::class);
@@ -51,7 +55,6 @@ class FlowTest extends TestCase
         $this->assertTrue($flow->apply('baz', new \stdClass));
         $this->assertCount(1, $flow->getHistory());
         $this->assertEmpty($flow->getPossibleTransitions());
-
     }
 
     public function testFailedTransitionHandler()

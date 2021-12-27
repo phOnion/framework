@@ -1,9 +1,11 @@
 <?php
+
 namespace Tests\Router\Strategy\Factory;
 
 use Onion\Framework\Router\Interfaces\ResolverInterface;
 use Onion\Framework\Router\Strategy\Factory\RouteStrategyFactory;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -11,6 +13,9 @@ class RouteStrategyFactoryTest extends TestCase
 {
     /** @var RouteStrategyFactory $factory */
     private $factory;
+
+    use ProphecyTrait;
+
     public function setUp(): void
     {
         $this->factory = new RouteStrategyFactory();

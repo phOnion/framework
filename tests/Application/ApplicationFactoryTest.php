@@ -1,10 +1,12 @@
 <?php
+
 namespace Tests\Application;
 
 use Onion\Framework\Application;
 use Onion\Framework\Application\Factory\ApplicationFactory;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Prophecy\Argument\Token\AnyValueToken;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -13,6 +15,8 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 class ApplicationFactoryTest extends \PHPUnit\Framework\TestCase
 {
+    use ProphecyTrait;
+
     public function testApplicationContainerRetrieval()
     {
         $container = $this->prophesize(ContainerInterface::class);

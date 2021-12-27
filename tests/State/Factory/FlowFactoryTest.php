@@ -1,15 +1,19 @@
 <?php
+
 namespace Tests\State\Factory;
 
 use Onion\Framework\Common\Config\Container;
 use Onion\Framework\State\Factory\FlowFactory;
 use Onion\Framework\State\Interfaces\FlowInterface;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Container\ContainerInterface;
 
 class FlowFactoryTest extends TestCase
 {
     private $container;
+
+    use ProphecyTrait;
 
     public function setUp(): void
     {
@@ -41,6 +45,5 @@ class FlowFactoryTest extends TestCase
         $this->assertTrue($flow->can('bar'));
         $this->assertFalse($flow->can('baz'));
         $this->assertTrue($flow->apply('bar', $this));
-
     }
 }

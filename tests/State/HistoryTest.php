@@ -1,12 +1,16 @@
 <?php
+
 namespace Tests\State;
 
 use PHPUnit\Framework\TestCase;
 use Onion\Framework\State\Interfaces\TransitionInterface;
 use Onion\Framework\State\History;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class HistoryTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testHistoryPush()
     {
         $t1 = $this->prophesize(TransitionInterface::class)->reveal();
@@ -19,7 +23,7 @@ class HistoryTest extends TestCase
         $this->assertCount(2, $history);
 
         foreach ($history as $index => $t) {
-            $name = 't' . ($index+1);
+            $name = 't' . ($index + 1);
             $this->assertSame($$name, $t);
         }
     }

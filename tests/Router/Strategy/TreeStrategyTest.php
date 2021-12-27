@@ -1,4 +1,5 @@
 <?php
+
 namespace Tests\Router\Strategy;
 
 use Onion\Framework\Router\Interfaces\Exception\NotAllowedException;
@@ -6,9 +7,12 @@ use Onion\Framework\Router\Interfaces\Exception\NotFoundException;
 use Onion\Framework\Router\Interfaces\RouteInterface;
 use Onion\Framework\Router\Strategy\TreeStrategy;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class TreeStrategyTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testSimpleResolve()
     {
         $route = $this->prophesize(RouteInterface::class);
@@ -32,7 +36,7 @@ class TreeStrategyTest extends TestCase
     public function testSuccessfulResolve()
     {
         $routes = [];
-        for ($i=0; $i<20; $i++) {
+        for ($i = 0; $i < 20; $i++) {
             $param = "/{$i}/{x:\d+}/{arg:test{$i}}";
             $route = $this->prophesize(RouteInterface::class);
             $route->getPattern()->willReturn($param);
@@ -63,20 +67,20 @@ class TreeStrategyTest extends TestCase
     public function testSuccessfulComplexResolve()
     {
         $route = $this->prophesize(RouteInterface::class);
-            $route->getPattern()->willReturn(
-                '/test/{arg1:foo}/simple/{example:yes}/mate/{name:Baz}'
-            );
-            $route->getName()->willReturn('test');
-            $route->hasMethod('GET')->willReturn(true);
+        $route->getPattern()->willReturn(
+            '/test/{arg1:foo}/simple/{example:yes}/mate/{name:Baz}'
+        );
+        $route->getName()->willReturn('test');
+        $route->hasMethod('GET')->willReturn(true);
 
-            $route->withParameters([
-                'arg1' => "foo",
-                'example' => "yes",
-                'name' => 'Baz',
-            ])->willReturn($route->reveal())
-                ->shouldBeCalledOnce();
+        $route->withParameters([
+            'arg1' => "foo",
+            'example' => "yes",
+            'name' => 'Baz',
+        ])->willReturn($route->reveal())
+            ->shouldBeCalledOnce();
 
-            $routes[] = $route->reveal();
+        $routes[] = $route->reveal();
 
         $strategy = new TreeStrategy($routes);
         $this->assertInstanceOf(

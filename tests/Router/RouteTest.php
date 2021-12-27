@@ -1,4 +1,5 @@
 <?php
+
 namespace Tests\Router;
 
 use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
@@ -7,12 +8,15 @@ use Onion\Framework\Router\Route;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument\Token\AnyValueToken;
 use Prophecy\Argument\Token\TypeToken;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 class RouteTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testNaming()
     {
         $route = new Route('/', 'home');
@@ -21,7 +25,6 @@ class RouteTest extends TestCase
         $route = new Route('/');
         $this->assertSame('/', $route->getName());
         $this->assertFalse($route->hasName());
-
     }
 
     public function testPattern()

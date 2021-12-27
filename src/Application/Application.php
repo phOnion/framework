@@ -15,11 +15,8 @@ use Psr\Http\Server\RequestHandlerInterface;
  */
 class Application implements ApplicationInterface
 {
-    /** @var RequestHandlerInterface $middleware */
-    private $middleware;
-    /**
-     * Application constructor.
-     */
+    private RequestHandlerInterface $middleware;
+
     public function __construct(RequestHandlerInterface $middleware)
     {
         $this->middleware = $middleware;
