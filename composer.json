@@ -17,7 +17,7 @@
   "license": "MIT",
   "require": {
     "php": "^8.0",
-    "guzzlehttp/psr7": "^1.4",
+    "guzzlehttp/psr7": "^2.1",
     "onion/interfaces": "dev-master",
     "onion/common": "dev-master",
     "guzzlehttp/streams": "^3.0"
