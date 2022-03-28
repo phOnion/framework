@@ -4,6 +4,9 @@
     <include>
       <directory suffix=".php">src</directory>
     </include>
+    <exclude>
+      <directory suffix="Exception.php">src</directory>
+    </exclude>
   </coverage>
   <testsuite name="all">
     <directory suffix="Test.php">tests</directory>
