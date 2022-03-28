@@ -5,7 +5,9 @@
             "src"
         ],
         "excludes": [
-            "/RouteStrategyFactory\\.php/"
+            "/RouteStrategyFactory\\.php/",
+            "/Exception\\.php/",
+            "/Factory\\.php/"
         ]
     },
     "logs": {
@@ -16,6 +18,11 @@
     },
     "mutators": {
         "@default": true,
-        "@number": false
+        "@number": true,
+        "ArrayOneItem": {
+            "ignore": [
+                "Onion\\Framework\\Router\\Strategy\\TreeStrategy::compile::104"
+            ]
+        }
     }
 }
