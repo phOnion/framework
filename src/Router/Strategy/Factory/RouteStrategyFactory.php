@@ -8,7 +8,7 @@ use GuzzleHttp\Psr7\Response;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Onion\Framework\Http\RequestHandler\RequestHandler;
 use Onion\Framework\Router\Route;
-use Onion\Framework\Router\Strategy\CompiledRegexStrategy;
+use Onion\Framework\Router\Strategy\TreeStrategy;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -19,7 +19,7 @@ class RouteStrategyFactory implements FactoryInterface
     public function build(ContainerInterface $container)
     {
         $target = $container->has('router.resolver') ?
-            $container->get('router.resolver') : CompiledRegexStrategy::class;
+            $container->get('router.resolver') : TreeStrategy::class;
 
         assert(class_exists($target), new \InvalidArgumentException(
             "Provided '{$target}' does not exist."
@@ -42,21 +42,15 @@ class RouteStrategyFactory implements FactoryInterface
                 $object = (new Route($route['pattern'], $route['name'] ?? $route['pattern']))
                     ->withMethods($route['methods'] ?? ['GET', 'HEAD'])
                     ->withHeaders($route['headers'] ?? []);
-                foreach ($route['preload'] ?? [] as $link => $kind) {
-                    $object = $object->withPreload($link, $kind);
-                }
 
                 $responseTemplate = $container->has(ResponseInterface::class) ?
                     $container->get(ResponseInterface::class) : new Response();
 
-                /** @codeCoverageIgnore */
-                $handler = new RequestHandler(generator(function () use ($route, $container) {
+                yield $object->withRequestHandler(new RequestHandler(generator(function () use ($route, $container) {
                     foreach ($route['middleware'] as $class) {
                         yield $container->get($class);
                     }
-                }), $responseTemplate);
-
-                yield $object->withRequestHandler($handler);
+                }), $responseTemplate));
             }
         });
 

@@ -53,7 +53,7 @@ class CacheContainer implements ContainerInterface, WrappingContainerInterface
      *
      * @param FactoryInterface $factory A factory to build the real container
      * @param CacheInterface $cache Cache in which to store resolved deps
-     * @param array $blacklist List of keys to not include in the cache
+     * @param array<array-key, string> $blacklist List of keys to not include in the cache
      */
     public function __construct(ContainerInterface $container, CacheInterface $cache, array $blacklist = [])
     {
@@ -67,15 +67,15 @@ class CacheContainer implements ContainerInterface, WrappingContainerInterface
      * @throws \Psr\SimpleCache\InvalidArgumentException
      * @throws \Onion\Framework\Dependency\Exception\ContainerErrorException
      */
-    public function get($key)
+    public function get($id)
     {
-        if ($this->cache->has($key)) {
-            return $this->cache->get($key);
+        if ($this->cache->has($id)) {
+            return $this->cache->get($id);
         }
 
-        $dependency = $this->getWrappedContainer()->get($key);
-        if (!in_array($key, $this->blacklist, true)) {
-            $this->cache->set($key, $dependency);
+        $dependency = $this->getWrappedContainer()->get($id);
+        if (!in_array($id, $this->blacklist, true)) {
+            $this->cache->set($id, $dependency);
         }
 
         return $dependency;
@@ -85,8 +85,8 @@ class CacheContainer implements ContainerInterface, WrappingContainerInterface
      * @inheritdoc
      * @throws \Psr\SimpleCache\InvalidArgumentException
      */
-    public function has($key): bool
+    public function has($id): bool
     {
-        return $this->cache->has($key) || $this->getWrappedContainer()->has($key);
+        return $this->cache->has($id) || $this->getWrappedContainer()->has($id);
     }
 }

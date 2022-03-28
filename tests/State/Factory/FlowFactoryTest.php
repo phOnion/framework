@@ -5,6 +5,7 @@ namespace Tests\State\Factory;
 use Onion\Framework\Common\Config\Container;
 use Onion\Framework\State\Factory\FlowFactory;
 use Onion\Framework\State\Interfaces\FlowInterface;
+use Onion\Framework\State\Interfaces\HistoryInterface;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Container\ContainerInterface;
@@ -17,20 +18,24 @@ class FlowFactoryTest extends TestCase
 
     public function setUp(): void
     {
-        $config = $this->prophesize(Container::class);
-        $config->get('initial')->willReturn('foo');
-        $config->get('transitions')->willReturn([
+        $container = $this->prophesize(ContainerInterface::class);
+        $container->get(HistoryInterface::class)->shouldBeCalledOnce()->willReturn(
+            $this->prophesize(HistoryInterface::class)->reveal()
+        );
+        $container->get('workflows.test.states')->willReturn([
             [
-                'source' => 'foo',
-                'destination' => 'bar',
+                'from' => 'foo',
+                'to' => 'bar',
+                'handler' => fn () => true,
             ], [
-                'source' => 'bar',
-                'destination' => 'baz',
+                'from' => 'bar',
+                'to' => 'baz',
+                'handler' => fn () => true,
             ]
         ]);
-
-        $container = $this->prophesize(ContainerInterface::class);
-        $container->get('states.test')->willReturn($config->reveal());
+        $container->has('workflows.test.history')->willReturn(true);
+        $container->get('workflows.test.history')->willReturn(HistoryInterface::class);
+        $container->get('workflows.test.initial')->willReturn('foo');
 
         $this->container = $container->reveal();
     }
@@ -39,7 +44,7 @@ class FlowFactoryTest extends TestCase
     {
         $factory = new FlowFactory;
         /** @var FlowInterface $flow */
-        $flow = $factory->build($this->container, 'test')->build($this->container);
+        $flow = $factory->build($this->container, 'test')($this->container);
 
         $this->assertInstanceOf(FlowInterface::class, $flow);
         $this->assertTrue($flow->can('bar'));

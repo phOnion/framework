@@ -39,6 +39,7 @@ class RouteTest extends TestCase
         $this->assertSame(['head', 'get'], $route->getMethods());
         $this->assertTrue($route->hasMethod('HEAD'));
         $this->assertFalse($route->hasMethod('PUT'));
+        $this->assertNotSame($route, $route->withMethods(['head', 'get']));
     }
 
     public function testEmptyRequestHandler()
@@ -54,12 +55,14 @@ class RouteTest extends TestCase
         $this->assertSame(['foo' => 'bar'], $route->getParameters());
         $this->assertSame('bar', $route->getParameter('foo'));
         $this->assertNull($route->getParameter('baz'));
+        $this->assertNotSame($route, $route->withParameters(['foo' => 'bar']));
     }
 
     public function testHeaders()
     {
         $route = (new Route('/'))->withHeaders(['accept' => 'application/json']);
         $this->assertSame(['accept' => 'application/json'], $route->getHeaders());
+        $this->assertNotSame($route, $route->withHeaders(['accept' => 'application/json']));
     }
 
     public function testRequestHandling()
@@ -70,20 +73,14 @@ class RouteTest extends TestCase
 
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getMethod()->willReturn('get');
-        $request->hasHeader('accept')->willReturn(true)->shouldBeCalledOnce();
-        $request->getHeaderLine('accept')->willReturn('application/json')->shouldBeCalledOnce();
-        $request->hasHeader('accept-encoding')->willReturn(true)->shouldBeCalledOnce();
-        $request->getHeaderLine('accept-encoding')->willReturn('gzip')->shouldBeCalledOnce();
-        $request->hasHeader('accept-charset')->willReturn(true)->shouldBeCalledOnce();
-        $request->getHeaderLine('accept-charset')->willReturn('utf-8')->shouldBeCalledOnce();
-        $request->hasHeader('accept-language')->wilLReturn(true);
-        $request->getHeaderLine('accept-language')->willReturn('en, en-us;q=0.5');
         $request->withAttribute(new AnyValueToken, new AnyValueToken)->willReturn($request->reveal());
 
+        $handler = $requestHandler->reveal();
         $route = (new Route('/'))
             ->withMethods(['GET'])
-            ->withRequestHandler($requestHandler->reveal());
+            ->withRequestHandler($handler);
         $route->handle($request->reveal());
+        $this->assertNotSame($route, $route->withRequestHandler($handler));
     }
 
     public function testRequestHandlingWithMissingRequiredHeader()

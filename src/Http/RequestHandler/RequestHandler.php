@@ -10,30 +10,13 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 final class RequestHandler implements RequestHandlerInterface
 {
-    /** @var \Iterator */
-    protected $middleware;
-
-    /** @var Message\ResponseInterface|null */
-    protected $response;
-
     /**
-     * @param \Iterator|MiddlewareInterface[] $middleware Middleware of the frame
+     * @param \Iterator $middleware Middleware of the frame
      */
-    public function __construct(iterable $middleware, ?Message\ResponseInterface $response = null)
+    public function __construct(private iterable $middleware, private ?Message\ResponseInterface $response = null)
     {
         if (is_array($middleware)) {
-            $middleware = new \ArrayIterator($middleware);
-        }
-
-        $this->middleware = $middleware;
-        $this->response = $response;
-    }
-
-    public function __clone()
-    {
-        $this->middleware = clone $this->middleware;
-        if ($this->response !== null) {
-            $this->response = clone $this->response;
+            $this->middleware = new \ArrayIterator($middleware);
         }
     }
 

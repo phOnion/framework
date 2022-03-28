@@ -4,37 +4,34 @@ declare(strict_types=1);
 
 namespace Onion\Framework\State\Factory;
 
-use Onion\Framework\Common\Config\Container;
+use Closure;
 use Onion\Framework\Dependency\Interfaces\FactoryBuilderInterface;
-use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Onion\Framework\State\Flow;
-use Onion\Framework\State\Transition;
+use Onion\Framework\State\Interfaces\HistoryInterface;
 use Psr\Container\ContainerInterface;
 
 class FlowFactory implements FactoryBuilderInterface
 {
-    public function build(ContainerInterface $container, string $key): FactoryInterface
+    public function build(ContainerInterface $container, string $key): Closure
     {
-        return new class ($key, $container->get("states.{$key}")) implements FactoryInterface {
-            private $name;
-            private $states;
+        return function (ContainerInterface $container) use ($key) {
+            $flow = new Flow(
+                $key,
+                $container->get("workflows.{$key}.initial"),
+                $container->has("workflows.{$key}.history") ?
+                    $container->get($container->get("workflows.{$key}.history")) :
+                    null,
+            );
 
-            public function __construct(string $name, Container $states)
-            {
-                $this->name = $name;
-                $this->states = $states;
+            foreach ($container->get("workflows.{$key}.states") as $state) {
+                $flow->addTransition(
+                    $state['from'],
+                    $state['to'],
+                    $state['handler']
+                );
             }
 
-            public function build(\Psr\Container\ContainerInterface $container)
-            {
-                $flow = new Flow($this->name, $this->states->get('initial'));
-
-                foreach ($this->states->get('transitions') as $def) {
-                    $flow->addTransition(new Transition($def['source'], $def['destination'], $def['handler'] ?? null));
-                }
-
-                return $flow;
-            }
+            return $flow;
         };
     }
 }

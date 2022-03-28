@@ -14,31 +14,24 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 class Route implements RouteInterface
 {
-    /** @var string $name */
-    private $name;
-    /** @var string $pattern */
-    private $pattern;
-    /** @var RequestHandlerInterface|null $handler */
-    private $handler = null;
+    private ?RequestHandlerInterface $handler = null;
     /** @var string[] */
-    private $methods = [];
+    private array $methods = [];
     /** @var bool[] $headers*/
-    private $headers = [];
-    /** @var string[][] $preload */
-    private $preload = [];
+    private array $headers = [];
 
     /** @var string[] $parameters */
     private $parameters = [];
 
-    public function __construct(string $pattern, ?string $name = null)
-    {
-        $this->pattern = $pattern;
-        $this->name = $name ?? $pattern;
+    public function __construct(
+        private readonly string $pattern,
+        private readonly ?string $name = null,
+    ) {
     }
 
     public function getName(): string
     {
-        return $this->name;
+        return $this->name ?? $this->pattern;
     }
 
     public function getMethods(): array
@@ -77,7 +70,7 @@ class Route implements RouteInterface
 
     public function hasName(): bool
     {
-        return $this->name !== $this->getPattern();
+        return $this->name !== null;
     }
 
     public function hasMethod(string $method): bool
@@ -121,14 +114,6 @@ class Route implements RouteInterface
         return $self;
     }
 
-    public function withPreload(string $uri, array $params): RouteInterface
-    {
-        $self = clone $this;
-        $self->preload[$uri] = $params;
-
-        return $self;
-    }
-
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         foreach ($this->getHeaders() as $header => $required) {
@@ -141,38 +126,7 @@ class Route implements RouteInterface
             throw new MethodNotAllowedException($this->getMethods());
         }
 
-        if ($request->hasHeader('accept')) {
-            $accept = new Accept('accept', $request->getHeaderLine('accept'));
-            $request = $request->withAttribute('content', $accept);
-        }
-
-        if ($request->hasHeader('accept-encoding')) {
-            $accept = new Accept('accept-encoding', $request->getHeaderLine('accept-encoding'));
-            $request = $request->withAttribute('encoding', $accept);
-        }
-
-        if ($request->hasHeader('accept-charset')) {
-            $accept = new Accept('accept-charset', $request->getHeaderLine('accept-charset'));
-            $request = $request->withAttribute('charset', $accept);
-        }
-
-        if ($request->hasHeader('accept-language')) {
-            $accept = new Accept('accept-language', $request->getHeaderLine('accept-language'));
-            $request = $request->withAttribute('language', $accept);
-        }
-
-        $response = $this->getRequestHandler()
+        return $this->getRequestHandler()
             ->handle($request->withAttribute('route', $this));
-
-        foreach ($this->preload as $link => $props) {
-            $response = $response->withAddedHeader(
-                'Link',
-                "<{$link}>; " . implode('; ', array_map(function ($key) use ($props) {
-                    return "{$key}={$props[$key]}";
-                }, array_keys($props)))
-            );
-        }
-
-        return $response;
     }
 }

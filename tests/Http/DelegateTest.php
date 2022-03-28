@@ -75,6 +75,7 @@ class DelegateTest extends \PHPUnit\Framework\TestCase
         }
 
         $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Invalid middleware type');
         $request = $this->prophesize(ServerRequestInterface::class);
         $delegate = new Delegate(['bad-middleware']);
         $delegate->handle($request->reveal());

@@ -6,7 +6,7 @@ namespace Tests\Dependency;
 
 use Onion\Framework\Dependency\Container as OnionContainer;
 use Onion\Framework\Dependency\Exception\ContainerErrorException;
-use Onion\Framework\Dependency\Exception\UnknownDependency;
+use Onion\Framework\Dependency\Exception\UnknownDependencyException;
 use Onion\Framework\Dependency\Interfaces\AttachableContainer as Container;
 use Onion\Framework\Dependency\ProxyContainer;
 use Onion\Framework\Dependency\ReflectionContainer;
@@ -15,11 +15,11 @@ use Prophecy\Argument\Token\TypeToken;
 use Prophecy\PhpUnit\ProphecyTrait;
 use stdClass;
 use Tests\Dependency\Doubles\DependencyA;
+use Tests\Dependency\Doubles\DependencyB;
 use Tests\Dependency\Doubles\DependencyC;
-use Tests\Dependency\Doubles\DependencyD;
 use Tests\Dependency\Doubles\DependencyE;
-use Tests\Dependency\Doubles\DependencyF;
 use Tests\Dependency\Doubles\DependencyJ;
+use Tests\Dependency\Doubles\DependencyL;
 
 class DelegateContainerTest extends \PHPUnit\Framework\TestCase
 {
@@ -61,7 +61,7 @@ class DelegateContainerTest extends \PHPUnit\Framework\TestCase
 
         $this->assertFalse($delegate->has('foo'));
 
-        $this->expectException(UnknownDependency::class);
+        $this->expectException(UnknownDependencyException::class);
         $this->expectExceptionMessage('Unable to resolve \'foo\'');
         $delegate->get('foo');
     }
@@ -101,7 +101,7 @@ class DelegateContainerTest extends \PHPUnit\Framework\TestCase
         $delegate = new ProxyContainer();
         $this->assertFalse($delegate->has('foo'));
 
-        $this->expectException(UnknownDependency::class);
+        $this->expectException(UnknownDependencyException::class);
         $this->expectExceptionMessage('No containers provided, can\'t retrieve \'foo\'');
         $delegate->get('foo');
     }
@@ -116,7 +116,7 @@ class DelegateContainerTest extends \PHPUnit\Framework\TestCase
         $dummy->get('name')->willReturn('foo');
         $dummy->attach(new TypeToken(ProxyContainer::class));
         $dummy->has(DependencyE::class)->willReturn(true);
-        $dummy->get(DependencyE::class)->willThrow(new UnknownDependency(''));
+        $dummy->get(DependencyE::class)->willThrow(new UnknownDependencyException(''));
 
         $delegate->attach($dummy->reveal());
         $delegate->attach($container);
@@ -131,7 +131,7 @@ class DelegateContainerTest extends \PHPUnit\Framework\TestCase
         $delegate = new ProxyContainer();
         $dummy = $this->prophesize(Container::class);
         $dummy->has('foo')->willReturn(true);
-        $dummy->get('foo')->willThrow(new UnknownDependency(''));
+        $dummy->get('foo')->willThrow(new UnknownDependencyException(''));
         $dummy->attach(new TypeToken(ProxyContainer::class));
         $delegate->attach($dummy->reveal());
 
@@ -165,13 +165,14 @@ class DelegateContainerTest extends \PHPUnit\Framework\TestCase
         $dummy = $this->prophesize(Container::class);
         $dummy->attach($delegate)->shouldBeCalledOnce();
         $dummy->has('name')->willReturn(false);
-        $dummy->has(DependencyC::class)->willReturn(false);
-        $dummy->has('c')->willReturn(true);
-        $dummy->get('c')->willReturn($this->prophesize(DependencyC::class)->reveal());
+        $dummy->has(DependencyA::class)->willReturn(false);
+        $dummy->has(DependencyB::class)->willReturn(false);
+        $dummy->has(DependencyC::class)->willReturn(true);
+        $dummy->get(DependencyC::class)->willReturn($this->prophesize(DependencyC::class)->reveal());
         $delegate->attach($container);
         $delegate->attach($dummy->reveal());
 
-        $this->assertFalse($delegate->has(DependencyC::class));
+        $this->assertTrue($delegate->has(DependencyC::class));
         $this->assertInstanceOf(DependencyA::class, $container->get(DependencyA::class));
     }
 
@@ -199,5 +200,16 @@ class DelegateContainerTest extends \PHPUnit\Framework\TestCase
         $this->expectException(\TypeError::class);
         $this->expectExceptionMessage('stdClass given');
         $this->assertInstanceOf(DependencyA::class, $container->get(DependencyJ::class));
+    }
+
+    public function testUnionTypeReflectionError()
+    {
+        $this->expectException(ContainerErrorException::class);
+        $this->expectExceptionMessage(sprintf("Unable to resolve '%s'", DependencyL::class));
+        $delegate = new ProxyContainer();
+        $delegate->attach(new ReflectionContainer());
+
+        $this->assertTrue($delegate->has(DependencyL::class));
+        $delegate->get(DependencyL::class);
     }
 }

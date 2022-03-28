@@ -1,15 +1,12 @@
 <?php
+
 namespace Tests\Dependency;
 
 use Onion\Framework\Dependency\Container;
 use Onion\Framework\Dependency\Exception\ContainerErrorException;
-use Onion\Framework\Dependency\Exception\UnknownDependency;
 use Onion\Framework\Dependency\Interfaces\FactoryBuilderInterface;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
-use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
-use stdClass;
 use Tests\Dependency\Doubles\DependencyA;
 use Tests\Dependency\Doubles\DependencyB;
 use Tests\Dependency\Doubles\DependencyC;
@@ -21,12 +18,13 @@ use Tests\Dependency\Doubles\DependencyH;
 use Tests\Dependency\Doubles\DependencyI;
 use Tests\Dependency\Doubles\DependencyJ;
 use Tests\Dependency\Doubles\FactoryStub;
+use Onion\Framework\Dependency\Exception\UnknownDependencyException;
 
 class ContainerTest extends \PHPUnit\Framework\TestCase
 {
     public function testHasParameterCheck()
     {
-        $container = new Container( ['bar' => 'baz']);
+        $container = new Container(['bar' => 'baz']);
         $this->assertFalse($container->has('foo'));
         $this->assertFalse($container->has('bar'));
         $this->assertFalse($container->has(1));
@@ -47,25 +45,26 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
 
     public function testRetrievalOfInvokablesWithBadMapping()
     {
-        $container = new Container( [
+        $container = new Container([
             'invokables' =>  [
                 \stdClass::class => 1
             ]
         ]);
 
         $this->expectExceptionMessage('Unable to resolve');
-        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectException(ContainerErrorException::class);
         $container->get(\stdClass::class);
     }
 
     public function testRetrievalWhenUsingAFactory()
     {
-        $container = new Container( [
+        $container = new Container([
             'factories' =>  [
                 \stdClass::class => FactoryStub::class
-            ]
+            ],
         ]);
 
+        $this->assertTrue($container->has(FactoryStub::class));
         $this->assertTrue($container->has(\stdClass::class));
         $this->assertInstanceOf(\stdClass::class, $container->get(\stdClass::class));
         $this->assertNotSame($container->get(\stdClass::class), $container->get(\stdClass::class));
@@ -73,9 +72,9 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
 
     public function testExceptionOnNonExistingEntry()
     {
-        $container = new Container( []);
+        $container = new Container([]);
         $this->expectExceptionMessage('Unable to resolve');
-        $this->expectException(NotFoundExceptionInterface::class);
+        $this->expectException(UnknownDependencyException::class);
         $container->get('foo');
     }
 
@@ -89,8 +88,8 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
             $this->markTestSkipped('The "assert.exception" should be set to "1" to throw the exception');
         }
 
-        $this->expectExceptionMessage('Registered factory for \'stdClass\' must be a valid FQCN');
-        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage('Registered factory for \'stdClass\' must be a valid FQCN, boolean given',);
+        $this->expectException(ContainerErrorException::class);
         $container = new Container([
             'factories' =>  [
                 \stdClass::class => true,
@@ -110,9 +109,9 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         }
 
         $this->expectExceptionMessage('Factory for \'stdClass\' does not implement any of Dependency\\Interfaces');
-        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectException(ContainerErrorException::class);
         $container = new Container(
-             [
+            [
                 'factories' =>  [
                     \stdClass::class => \stdClass::class
                 ]
@@ -124,9 +123,9 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
     public function testExceptionWhenInvokableIsStringButNotAClass()
     {
         $this->expectExceptionMessage('Unable to resolve');
-        $this->expectException(UnknownDependency::class);
+        $this->expectException(UnknownDependencyException::class);
         $container = new Container(
-             [
+            [
                 'invokables' =>  [
                     \stdClass::class => 'FooBarDoesNotExistMan'
                 ]
@@ -146,7 +145,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         }
 
         $this->expectExceptionMessage('Unable to verify that "stdClass" is of type "SplFixedArray"');
-        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectException(ContainerErrorException::class);
         $container = new Container([
             'invokables' =>  [
                 \SplFixedArray::class => \stdClass::class
@@ -164,15 +163,20 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
 
     public function testDependencyTypeResolutionFromReflectionException()
     {
-        $this->expectException(ContainerErrorException::class);
-        $this->expectExceptionMessage('c(' . DependencyC::class . ')');
+        $this->expectException(UnknownDependencyException::class);
+        $this->expectExceptionMessage(sprintf(
+            "Unable to resolve %s: Unable to resolve %s: Unable to resolve non-nullable type '\$c(%s)'",
+            DependencyA::class,
+            DependencyB::class,
+            DependencyC::class,
+        ));
         $container = new Container([]);
         $container->get(DependencyA::class);
     }
 
     public function testDependencyLookupWhenBoundToInterface()
     {
-        $container = new Container( [
+        $container = new Container([
             'invokables' =>  [
                 DependencyC::class => DependencyD::class
             ]
@@ -183,24 +187,24 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
 
     public function testDependencyWithParameterOfUnknownType()
     {
-        $container = new Container( []);
+        $container = new Container([]);
 
-        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectException(ContainerErrorException::class);
         $container->get(DependencyE::class);
     }
 
     public function testUnknownInterfaceResolution()
     {
-        $container = new Container( []);
-        $this->expectException(ContainerExceptionInterface::class);
+        $container = new Container([]);
+        $this->expectException(ContainerErrorException::class);
         $container->get(DependencyF::class);
     }
 
     public function testExceptionOnConstructorParameterNotAvailable()
     {
         $container = new Container([]);
-        $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage('foo(mixed)');
+        $this->expectException(UnknownDependencyException::class);
+        $this->expectExceptionMessage(sprintf('Unable to resolve %s: Missing $foo(unknown)', DependencyH::class));
         $container->get(DependencyH::class);
     }
 
@@ -214,12 +218,17 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
     {
         $container = new Container([]);
         $this->expectException(ContainerErrorException::class);
+        $this->expectExceptionMessage(sprintf(
+            'Unable to resolve %s: Missing $testMockName(string)',
+            DependencyG::class,
+        ));
         $container->get(DependencyG::class);
     }
 
     public function testCreationFromFactoryWithInvalidReslut()
     {
-        $class = new class implements FactoryInterface {
+        $class = new class implements FactoryInterface
+        {
             public function build(\Psr\Container\ContainerInterface $container)
             {
                 // nothing is returned
@@ -227,47 +236,34 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         };
         $container = new Container([
             'factories' => [
-                \StdClass::class => get_class($class),
+                \stdClass::class => get_class($class),
             ],
             'invokables' => [
                 get_class($class) => $class,
             ]
         ]);
-        $this->assertTrue($container->has(\StdClass::class));
+        $this->assertTrue($container->has(\stdClass::class));
         $this->expectException(ContainerErrorException::class);
         $this->expectExceptionMessage('No factory available');
-        $container->get(\StdClass::class);
-    }
-
-    public function testExceptionOnHasInvalidKey()
-    {
-        $container = new Container([]);
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Provided key must be a string');
-        $this->assertFalse($container->has(new \stdClass));
-    }
-
-    public function testExceptionOnGetInvalidKey()
-    {
-        $container = new Container([]);
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Provided key must be a string');
-        $container->get(new \stdClass);
+        $container->get(\stdClass::class);
     }
 
     public function testFactoryBuilderCreation()
     {
-        $class = new class implements FactoryBuilderInterface {
+        $class = new class implements FactoryBuilderInterface
+        {
             public function build(\Psr\Container\ContainerInterface $container, string $key): FactoryInterface
             {
-                return new class ($key) implements FactoryInterface {
+                return new class($key) implements FactoryInterface
+                {
                     private $key;
                     public function __construct(string $name)
                     {
                         $this->key = $name;
                     }
 
-                    public function build(ContainerInterface $container) {
+                    public function build(ContainerInterface $container)
+                    {
                         return $container->get("Tests\\Dependency\\Doubles\\Dependency{$this->key}");
                     }
                 };

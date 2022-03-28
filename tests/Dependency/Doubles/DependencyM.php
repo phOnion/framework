@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Dependency\Doubles;
 
-class DependencyJ
+class DependencyM
 {
-    public function __construct(DependencyK $test)
+    public function __construct(?string $test)
     {
     }
 }

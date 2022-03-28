@@ -2,7 +2,6 @@
 
 namespace Tests\Router\Strategy\Factory;
 
-use Onion\Framework\Router\Interfaces\ResolverInterface;
 use Onion\Framework\Router\Strategy\Factory\RouteStrategyFactory;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;

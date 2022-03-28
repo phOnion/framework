@@ -60,15 +60,12 @@ class Accept implements Interfaces\AcceptInterface
      * is supported by the client. Not that this
      * checks as-is and does not try to determine
      * if `application/*` is supported for example
-     *
-     * @param string $contentType
-     * @return bool
      */
-    public function supports(string $contentType): bool
+    public function supports(string $value): bool
     {
         foreach (array_keys($this->types) as $pattern) {
             $pattern = str_replace(['.', '*', '/', '+'], ['\.', '(.*)', '\/', '\+'], $pattern);
-            if (preg_match("#^$pattern$#i", $contentType) > 0) {
+            if (preg_match("#^$pattern$#i", $value) > 0) {
                 return true;
             }
         }
@@ -77,15 +74,12 @@ class Accept implements Interfaces\AcceptInterface
 
     /**
      * Retrieves the 'weight' of the $contentType provided.
-     *
-     * @param string $contentType
-     * @return float
      */
-    public function getPriority(string $contentType): float
+    public function getPriority(string $value): float
     {
         foreach ($this->types as $pattern => $weight) {
             $pattern = str_replace(['*', '.', '/', '+'], ['(.*)', '.', '\/', '\+'], $pattern);
-            if (preg_match("#^$pattern$#i", $contentType) > 0) {
+            if (preg_match("#^$pattern$#i", $value) > 0) {
                 return $weight;
             }
         }

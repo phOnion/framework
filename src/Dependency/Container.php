@@ -7,13 +7,16 @@ namespace Onion\Framework\Dependency;
 use Onion\Framework\Common\Dependency\Traits\AttachableContainerTrait;
 use Onion\Framework\Common\Dependency\Traits\ContainerTrait;
 use Onion\Framework\Dependency\Exception\ContainerErrorException;
-use Onion\Framework\Dependency\Exception\UnknownDependency;
+use Onion\Framework\Dependency\Exception\UnknownDependencyException;
 use Onion\Framework\Dependency\Interfaces\AttachableContainer;
 use Onion\Framework\Dependency\Interfaces\FactoryBuilderInterface;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use RuntimeException;
+use Stringable;
+use Closure;
 
 /**
  * Class Container
@@ -48,45 +51,31 @@ final class Container extends ReflectionContainer implements AttachableContainer
     /**
      * Finds an entry of the container by its identifier and returns it.
      *
-     * @param string $key Identifier of the entry to look for.
+     * @param string $id Identifier of the entry to look for.
      *
-     * @throws NotFoundExceptionInterface|UnknownDependency  No entry was found for this identifier.
+     * @throws NotFoundExceptionInterface|UnknownDependencyException  No entry was found for this identifier.
      * @throws ContainerExceptionInterface|ContainerErrorException Error while retrieving the entry.
      * @throws \InvalidArgumentException If the provided identifier is not a string
      *
      * @return mixed Entry.
      */
-    public function get($key): mixed
+    public function get(string $id): mixed
     {
-        assert(
-            $this->isKeyValid($key),
-            new \InvalidArgumentException(sprintf(
-                'Provided key must be a string, %s given',
-                gettype($key)
-            ))
-        );
-
         try {
-            if (isset($this->invokables[$key])) {
-                return $this->retrieveInvokable($key);
-            }
-
-            if (isset($this->factories[$key])) {
-                return $this->retrieveFromFactory($key);
-            }
-
-            if (parent::has($key)) {
-                return parent::get($key);
-            }
-
-            if ($this->getDelegate()->has($key)) {
-                return $this->getDelegate()->get($key);
+            if (isset($this->invokables[$id])) {
+                return $this->retrieveInvokable($id);
+            } elseif (isset($this->factories[$id])) {
+                return $this->retrieveFromFactory($id);
+            } elseif (parent::has($id)) {
+                return parent::get($id);
+            } elseif ($this->getDelegate()->has($id)) {
+                return $this->getDelegate()->get($id);
             }
         } catch (\RuntimeException | \InvalidArgumentException $ex) {
-            throw new ContainerErrorException($ex->getMessage(), 0, $ex);
+            throw new ContainerErrorException($ex->getMessage(), previous: $ex);
         }
 
-        throw new UnknownDependency(sprintf('Unable to resolve "%s"', $key));
+        throw new UnknownDependencyException(sprintf('Unable to resolve "%s"', $id));
     }
 
     /**
@@ -97,36 +86,31 @@ final class Container extends ReflectionContainer implements AttachableContainer
      *
      * @return boolean
      */
-    public function has($key): bool
+    public function has(string $id): bool
     {
-        if (!$this->isKeyValid($key)) {
-            throw new \InvalidArgumentException(sprintf(
-                'Provided key must be a string, %s given',
-                gettype($key)
-            ));
-        }
-
-        return (isset($this->invokables[$key]) || isset($this->factories[$key])) ?: parent::has($key);
+        return (isset($this->invokables[$id]) || isset($this->factories[$id])) ?: parent::has($id);
     }
 
     /**
      * @param string $className
      * @return object
      *
-     * @throws UnknownDependency
+     * @throws UnknownDependencyException
      */
     private function retrieveInvokable(string $className): object
     {
         $dependency = $this->invokables[$className];
+
         if (is_object($dependency)) {
             return $this->enforceReturnType($className, $dependency);
         }
 
-        if (!$this->has($dependency)) {
-            throw new UnknownDependency(
+        assert(
+            is_string($dependency) && $this->has($dependency),
+            new UnknownDependencyException(
                 "Unable to resolve '{$dependency}'. Consider using a factory"
-            );
-        }
+            )
+        );
 
         return $this->enforceReturnType($className, parent::get($dependency));
     }
@@ -145,7 +129,7 @@ final class Container extends ReflectionContainer implements AttachableContainer
             )
         );
 
-        if (is_callable($name)) {
+        if ($name instanceof Closure) {
             return $this->enforceReturnType($className, call_user_func($name, $this));
         }
 
@@ -154,31 +138,25 @@ final class Container extends ReflectionContainer implements AttachableContainer
             new \InvalidArgumentException("Provided '{$name}' does not exist")
         );
 
-        $factoryReflection = new \ReflectionClass($name);
-
         assert(
-            $factoryReflection->implementsInterface(FactoryInterface::class) ||
-                $factoryReflection->implementsInterface(FactoryBuilderInterface::class),
+            in_array(FactoryInterface::class, class_implements($name) ?: []) ||
+                in_array(FactoryBuilderInterface::class, class_implements($name) ?: []),
             new ContainerErrorException(
                 "Factory for '{$className}' does not implement any of Dependency\\Interfaces"
             )
         );
 
         $factory = $this->get($name);
+
+
+
         if ($factory instanceof FactoryBuilderInterface) {
             $factory = $factory->build($this->getDelegate(), $className);
         }
 
-        if ($factory instanceof FactoryInterface) {
-            $factoryResult = $factory->build($this->getDelegate());
-        }
-
-        if (!isset($factoryResult)) {
-            throw new \RuntimeException(
-                "No factory available to build {$className}"
-            );
-        }
-
-        return $this->enforceReturnType($className, $factoryResult);
+        return $this->enforceReturnType(
+            $className,
+            $factory->build($this->getDelegate())
+        );
     }
 }

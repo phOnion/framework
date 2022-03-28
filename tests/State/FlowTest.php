@@ -2,11 +2,13 @@
 
 namespace Tests\State;
 
+use Countable;
 use Onion\Framework\State\Exceptions\TransitionException;
 use Onion\Framework\State\Flow;
 use Onion\Framework\State\Interfaces\HistoryInterface;
 use Onion\Framework\State\Interfaces\TransitionInterface;
 use PHPUnit\Framework\TestCase;
+use Prophecy\Argument;
 use Prophecy\Argument\Token\TypeToken;
 use Prophecy\PhpUnit\ProphecyTrait;
 use stdClass;
@@ -17,21 +19,13 @@ class FlowTest extends TestCase
 
     public function testBaseFunctionality()
     {
-        $transition = $this->prophesize(TransitionInterface::class);
-        $transition->getSource()->willReturn('bar');
-        $transition->getDestination()->willReturn('baz');
-        $transition->withArguments(new stdClass)
-            ->willReturn($transition->reveal())
-            ->shouldBeCalledOnce();
-        $transition->__invoke()->willReturn(true);
-
         $flow = new Flow('foo', 'bar');
-        $flow->addTransition($transition->reveal());
+        $flow->addTransition('bar', 'baz', fn () => true);
         $this->assertSame('bar', $flow->getState());
-        $this->assertSame('foo', $flow->getName());
-        $this->assertCount(0, $flow->getHistory());
+        $this->assertSame('foo', $flow->name);
+        $this->assertNull($flow->history);
         $this->assertFalse($flow->can('test'));
-        $this->assertNotEmpty($flow->getPossibleTransitions());
+        $this->assertNotNull($flow->getBranches());
         $this->assertTrue($flow->apply('baz', new stdClass));
         $this->assertNotSame($flow, $flow->reset());
         $this->assertNotSame($flow->getState(), $flow->reset()->getState());
@@ -40,39 +34,28 @@ class FlowTest extends TestCase
 
     public function testBaseTransitioning()
     {
-        $t1 = $this->prophesize(TransitionInterface::class);
-        $t1->getSource()->willReturn('bar')->shouldBeCalledOnce();
-        $t1->getDestination()->willReturn('baz')->shouldBeCalledOnce();
-        $t1->__invoke()->willReturn(true)->shouldBeCalledOnce();
-        $t1->withArguments(new TypeToken(\stdClass::class))->willReturn($t1->reveal())->shouldBeCalledOnce();
-
-        $flow = new Flow('foo', 'bar');
-        $flow->addTransition($t1->reveal());
+        $history = $this->prophesize(HistoryInterface::class);
+        $history->add('bar', 'baz', [])->shouldBeCalledOnce();
+        $flow = new Flow('foo', 'bar', $history->reveal());
+        $flow->addTransition('bar', 'baz', fn () => true);
+        $flow->addTransition('bar', 'bam', fn () => true);
 
         $this->assertTrue($flow->can('baz'));
-        $this->assertCount(0, $flow->getHistory());
-        $this->assertSame(['baz'], $flow->getPossibleTransitions());
+        $this->assertSame(['baz', 'bam'], $flow->reset()->getBranches());
         $this->assertTrue($flow->apply('baz', new \stdClass));
-        $this->assertCount(1, $flow->getHistory());
-        $this->assertEmpty($flow->getPossibleTransitions());
+        $this->assertNull($flow->getBranches());
     }
 
     public function testFailedTransitionHandler()
     {
-        $t1 = $this->prophesize(TransitionInterface::class);
-        $t1->getSource()->willReturn('bar')->shouldBeCalledOnce();
-        $t1->getDestination()->willReturn('baz')->shouldBeCalledOnce();
-        $t1->__invoke()->willReturn(false)->shouldBeCalledOnce();
-        $t1->withArguments(new TypeToken(\stdClass::class))->willReturn($t1->reveal())->shouldBeCalledOnce();
-
-        $flow = new Flow('foo', 'bar');
-        $flow->addTransition($t1->reveal());
+        $history = $this->prophesize(HistoryInterface::class);
+        $history->add('bar', 'baz', [])->shouldBeCalledOnce();
+        $flow = new Flow('foo', 'bar', $history->reveal());
+        $flow->addTransition('bar', 'baz', fn () => false);
 
 
         $this->assertTrue($flow->can('baz'));
-        $this->assertCount(0, $flow->getHistory());
         $this->assertFalse($flow->apply('baz', new \stdClass));
-        $this->assertCount(1, $flow->getHistory());
     }
 
     public function testUndefinedTransition()
@@ -81,13 +64,39 @@ class FlowTest extends TestCase
         $this->expectExceptionMessage(
             'Moving from \'foo\' to \'bar\''
         );
+        $history = $this->prophesize(HistoryInterface::class);
+        $history->add('foo', 'bar', [])->shouldBeCalledOnce();
+        $history = $history->reveal();
 
         try {
-            $flow = new Flow('test', 'foo');
+            $flow = new Flow('test', 'foo', $history);
             $flow->apply('bar', new \stdClass);
         } catch (TransitionException $ex) {
             $this->assertInstanceOf(HistoryInterface::class, $ex->getHistory());
-            $this->assertCount(1, $ex->getHistory());
+            $this->assertSame($history, $ex->getHistory());
+
+            throw $ex;
+        }
+    }
+
+    public function testExceptionDuringTransition()
+    {
+        $this->expectException(TransitionException::class);
+        $this->expectExceptionMessage("Transition from 'foo' to 'bar' failed");
+
+        $history = $this->prophesize(HistoryInterface::class);
+        $history->add('foo', 'bar', [])->shouldBeCalledOnce();
+        $history = $history->reveal();
+
+        try {
+            $flow = new Flow('test', 'foo', $history);
+            $flow->addTransition('foo', 'bar', function () {
+                throw new \RuntimeException('Test');
+            });
+            $flow->apply('bar', new \stdClass);
+        } catch (TransitionException $ex) {
+            $this->assertInstanceOf(HistoryInterface::class, $ex->getHistory());
+            $this->assertSame($history, $ex->getHistory());
 
             throw $ex;
         }
@@ -97,14 +106,10 @@ class FlowTest extends TestCase
     {
         $this->expectException(TransitionException::class);
 
-        $t1 = $this->prophesize(TransitionInterface::class);
-        $t1->getSource()->willReturn('foo')->shouldBeCalledOnce();
-        $t1->getDestination()->willReturn('bar')->shouldBeCalledOnce();
-        $t1->__invoke()->willThrow(new \Exception('OK'))->shouldBeCalledOnce();
-        $t1->withArguments(new TypeToken(\stdClass::class))->willReturn($t1->reveal())->shouldBeCalledOnce();
-
         $flow = new Flow('test', 'foo');
-        $flow->addTransition($t1->reveal());
+        $flow->addTransition('foo', 'bar', function () {
+            throw new \Exception('OK');
+        });
 
         $flow->apply('bar', new \stdClass);
     }

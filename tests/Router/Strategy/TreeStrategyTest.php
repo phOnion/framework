@@ -121,4 +121,22 @@ class TreeStrategyTest extends TestCase
             $strategy->resolve('GET', '/test/foo/bar/')
         );
     }
+
+    public function testConditionalResolution()
+    {
+        $route = $this->prophesize(RouteInterface::class);
+        $route->hasMethod('GET')->willReturn(true);
+        $route->getMethods()->willReturn(['GET']);
+        $route->getPattern()->willReturn('/a/b/c/d/e/{f}?');
+        $route->withParameters([
+            'f' => null,
+        ])->willReturn($route->reveal())
+            ->shouldBeCalledOnce();
+
+        $strategy = new TreeStrategy([$route->reveal()]);
+        $this->assertInstanceOf(
+            RouteInterface::class,
+            $strategy->resolve('GET', '/a/b/c/d/e'),
+        );
+    }
 }

@@ -53,10 +53,50 @@ class HttpErrorMiddlewareTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($response->hasHeader('proxy-authenticate'));
     }
 
-    public function testConditionalsException()
+    public function testConditionalMatchException()
     {
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new MissingHeaderException('if-match'));
+
+        $response = $this->middleware->process($this->request->reveal(), $this->handler->reveal());
+
+        $this->assertSame(428, $response->getStatusCode());
+    }
+
+    public function testConditionalNonMatchException()
+    {
+        $this->handler->handle(new AnyValueToken())
+            ->willThrow(new MissingHeaderException('if-none-match'));
+
+        $response = $this->middleware->process($this->request->reveal(), $this->handler->reveal());
+
+        $this->assertSame(428, $response->getStatusCode());
+    }
+
+    public function testConditionalModifiedSinceException()
+    {
+        $this->handler->handle(new AnyValueToken())
+            ->willThrow(new MissingHeaderException('if-modified-since'));
+
+        $response = $this->middleware->process($this->request->reveal(), $this->handler->reveal());
+
+        $this->assertSame(428, $response->getStatusCode());
+    }
+
+    public function testConditionalUnmodifiedSinceException()
+    {
+        $this->handler->handle(new AnyValueToken())
+            ->willThrow(new MissingHeaderException('if-unmodified-since'));
+
+        $response = $this->middleware->process($this->request->reveal(), $this->handler->reveal());
+
+        $this->assertSame(428, $response->getStatusCode());
+    }
+
+    public function testConditionalRangeException()
+    {
+        $this->handler->handle(new AnyValueToken())
+            ->willThrow(new MissingHeaderException('if-range'));
 
         $response = $this->middleware->process($this->request->reveal(), $this->handler->reveal());
 

@@ -24,8 +24,10 @@ class HttpErrorMiddleware implements MiddlewareInterface
         $this->proxyAuthorization = $proxyAuth;
     }
 
-    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
-    {
+    public function process(
+        ServerRequestInterface $request,
+        RequestHandlerInterface $handler
+    ): ResponseInterface {
         try {
             return $handler->handle($request);
         } catch (MissingHeaderException $ex) {
@@ -57,8 +59,9 @@ class HttpErrorMiddleware implements MiddlewareInterface
         } catch (NotFoundException $ex) {
             return new Response(404);
         } catch (NotAllowedException $ex) {
-            return (new Response(405))
-                ->withHeader('Allow', $ex->getAllowedMethods());
+            return (new Response(405, [
+                'Allow' => $ex->getAllowedMethods()
+            ]));
         } catch (\BadMethodCallException $ex) {
             return (new Response(
                 in_array(strtolower($request->getMethod()), ['get', 'head']) ? 503 : 501

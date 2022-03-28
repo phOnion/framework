@@ -7,7 +7,7 @@ namespace Onion\Framework\Dependency;
 use Onion\Framework\Common\Dependency\Traits\ContainerTrait;
 use Onion\Framework\Common\Dependency\Traits\DelegateContainerTrait;
 use Onion\Framework\Dependency\Exception\ContainerErrorException;
-use Onion\Framework\Dependency\Exception\UnknownDependency;
+use Onion\Framework\Dependency\Exception\UnknownDependencyException;
 use Onion\Framework\Dependency\Interfaces\DelegateContainerInterface;
 use Psr\Container\ContainerInterface;
 
@@ -21,7 +21,7 @@ class ProxyContainer implements ContainerInterface, DelegateContainerInterface, 
     public function get($id): mixed
     {
         if (count($this) === 0) {
-            throw new UnknownDependency("No containers provided, can't retrieve '{$id}'");
+            throw new UnknownDependencyException("No containers provided, can't retrieve '{$id}'");
         }
 
         $resolvers = [];
@@ -33,7 +33,7 @@ class ProxyContainer implements ContainerInterface, DelegateContainerInterface, 
 
         $result = null;
         if (empty($resolvers)) {
-            throw new UnknownDependency("Unable to resolve '{$id}'");
+            throw new UnknownDependencyException("Unable to resolve '{$id}'");
         }
 
         foreach ($resolvers as $resolver) {

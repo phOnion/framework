@@ -11,6 +11,6 @@ use Psr\Container\NotFoundExceptionInterface;
  *
  * @package Onion\Framework\Dependency\Exception
  */
-class UnknownDependency extends ContainerErrorException implements NotFoundExceptionInterface
+class UnknownDependencyException extends ContainerErrorException implements NotFoundExceptionInterface
 {
 }
