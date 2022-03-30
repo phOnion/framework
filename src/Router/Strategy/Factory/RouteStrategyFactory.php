@@ -12,7 +12,7 @@ use Onion\Framework\Router\Strategy\TreeStrategy;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 
-use function Onion\Framework\Common\generator;
+use function Onion\Framework\generator;
 
 class RouteStrategyFactory implements FactoryInterface
 {

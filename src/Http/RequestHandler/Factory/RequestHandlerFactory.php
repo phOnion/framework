@@ -11,7 +11,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\MiddlewareInterface;
 
-use function Onion\Framework\Common\generator;
+use function Onion\Framework\generator;
 
 class RequestHandlerFactory implements FactoryInterface
 {

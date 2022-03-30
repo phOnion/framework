@@ -9,7 +9,7 @@ use Onion\Framework\Router\Exceptions\NotFoundException;
 use Onion\Framework\Router\Interfaces\ResolverInterface;
 use Onion\Framework\Router\Interfaces\RouteInterface;
 
-use function Onion\Framework\Common\normalize_tree_keys;
+use function Onion\Framework\normalize_tree_keys;
 
 class TreeStrategy implements ResolverInterface
 {

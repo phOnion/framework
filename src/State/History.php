@@ -6,7 +6,7 @@ namespace Onion\Framework\State;
 
 use Onion\Framework\State\Interfaces\HistoryInterface;
 
-use function Onion\Framework\Common\generator;
+use function Onion\Framework\generator;
 
 class History implements \IteratorAggregate, HistoryInterface, \Countable
 {

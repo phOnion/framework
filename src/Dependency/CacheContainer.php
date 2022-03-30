@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Onion\Framework\Dependency;
 
-use Onion\Framework\Common\Dependency\Traits\ContainerTrait;
-use Onion\Framework\Common\Dependency\Traits\WrappingContainerTrait;
+use Onion\Framework\Dependency\Traits\ContainerTrait;
+use Onion\Framework\Dependency\Traits\WrappingContainerTrait;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
 use Onion\Framework\Dependency\Interfaces\WrappingContainerInterface;
 use Psr\Container\ContainerInterface;

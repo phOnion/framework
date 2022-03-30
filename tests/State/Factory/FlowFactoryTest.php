@@ -2,7 +2,7 @@
 
 namespace Tests\State\Factory;
 
-use Onion\Framework\Common\Config\Container;
+use Onion\Framework\Config\Container;
 use Onion\Framework\State\Factory\FlowFactory;
 use Onion\Framework\State\Interfaces\FlowInterface;
 use Onion\Framework\State\Interfaces\HistoryInterface;
