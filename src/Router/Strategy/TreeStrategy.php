@@ -31,7 +31,8 @@ class TreeStrategy implements ResolverInterface
     public function resolve(string $method, string $path): RouteInterface
     {
         $params = [];
-        $route = $this->match($this->routes, explode('/', trim($path, '/')), $params);
+        $path = trim($path, '/');
+        $route = $this->match($this->routes, $path !== '' ? explode('/', $path) : [], $params);
 
         if ($route === null) {
             throw new NotFoundException("No match for '{$path}' found");
