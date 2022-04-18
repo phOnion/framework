@@ -22,7 +22,7 @@ class TreeStrategy implements ResolverInterface
     public function __construct(iterable $routes)
     {
         foreach ($routes as $route) {
-            $this->routes[$route->getPattern()] = $route;
+            $this->routes["{$route->getPattern()}/@"] = $route;
         }
 
         $this->routes = normalize_tree_keys($this->routes, '/');
@@ -48,13 +48,19 @@ class TreeStrategy implements ResolverInterface
 
     private function match(array $routes, array $parts, array &$params = []): ?RouteInterface
     {
-        $part = (string) array_shift($parts);
+        $part = array_shift($parts);
+
+        if ($part === null) {
+            return $routes['@'] ?? null;
+        }
 
         foreach ($routes as $segment => $remaining) {
             $compiled = $this->compile((string) $segment);
 
             foreach ($compiled as $segment => $param) {
                 $segment = trim($segment, '/');
+
+
                 if (preg_match("~^{$segment}$~i", $part, $matches, PREG_OFFSET_CAPTURE) > 0) {
                     foreach ($param as $index => $key) {
                         $params[$key] = $matches[$index][0];
@@ -63,8 +69,6 @@ class TreeStrategy implements ResolverInterface
                     if (is_array($remaining)) {
                         return $this->match($remaining, $parts, $params);
                     }
-
-                    return $remaining instanceof RouteInterface ? $remaining : null;
                 }
             }
         }
