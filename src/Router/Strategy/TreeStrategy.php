@@ -48,12 +48,11 @@ class TreeStrategy implements ResolverInterface
 
     private function match(array $routes, array $parts, array &$params = []): ?RouteInterface
     {
-        $part = array_shift($parts);
-
-        if ($part === null) {
+        if ($parts === []) {
             return $routes['@'] ?? null;
         }
 
+        $part = array_shift($parts);
         foreach ($routes as $segment => $remaining) {
             $compiled = $this->compile((string) $segment);
 
