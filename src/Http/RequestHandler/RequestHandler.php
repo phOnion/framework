@@ -20,6 +20,11 @@ final class RequestHandler implements RequestHandlerInterface
         }
     }
 
+    public function __clone()
+    {
+        $this->middleware->rewind();
+    }
+
     /**
      * @param Message\ServerRequestInterface $request
      *
