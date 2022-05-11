@@ -14,20 +14,34 @@ use Psr\Http\Message\ResponseInterface;
 
 use function Onion\Framework\generator;
 
-class RouteStrategyFactory implements FactoryInterface
+class TreeStrategyFactory implements FactoryInterface
 {
     public function build(ContainerInterface $container)
     {
         $target = $container->has('router.resolver') ?
             $container->get('router.resolver') : TreeStrategy::class;
 
+        $groups = $container->has('router.groups') ?
+            $container->get('router.groups') : [];
+
         assert(class_exists($target), new \InvalidArgumentException(
             "Provided '{$target}' does not exist."
         ));
 
         $routes = $container->get('routes');
-        $generator = generator(function () use ($routes, $container) {
+        $generator = generator(function () use ($groups, $routes, $container) {
+
             foreach ($routes as $route) {
+                $group = isset($route['group']) ? array_merge([
+                    'prefix' => '',
+                    'middleware' => [],
+                    'headers' => [],
+                ], $groups[$route['group']] ?? []) : [
+                    'prefix' => '',
+                    'middleware' => [],
+                    'headers' => [],
+                ];
+
                 assert(
                     isset($route['pattern']),
                     new \InvalidArgumentException("Missing 'pattern' key of route")
@@ -39,15 +53,15 @@ class RouteStrategyFactory implements FactoryInterface
                 );
 
                 /** @var Route $object */
-                $object = (new Route($route['pattern'], $route['name'] ?? $route['pattern']))
+                $object = (new Route("{$group['prefix']}{$route['pattern']}", $route['name'] ?? $route['pattern']))
                     ->withMethods($route['methods'] ?? ['GET', 'HEAD'])
-                    ->withHeaders($route['headers'] ?? []);
+                    ->withHeaders(array_merge($group['headers'], $route['headers'] ?? []));
 
                 $responseTemplate = $container->has(ResponseInterface::class) ?
                     $container->get(ResponseInterface::class) : new Response();
 
-                yield $object->withRequestHandler(new RequestHandler(generator(function () use ($route, $container) {
-                    foreach ($route['middleware'] as $class) {
+                yield $object->withRequestHandler(new RequestHandler(generator(function () use ($group, $route, $container) {
+                    foreach ([...$group['middleware'], ...$route['middleware']] as $class) {
                         yield $container->get($class);
                     }
                 }), $responseTemplate));

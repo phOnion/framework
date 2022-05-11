@@ -2,27 +2,30 @@
 
 namespace Tests\Router\Strategy\Factory;
 
-use Onion\Framework\Router\Strategy\Factory\RouteStrategyFactory;
+use Onion\Framework\Router\Strategy\Factory\TreeStrategyFactory;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 
-class RouteStrategyFactoryTest extends TestCase
+class TreeStrategyFactoryTest extends TestCase
 {
-    /** @var RouteStrategyFactory $factory */
+    /** @var TreeStrategyFactory $factory */
     private $factory;
 
     use ProphecyTrait;
 
     public function setUp(): void
     {
-        $this->factory = new RouteStrategyFactory();
+        $this->factory = new TreeStrategyFactory();
     }
 
     public function testBadResolver()
     {
         $container = $this->prophesize(ContainerInterface::class);
+        $container->has('router.groups')
+            ->willReturn(false)
+            ->shouldBeCalledOnce();
         $container->has('router.resolver')
             ->willReturn(true)
             ->shouldBeCalledOnce();
@@ -39,6 +42,12 @@ class RouteStrategyFactoryTest extends TestCase
     public function testBasicResolution()
     {
         $container = $this->prophesize(ContainerInterface::class);
+        $container->has('router.groups')
+            ->willReturn(true)
+            ->shouldBeCalledOnce();
+        $container->get('router.groups')
+            ->willReturn(['foo' => ['prefix' => '/foo']])
+            ->shouldBeCalledOnce();
         $container->has('router.resolver')
             ->willReturn(false)
             ->shouldBeCalledOnce();
@@ -72,6 +81,11 @@ class RouteStrategyFactoryTest extends TestCase
                     'middleware' => [
                         'baz',
                     ]
+                ], [
+                    'pattern' => '/bar',
+                    'middleware' => [
+                        'foobar',
+                    ],
                 ],
             ])->shouldBeCalledOnce();
         $this->factory->build($container->reveal());
