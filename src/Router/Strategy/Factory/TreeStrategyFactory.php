@@ -11,8 +11,10 @@ use Onion\Framework\Router\Route;
 use Onion\Framework\Router\Strategy\TreeStrategy;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
+use RuntimeException;
 
 use function Onion\Framework\generator;
+use function Onion\Framework\merge;
 
 class TreeStrategyFactory implements FactoryInterface
 {
@@ -23,6 +25,18 @@ class TreeStrategyFactory implements FactoryInterface
 
         $groups = $container->has('router.groups') ?
             $container->get('router.groups') : [];
+
+        foreach ($groups as $name => $group) {
+            if (isset($group['extends'])) {
+                assert(
+                    isset($groups[$group['extends']]),
+                    new RuntimeException(
+                        "Route group '{$name}' attempts to extend group '{$group['extends']}' that does not exist"
+                    )
+                );
+                $groups[$name] = merge($group, $groups[$group['extends']]);
+            }
+        }
 
         assert(class_exists($target), new \InvalidArgumentException(
             "Provided '{$target}' does not exist."
