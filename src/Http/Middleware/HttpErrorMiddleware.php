@@ -16,16 +16,11 @@ use Psr\Log\LoggerInterface;
 
 class HttpErrorMiddleware implements MiddlewareInterface
 {
-    private $baseAuthorization;
-    private $proxyAuthorization;
-
     public function __construct(
-        string $baseAuth = 'bearer',
-        string $proxyAuth = 'basic',
+        private readonly string $baseAuthorization = 'bearer',
+        private readonly string $proxyAuthorization = 'basic',
         private readonly ?LoggerInterface $logger = null,
     ) {
-        $this->baseAuthorization = $baseAuth;
-        $this->proxyAuthorization = $proxyAuth;
     }
 
     public function process(
