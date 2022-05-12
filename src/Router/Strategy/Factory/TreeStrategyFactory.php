@@ -46,7 +46,7 @@ class TreeStrategyFactory implements FactoryInterface
         $generator = generator(function () use ($groups, $routes, $container) {
 
             foreach ($routes as $route) {
-                $group = isset($route['group']) ? array_merge([
+                $group = isset($route['group']) ? merge([
                     'prefix' => '',
                     'middleware' => [],
                     'headers' => [],
