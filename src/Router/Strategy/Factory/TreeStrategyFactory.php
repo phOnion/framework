@@ -74,11 +74,14 @@ class TreeStrategyFactory implements FactoryInterface
                 $responseTemplate = $container->has(ResponseInterface::class) ?
                     $container->get(ResponseInterface::class) : new Response();
 
-                yield $object->withRequestHandler(new RequestHandler(generator(function () use ($group, $route, $container) {
-                    foreach ([...$group['middleware'], ...$route['middleware']] as $class) {
-                        yield $container->get($class);
-                    }
-                }), $responseTemplate));
+                yield $object->withRequestHandler(new RequestHandler(
+                    generator(function () use ($group, $route, $container) {
+                        foreach ([...$group['middleware'], ...$route['middleware']] as $class) {
+                            yield $container->get($class);
+                        }
+                    }),
+                    $responseTemplate
+                ));
             }
         });
 

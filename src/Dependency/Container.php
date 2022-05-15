@@ -12,6 +12,8 @@ use Onion\Framework\Dependency\Traits\ContainerTrait;
 
 class Container extends ReflectionContainer implements ContainerInterface
 {
+    use ContainerTrait;
+
     private bool $initialized = false;
 
     /** @var ServiceProviderInterface[] */
@@ -27,8 +29,6 @@ class Container extends ReflectionContainer implements ContainerInterface
     private array $singleton = [];
     /** @var array[] */
     private array $extend = [];
-
-    use ContainerTrait;
 
     public function register(ServiceProviderInterface $provider): void
     {
