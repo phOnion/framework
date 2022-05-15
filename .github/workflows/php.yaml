@@ -13,21 +13,27 @@ jobs:
       matrix:
         operating-system: [ubuntu-latest, windows-latest, macos-latest]
         php-versions: ["8.1", "8.2"]
+        ts: ["ts", "nts"]
     name: PHP ${{matrix.php-versions}} on ${{matrix.operating-system}}
     steps:
       - uses: actions/checkout@v2
 
       - name: Setup PHP
+        continue-on-error: ${{ matrix.php-versions != '8.1' }}
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{matrix.php-versions}}
           ini-values: zend.assertions = 1, assert.active = On, assert.exception=1, assert.bail=1
           coverage: xdebug
-
+        env:
+          phpts: ${{matrix.ts}}
+          update: true
       - name: Validate composer.json and composer.lock
+        continue-on-error: ${{ matrix.php-versions != '8.1' }}
         run: composer validate --strict
 
       - name: Cache Composer packages
+        continue-on-error: ${{ matrix.php-versions != '8.1' }}
         id: composer-cache
         uses: actions/cache@v2
         with:
@@ -37,16 +43,21 @@ jobs:
             ${{ runner.os }}-php-
 
       - name: Install dependencies
-        run: composer install --no-progress -q --no-interaction
+        continue-on-error: ${{ matrix.php-versions != '8.1' }}
+        run: composer install --no-progress --no-interaction --ignore-platform-reqs
 
       # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
       # Docs: https://getcomposer.org/doc/articles/scripts.md
 
       - name: Lint
+        continue-on-error: ${{ matrix.php-versions != '8.1' }}
         run: composer lint
       - name: Run test suite
+        continue-on-error: ${{ matrix.php-versions != '8.1' }}
         run: composer test
       - name: Run infection tests
+        continue-on-error: ${{ matrix.php-versions != '8.1' }}
         run: composer infect
       - name: Psalm
+        continue-on-error: ${{ matrix.php-versions != '8.1' }}
         run: composer psalm
