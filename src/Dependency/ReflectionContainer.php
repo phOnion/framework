@@ -12,7 +12,6 @@ use Onion\Framework\Dependency\Exception\UnknownDependencyException;
 use Onion\Framework\Dependency\Interfaces\AttachableContainer;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
-use ReflectionIntersectionType;
 use ReflectionNamedType;
 use ReflectionUnionType;
 
