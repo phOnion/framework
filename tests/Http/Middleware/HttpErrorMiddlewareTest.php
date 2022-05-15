@@ -33,172 +33,197 @@ class HttpErrorMiddlewareTest extends \PHPUnit\Framework\TestCase
         $this->request = $request;
     }
 
-    public function testAuthorizationException()
+    public function loggerProvider(): array
+    {
+        return [[null], [$this->prophesize(LoggerInterface::class)]];
+    }
+
+    /**
+     * @dataProvider loggerProvider()
+     */
+    public function testAuthorizationException($logger)
     {
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new MissingHeaderException('authorization'));
 
-        $logger = $this->prophesize(LoggerInterface::class);
-        $logger->info(Argument::type('string'), Argument::type('array'))
+        $logger?->info(Argument::type('string'), Argument::type('array'))
             ->shouldBeCalledOnce();
-        $response = (new HttpErrorMiddleware(logger: $logger->reveal()))->process($this->request->reveal(), $this->handler->reveal());
+        $response = (new HttpErrorMiddleware(logger: $logger?->reveal()))->process($this->request->reveal(), $this->handler->reveal());
 
         $this->assertSame(401, $response->getStatusCode());
         $this->assertTrue($response->hasHeader('www-authenticate'));
     }
 
-    public function testProxyAuthorizationException()
+    /**
+     * @dataProvider loggerProvider()
+     */
+    public function testProxyAuthorizationException($logger)
     {
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new MissingHeaderException('proxy-authorization'));
 
-        $logger = $this->prophesize(LoggerInterface::class);
-        $logger->info(Argument::type('string'), Argument::type('array'))
+        $logger?->info(Argument::type('string'), Argument::type('array'))
             ->shouldBeCalledOnce();
-        $response = (new HttpErrorMiddleware(logger: $logger->reveal()))->process($this->request->reveal(), $this->handler->reveal());
+        $response = (new HttpErrorMiddleware(logger: $logger?->reveal()))->process($this->request->reveal(), $this->handler->reveal());
 
         $this->assertSame(407, $response->getStatusCode());
         $this->assertTrue($response->hasHeader('proxy-authenticate'));
     }
 
-    public function testConditionalMatchException()
+    /**
+     * @dataProvider loggerProvider()
+     */
+    public function testConditionalMatchException($logger)
     {
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new MissingHeaderException('if-match'));
 
-        $logger = $this->prophesize(LoggerInterface::class);
-        $logger->info(Argument::type('string'), Argument::type('array'))
+        $logger?->info(Argument::type('string'), Argument::type('array'))
             ->shouldBeCalledOnce();
-        $response = (new HttpErrorMiddleware(logger: $logger->reveal()))->process($this->request->reveal(), $this->handler->reveal());
+        $response = (new HttpErrorMiddleware(logger: $logger?->reveal()))->process($this->request->reveal(), $this->handler->reveal());
 
         $this->assertSame(428, $response->getStatusCode());
     }
 
-    public function testConditionalNonMatchException()
+    /**
+     * @dataProvider loggerProvider()
+     */
+    public function testConditionalNonMatchException($logger)
     {
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new MissingHeaderException('if-none-match'));
 
-        $logger = $this->prophesize(LoggerInterface::class);
-        $logger->info(Argument::type('string'), Argument::type('array'))
+        $logger?->info(Argument::type('string'), Argument::type('array'))
             ->shouldBeCalledOnce();
-        $response = (new HttpErrorMiddleware(logger: $logger->reveal()))->process($this->request->reveal(), $this->handler->reveal());
+        $response = (new HttpErrorMiddleware(logger: $logger?->reveal()))->process($this->request->reveal(), $this->handler->reveal());
 
         $this->assertSame(428, $response->getStatusCode());
     }
 
-    public function testConditionalModifiedSinceException()
+    /**
+     * @dataProvider loggerProvider()
+     */
+    public function testConditionalModifiedSinceException($logger)
     {
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new MissingHeaderException('if-modified-since'));
 
-        $logger = $this->prophesize(LoggerInterface::class);
-        $logger->info(Argument::type('string'), Argument::type('array'))
+        $logger?->info(Argument::type('string'), Argument::type('array'))
             ->shouldBeCalledOnce();
-        $response = (new HttpErrorMiddleware(logger: $logger->reveal()))->process($this->request->reveal(), $this->handler->reveal());
+        $response = (new HttpErrorMiddleware(logger: $logger?->reveal()))->process($this->request->reveal(), $this->handler->reveal());
 
         $this->assertSame(428, $response->getStatusCode());
     }
 
-    public function testConditionalUnmodifiedSinceException()
+    /**
+     * @dataProvider loggerProvider()
+     */
+    public function testConditionalUnmodifiedSinceException($logger)
     {
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new MissingHeaderException('if-unmodified-since'));
 
-        $logger = $this->prophesize(LoggerInterface::class);
-        $logger->info(Argument::type('string'), Argument::type('array'))
+        $logger?->info(Argument::type('string'), Argument::type('array'))
             ->shouldBeCalledOnce();
-        $response = (new HttpErrorMiddleware(logger: $logger->reveal()))->process($this->request->reveal(), $this->handler->reveal());
+        $response = (new HttpErrorMiddleware(logger: $logger?->reveal()))->process($this->request->reveal(), $this->handler->reveal());
 
         $this->assertSame(428, $response->getStatusCode());
     }
 
-    public function testConditionalRangeException()
+    /**
+     * @dataProvider loggerProvider()
+     */
+    public function testConditionalRangeException($logger)
     {
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new MissingHeaderException('if-range'));
 
-        $logger = $this->prophesize(LoggerInterface::class);
-        $logger->info(Argument::type('string'), Argument::type('array'))
+        $logger?->info(Argument::type('string'), Argument::type('array'))
             ->shouldBeCalledOnce();
-        $response = (new HttpErrorMiddleware(logger: $logger->reveal()))->process($this->request->reveal(), $this->handler->reveal());
+        $response = (new HttpErrorMiddleware(logger: $logger?->reveal()))->process($this->request->reveal(), $this->handler->reveal());
 
         $this->assertSame(428, $response->getStatusCode());
     }
 
-    public function testCustomHeaderException()
+    /**
+     * @dataProvider loggerProvider()
+     */
+    public function testCustomHeaderException($logger)
     {
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new MissingHeaderException('x-custom'));
 
-        $logger = $this->prophesize(LoggerInterface::class);
-        $logger->info(Argument::type('string'), Argument::type('array'))
+        $logger?->info(Argument::type('string'), Argument::type('array'))
             ->shouldBeCalledOnce();
-        $response = (new HttpErrorMiddleware(logger: $logger->reveal()))->process($this->request->reveal(), $this->handler->reveal());
+        $response = (new HttpErrorMiddleware(logger: $logger?->reveal()))->process($this->request->reveal(), $this->handler->reveal());
 
         $this->assertSame(400, $response->getStatusCode());
     }
 
-    public function testNotFoundException()
+    /**
+     * @dataProvider loggerProvider()
+     */
+    public function testNotFoundException($logger)
     {
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new NotFoundException());
 
-        $logger = $this->prophesize(LoggerInterface::class);
-        $logger->info(Argument::type('string'), Argument::type('array'))
+        $logger?->info(Argument::type('string'), Argument::type('array'))
             ->shouldBeCalledOnce();
-        $response = (new HttpErrorMiddleware(logger: $logger->reveal()))->process($this->request->reveal(), $this->handler->reveal());
+        $response = (new HttpErrorMiddleware(logger: $logger?->reveal()))->process($this->request->reveal(), $this->handler->reveal());
 
         $this->assertSame(404, $response->getStatusCode());
     }
 
-    public function testUnsupportedMethodException()
+    /**
+     * @dataProvider loggerProvider()
+     */
+    public function testUnsupportedMethodException($logger)
     {
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new MethodNotAllowedException(['get', 'head']));
 
-        $logger = $this->prophesize(LoggerInterface::class);
-        $logger->info(Argument::type('string'), Argument::type('array'))
+        $logger?->info(Argument::type('string'), Argument::type('array'))
             ->shouldBeCalledOnce();
-        $response = (new HttpErrorMiddleware(logger: $logger->reveal()))->process($this->request->reveal(), $this->handler->reveal());
+        $response = (new HttpErrorMiddleware(logger: $logger?->reveal()))->process($this->request->reveal(), $this->handler->reveal());
 
         $this->assertSame(405, $response->getStatusCode());
         $this->assertTrue($response->hasHeader('allow'));
         $this->assertSame('get, head', $response->getHeaderLine('allow'));
     }
 
-    public function testNotImplementedException()
+    /**
+     * @dataProvider loggerProvider()
+     */
+    public function testNotImplementedException($logger)
     {
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new \BadMethodCallException());
         $this->request->getMethod()->willReturn('GET');
 
-        $logger = $this->prophesize(LoggerInterface::class);
-        $logger->warning(Argument::type('string'), Argument::type('array'))
-            ->shouldBeCalledOnce();
-        $response = (new HttpErrorMiddleware(logger: $logger->reveal()))->process($this->request->reveal(), $this->handler->reveal());
+        $logger?->warning(Argument::type('string'), Argument::type('array'))
+            ->shouldBeCalledTimes(2);
+        $response = (new HttpErrorMiddleware(logger: $logger?->reveal()))->process($this->request->reveal(), $this->handler->reveal());
 
         $this->assertSame(503, $response->getStatusCode());
 
         $this->request->getMethod()->willReturn('post');
-
-        $logger = $this->prophesize(LoggerInterface::class);
-        $logger->warning(Argument::type('string'), Argument::type('array'))
-            ->shouldBeCalledOnce();
-        $response = (new HttpErrorMiddleware(logger: $logger->reveal()))->process($this->request->reveal(), $this->handler->reveal());
+        $response = (new HttpErrorMiddleware(logger: $logger?->reveal()))->process($this->request->reveal(), $this->handler->reveal());
 
         $this->assertSame(501, $response->getStatusCode());
     }
 
-    public function testUnknownErrorException()
+    /**
+     * @dataProvider loggerProvider()
+     */
+    public function testUnknownErrorException($logger)
     {
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new \Exception());
 
-        $logger = $this->prophesize(LoggerInterface::class);
-        $logger->critical(Argument::type('string'), Argument::type('array'))
+        $logger?->critical(Argument::type('string'), Argument::type('array'))
             ->shouldBeCalledOnce();
-        $response = (new HttpErrorMiddleware(logger: $logger->reveal()))->process($this->request->reveal(), $this->handler->reveal());
+        $response = (new HttpErrorMiddleware(logger: $logger?->reveal()))->process($this->request->reveal(), $this->handler->reveal());
 
         $this->assertSame(500, $response->getStatusCode());
     }
