@@ -18,7 +18,7 @@ use function Onion\Framework\merge;
 
 class TreeStrategyFactory implements FactoryInterface
 {
-    public function build(ContainerInterface $container)
+    public function build(ContainerInterface $container): mixed
     {
         $target = $container->has('router.resolver') ?
             $container->get('router.resolver') : TreeStrategy::class;

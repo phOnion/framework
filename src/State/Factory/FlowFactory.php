@@ -5,33 +5,32 @@ declare(strict_types=1);
 namespace Onion\Framework\State\Factory;
 
 use Closure;
+use Onion\Framework\Dependency\Interfaces\ContextFactoryInterface;
 use Onion\Framework\Dependency\Interfaces\FactoryBuilderInterface;
 use Onion\Framework\State\Flow;
-use Onion\Framework\State\Interfaces\HistoryInterface;
+use Onion\Framework\State\Interfaces\FlowInterface;
 use Psr\Container\ContainerInterface;
 
-class FlowFactory implements FactoryBuilderInterface
+class FlowFactory implements ContextFactoryInterface
 {
-    public function build(ContainerInterface $container, string $key): Closure
+    public function build(ContainerInterface $container, string $key = null): FlowInterface
     {
-        return function (ContainerInterface $container) use ($key) {
-            $flow = new Flow(
-                $key,
-                $container->get("workflows.{$key}.initial"),
-                $container->has("workflows.{$key}.history") ?
-                    $container->get($container->get("workflows.{$key}.history")) :
-                    null,
+        $flow = new Flow(
+            $key,
+            $container->get("workflows.{$key}.initial"),
+            $container->has("workflows.{$key}.history") ?
+                $container->get($container->get("workflows.{$key}.history")) :
+                null,
+        );
+
+        foreach ($container->get("workflows.{$key}.states") as $state) {
+            $flow->addTransition(
+                $state['from'],
+                $state['to'],
+                $state['handler']
             );
+        }
 
-            foreach ($container->get("workflows.{$key}.states") as $state) {
-                $flow->addTransition(
-                    $state['from'],
-                    $state['to'],
-                    $state['handler']
-                );
-            }
-
-            return $flow;
-        };
+        return $flow;
     }
 }

@@ -10,12 +10,13 @@ use Onion\Framework\Http\RequestHandler\RequestHandler;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 use function Onion\Framework\generator;
 
 class RequestHandlerFactory implements FactoryInterface
 {
-    public function build(ContainerInterface $container)
+    public function build(ContainerInterface $container): RequestHandlerInterface
     {
         assert(
             $container->has('middleware'),
