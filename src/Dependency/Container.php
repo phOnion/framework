@@ -16,18 +16,13 @@ class Container extends ReflectionContainer implements ContainerInterface
 
     private bool $initialized = false;
 
-    /** @var ServiceProviderInterface[] */
     private array $serviceProviders = [];
 
-    /** @var object[] */
+    private array $aliases = [];
     private array $instances = [];
-    /** @var Closure[] */
     private array $bindings = [];
 
-
-    /** @var true[] */
     private array $singleton = [];
-    /** @var array[] */
     private array $extend = [];
 
     public function register(ServiceProviderInterface $provider): void
@@ -35,88 +30,100 @@ class Container extends ReflectionContainer implements ContainerInterface
         $this->serviceProviders[] = $provider;
     }
 
-    public function singleton(string $className, string|Closure|FactoryInterface $binding): static
+    public function singleton(string $service, string|object $binding): static
     {
-        $this->singleton[$className] = true;
-        return $this->bind($className, $binding);
+        $this->singleton[$service] = true;
+
+        if (is_string($binding) || $binding instanceof FactoryInterface || $binding instanceof Closure) {
+            $this->bind($service, $binding);
+        } else {
+            $this->instances[$service] = $binding;
+        }
+
+        return $this;
     }
 
-    public function bind(string $id, string|Closure|FactoryInterface $binding): static
+    public function bind(string $service, string|Closure|FactoryInterface $binding): static
     {
-        $this->initialized = false;
-
         if ($binding instanceof FactoryInterface) {
             $binding = $binding->build(...);
         } elseif (is_string($binding)) {
-            $binding = fn () => $this->getDelegate()->get($binding);
+            $binding = fn () => parent::get($binding);
         }
 
-        $this->bindings[$id] = $binding;
+        if ($binding instanceof Closure) {
+            $this->bindings[$service] = $binding;
+        }
 
         return $this;
     }
 
-    public function extend(string $className, Closure $decorator): static
+    public function alias(string $alias, string $service): static
     {
-        if (!isset($this->extend[$className])) {
-            $this->extend[$className][] = $decorator;
-        }
-
-        $this->extend[$className][] = $decorator;
+        $this->aliases[$alias] = $service;
 
         return $this;
     }
 
-    public function get(string $service): mixed
+    public function extend(string $service, Closure $decorator): static
     {
-        if (!$this->initialized) {
-            $this->load();
+        if (!isset($this->extend[$service])) {
+            $this->extend[$service] = [];
         }
+
+        $this->extend[$service][] = $decorator;
+
+        return $this;
+    }
+
+    public function get(string $id): mixed
+    {
+        if ($this->serviceProviders) {
+            foreach ($this->serviceProviders as $provider) {
+                $provider->register($this);
+            }
+
+            foreach ($this->serviceProviders as $provider) {
+                if (method_exists($provider, 'boot')) {
+                    $provider->boot($this);
+                }
+            }
+
+            $this->serviceProviders = [];
+        }
+
         $instance = null;
+        $service = $this->aliases[$id] ?? $id;
 
         if (isset($this->instances[$service])) {
             return $this->instances[$service];
         }
 
         /** @var Closure|null $factory */
-        $instance = ($this->bindings[$service] ?? fn () => parent::get($service))($this);
+        $instance = ($this->bindings[$service] ?? fn () => parent::get($service))($this, $id);
+
+        if (isset($this->extend[$id])) {
+            foreach ($this->extend[$id] as $decorator) {
+                $instance = $decorator($instance, $this, $id);
+            }
+        }
 
         if (isset($this->singleton[$service])) {
             $this->instances[$service] = $instance;
         }
 
-        if (isset($this->extend[$service])) {
-            foreach ($this->extend[$service] as $decorator) {
-                $instance = $decorator($instance, $this);
-            }
-        }
-
-
         assert(
             $instance !== null,
-            new UnknownDependencyException("Unable to resolve dependency '$service'"),
+            new UnknownDependencyException("Unable to resolve dependency '$id'"),
         );
 
-        return $this->enforceReturnType($service, $instance);
+        return $this->enforceReturnType($id, $instance);
     }
 
     public function has(string $id): bool
     {
-        return isset($this->bindings[$id]) || parent::has($id);
-    }
+        $service = $this->aliases[$id] ?? $id;
 
-    public function load(): void
-    {
-        foreach ($this->serviceProviders as $provider) {
-            $provider->register($this);
-        }
-
-        foreach ($this->serviceProviders as $provider) {
-            if (method_exists($provider, 'boot')) {
-                $provider->boot($this);
-            }
-        }
-
-        $this->initialized = true;
+        return isset($this->bindings[$service]) || parent::has($service);
     }
 }
