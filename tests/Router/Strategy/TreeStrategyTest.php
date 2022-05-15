@@ -128,8 +128,11 @@ class TreeStrategyTest extends TestCase
         $route->hasMethod('GET')->willReturn(true);
         $route->getMethods()->willReturn(['GET']);
         $route->getPattern()->willReturn('/a/b/c/d/e/{f}?');
+        $route->withParameters([])->willReturn($route->reveal())
+            ->shouldBeCalledOnce();
+
         $route->withParameters([
-            'f' => null,
+            'f' => 'z',
         ])->willReturn($route->reveal())
             ->shouldBeCalledOnce();
 
@@ -137,6 +140,10 @@ class TreeStrategyTest extends TestCase
         $this->assertInstanceOf(
             RouteInterface::class,
             $strategy->resolve('GET', '/a/b/c/d/e'),
+        );
+        $this->assertInstanceOf(
+            RouteInterface::class,
+            $strategy->resolve('GET', '/a/b/c/d/e/z'),
         );
     }
 }
