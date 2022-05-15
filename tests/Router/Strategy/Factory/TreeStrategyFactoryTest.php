@@ -59,10 +59,10 @@ class TreeStrategyFactoryTest extends TestCase
             ->shouldBeCalledOnce();
         $container->has(ResponseInterface::class)
             ->willReturn(true)
-            ->shouldBeCalledTimes(3);
+            ->shouldBeCalledTimes(4);
         $container->get(ResponseInterface::class)
             ->willReturn($this->prophesize(ResponseInterface::class)->reveal())
-            ->shouldBeCalledTimes(3);
+            ->shouldBeCalledTimes(4);
 
         $container->get('routes')
             ->willReturn([

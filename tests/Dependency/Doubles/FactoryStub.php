@@ -1,4 +1,5 @@
 <?php
+
 namespace Tests\Dependency\Doubles;
 
 use Psr\Container\ContainerInterface;
@@ -19,7 +20,7 @@ class FactoryStub implements FactoryInterface
      * @param ContainerInterface $container
      * @return object
      */
-    public function build(ContainerInterface $container)
+    public function build(ContainerInterface $container): mixed
     {
         return is_string($this->returnVal) ?
             new $this->returnVal : $this->returnVal;

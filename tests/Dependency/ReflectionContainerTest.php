@@ -2,7 +2,6 @@
 
 namespace Tests\Dependency;
 
-use InvalidArgumentException;
 use Onion\Framework\Dependency\Exception\ContainerErrorException;
 use Onion\Framework\Dependency\Exception\UnknownDependencyException;
 use Onion\Framework\Dependency\Interfaces\DelegateContainerInterface;
@@ -31,7 +30,7 @@ class ReflectionContainerTest extends TestCase
 
     public function testNonExistentClassName()
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(ContainerErrorException::class);
         $this->expectExceptionMessage(
             "Provided key 'foo' is not a FQN of a class or could not be auto-loaded"
         );

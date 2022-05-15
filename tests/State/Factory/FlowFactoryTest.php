@@ -44,7 +44,7 @@ class FlowFactoryTest extends TestCase
     {
         $factory = new FlowFactory;
         /** @var FlowInterface $flow */
-        $flow = $factory->build($this->container, 'test')($this->container);
+        $flow = $factory->build($this->container, 'test');
 
         $this->assertInstanceOf(FlowInterface::class, $flow);
         $this->assertTrue($flow->can('bar'));
