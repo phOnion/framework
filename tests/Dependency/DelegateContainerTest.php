@@ -142,11 +142,8 @@ class DelegateContainerTest extends \PHPUnit\Framework\TestCase
 
     public function testMetaResolution()
     {
-        $container = new OnionContainer([
-            'invokables' => [
-                \Tests\Dependency\Doubles\DependencyK::class => new stdClass
-            ]
-        ]);
+        $container = new OnionContainer();
+        $container->singleton(\Tests\Dependency\Doubles\DependencyK::class, stdClass::class);
         $delegate = new ProxyContainer;
         $delegate->attach($container);
 
@@ -180,13 +177,10 @@ class DelegateContainerTest extends \PHPUnit\Framework\TestCase
     {
         $key = \Tests\Dependency\Doubles\DependencyK::class;
         $delegate = new ProxyContainer();
-        $container = new OnionContainer([
-            'factories' => [
-                $key => function ($c) {
-                    return new stdClass;
-                },
-            ]
-        ]);
+        $container = new OnionContainer();
+        $container->bind($key, function ($c) {
+            return new stdClass;
+        });
         $dummy = $this->prophesize(Container::class);
         $dummy->attach($delegate)->shouldBeCalledOnce();
         // $dummy->has('name')->willReturn(false);

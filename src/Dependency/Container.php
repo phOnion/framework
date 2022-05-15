@@ -4,159 +4,119 @@ declare(strict_types=1);
 
 namespace Onion\Framework\Dependency;
 
-use Onion\Framework\Dependency\Traits\AttachableContainerTrait;
-use Onion\Framework\Dependency\Traits\ContainerTrait;
-use Onion\Framework\Dependency\Exception\ContainerErrorException;
-use Onion\Framework\Dependency\Exception\UnknownDependencyException;
-use Onion\Framework\Dependency\Interfaces\AttachableContainer;
-use Onion\Framework\Dependency\Interfaces\FactoryBuilderInterface;
-use Onion\Framework\Dependency\Interfaces\FactoryInterface;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
-use RuntimeException;
-use Stringable;
 use Closure;
+use Onion\Framework\Dependency\Exception\UnknownDependencyException;
+use Onion\Framework\Dependency\Interfaces\{ContainerInterface, FactoryInterface, ServiceProviderInterface};
+use Onion\Framework\Dependency\ReflectionContainer;
+use Onion\Framework\Dependency\Traits\ContainerTrait;
 
-/**
- * Class Container
- *
- * @package Onion\Framework\Dependency
- */
-final class Container extends ReflectionContainer implements AttachableContainer, ContainerInterface
+class Container extends ReflectionContainer implements ContainerInterface
 {
+    private bool $initialized = false;
+
+    /** @var ServiceProviderInterface[] */
+    private array $serviceProviders = [];
+
+    /** @var object[] */
+    private array $instances = [];
+    /** @var Closure[] */
+    private array $bindings = [];
+
+
+    /** @var true[] */
+    private array $singleton = [];
+    /** @var array[] */
+    private array $extend = [];
+
     use ContainerTrait;
-    use AttachableContainerTrait;
 
-    /** @var string[]|object[] $invokables */
-    private $invokables = [];
-
-    /** @var string[] $factories */
-    private $factories = [];
-
-    /** @var string[] $shared */
-    private $shared = [];
-
-    /**
-     * Container constructor.
-     *
-     * @param array $dependencies
-     */
-    public function __construct(array $dependencies)
+    public function register(ServiceProviderInterface $provider): void
     {
-        $this->invokables = $dependencies['invokables'] ?? [];
-        $this->factories = $dependencies['factories'] ?? [];
+        $this->serviceProviders[] = $provider;
     }
 
-    /**
-     * Finds an entry of the container by its identifier and returns it.
-     *
-     * @param string $id Identifier of the entry to look for.
-     *
-     * @throws NotFoundExceptionInterface|UnknownDependencyException  No entry was found for this identifier.
-     * @throws ContainerExceptionInterface|ContainerErrorException Error while retrieving the entry.
-     * @throws \InvalidArgumentException If the provided identifier is not a string
-     *
-     * @return mixed Entry.
-     */
-    public function get(string $id): mixed
+    public function singleton(string $className, string|Closure|FactoryInterface $binding): static
     {
-        try {
-            if (isset($this->invokables[$id])) {
-                return $this->retrieveInvokable($id);
-            } elseif (isset($this->factories[$id])) {
-                return $this->retrieveFromFactory($id);
-            } elseif (parent::has($id)) {
-                return parent::get($id);
-            } elseif ($this->getDelegate()->has($id)) {
-                return $this->getDelegate()->get($id);
-            }
-        } catch (\RuntimeException | \InvalidArgumentException $ex) {
-            throw new ContainerErrorException($ex->getMessage(), previous: $ex);
+        $this->singleton[$className] = true;
+        return $this->bind($className, $binding);
+    }
+
+    public function bind(string $id, string|Closure|FactoryInterface $binding): static
+    {
+        $this->initialized = false;
+
+        if ($binding instanceof FactoryInterface) {
+            $binding = $binding->build(...);
+        } elseif (is_string($binding)) {
+            $binding = fn () => $this->getDelegate()->get($binding);
         }
 
-        throw new UnknownDependencyException(sprintf('Unable to resolve "%s"', $id));
+        $this->bindings[$id] = $binding;
+
+        return $this;
     }
 
-    /**
-     * Returns true if the container can return an entry for the given identifier.
-     * Returns false otherwise.
-     *
-     * @param string $key Identifier of the entry to look for.
-     *
-     * @return boolean
-     */
+    public function extend(string $className, Closure $decorator): static
+    {
+        if (!isset($this->extend[$className])) {
+            $this->extend[$className][] = $decorator;
+        }
+
+        $this->extend[$className][] = $decorator;
+
+        return $this;
+    }
+
+    public function get(string $service): mixed
+    {
+        if (!$this->initialized) {
+            $this->load();
+        }
+        $instance = null;
+
+        if (isset($this->instances[$service])) {
+            return $this->instances[$service];
+        }
+
+        /** @var Closure|null $factory */
+        $instance = ($this->bindings[$service] ?? fn () => parent::get($service))($this);
+
+        if (isset($this->singleton[$service])) {
+            $this->instances[$service] = $instance;
+        }
+
+        if (isset($this->extend[$service])) {
+            foreach ($this->extend[$service] as $decorator) {
+                $instance = $decorator($instance, $this);
+            }
+        }
+
+
+        assert(
+            $instance !== null,
+            new UnknownDependencyException("Unable to resolve dependency '$service'"),
+        );
+
+        return $this->enforceReturnType($service, $instance);
+    }
+
     public function has(string $id): bool
     {
-        return (isset($this->invokables[$id]) || isset($this->factories[$id])) ?: parent::has($id);
+        return isset($this->bindings[$id]) || parent::has($id);
     }
 
-    /**
-     * @param string $className
-     * @return object
-     *
-     * @throws UnknownDependencyException
-     */
-    private function retrieveInvokable(string $className): object
+    public function load(): void
     {
-        $dependency = $this->invokables[$className];
-
-        if (is_object($dependency)) {
-            return $this->enforceReturnType($className, $dependency);
+        foreach ($this->serviceProviders as $provider) {
+            $provider->register($this);
         }
 
-        assert(
-            is_string($dependency) && $this->has($dependency),
-            new UnknownDependencyException(
-                "Unable to resolve '{$dependency}'. Consider using a factory"
-            )
-        );
-
-        return $this->enforceReturnType($className, parent::get($dependency));
-    }
-
-    /**
-     * @param string $className
-     * @return object
-     */
-    private function retrieveFromFactory(string $className): object
-    {
-        $name = $this->factories[$className];
-        assert(
-            is_string($name) || is_callable($name),
-            new ContainerErrorException(
-                "Registered factory for '{$className}' must be a valid FQCN, " . gettype($name) . ' given'
-            )
-        );
-
-        if ($name instanceof Closure) {
-            return $this->enforceReturnType($className, call_user_func($name, $this));
+        foreach ($this->serviceProviders as $provider) {
+            if (method_exists($provider, 'boot')) {
+                $provider->boot($this);
+            }
         }
 
-        assert(
-            class_exists($name),
-            new \InvalidArgumentException("Provided '{$name}' does not exist")
-        );
-
-        assert(
-            in_array(FactoryInterface::class, class_implements($name) ?: []) ||
-                in_array(FactoryBuilderInterface::class, class_implements($name) ?: []),
-            new ContainerErrorException(
-                "Factory for '{$className}' does not implement any of Dependency\\Interfaces"
-            )
-        );
-
-        $factory = $this->get($name);
-
-
-
-        if ($factory instanceof FactoryBuilderInterface) {
-            $factory = $factory->build($this->getDelegate(), $className);
-        }
-
-        return $this->enforceReturnType(
-            $className,
-            $factory->build($this->getDelegate())
-        );
+        $this->initialized = true;
     }
 }
