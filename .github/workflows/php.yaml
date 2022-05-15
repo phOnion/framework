@@ -14,7 +14,7 @@ jobs:
         operating-system: [ubuntu-latest, windows-latest, macos-latest]
         php-versions: ["8.1", "8.2"]
         ts: ["ts", "nts"]
-    name: PHP ${{matrix.php-versions}} on ${{matrix.operating-system}}
+    name: PHP ${{matrix.php-versions}} (${{matrix.ts}}) on ${{matrix.operating-system}}
     steps:
       - uses: actions/checkout@v2
 
