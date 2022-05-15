@@ -24,7 +24,7 @@ class ReflectionContainer implements ContainerInterface, AttachableContainer
     {
         assert(
             class_exists($id),
-            new InvalidArgumentException("Provided key '{$id}' is not a FQN of a class or could not be auto-loaded")
+            new UnknownDependencyException("Provided key '{$id}' is not a FQN of a class or could not be auto-loaded")
         );
 
         $reflection = new ReflectionClass($id);
