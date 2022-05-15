@@ -22,16 +22,19 @@ class TreeStrategy implements ResolverInterface
     public function __construct(iterable $routes)
     {
         foreach ($routes as $route) {
-            $this->routes["{$route->getPattern()}/@"] = $route;
+            $pattern = str_replace('/', '~~', trim($route->getPattern(), '/'));
+            foreach ($this->compile($pattern) as $pattern) {
+                $this->routes[trim("{$pattern}~~@", '~')] = $route;
+            }
         }
 
-        $this->routes = normalize_tree_keys($this->routes, '/');
+        $this->routes = normalize_tree_keys($this->routes, '~~');
     }
 
     public function resolve(string $method, string $path): RouteInterface
     {
         $params = [];
-        $path = trim($path, '/');
+        $path = trim($path, '/') ?: '';
         $route = $this->match($this->routes, $path !== '' ? explode('/', $path) : [], $params);
 
         if ($route === null) {
@@ -42,9 +45,17 @@ class TreeStrategy implements ResolverInterface
             throw new MethodNotAllowedException($route->getMethods());
         }
 
-        return $route->withParameters(array_filter($params, function ($key) {
-            return !is_integer($key);
-        }, ARRAY_FILTER_USE_KEY));
+        $parameters = [];
+        foreach ($params as $name => $value) {
+            $name = substr((string) $name, 1);
+            if (!is_string($name) || is_numeric($name) || strlen($name) === 0) {
+                continue;
+            }
+
+            $parameters[$name] = $value;
+        }
+
+        return $route->withParameters($parameters);
     }
 
     private function match(array $routes, array $parts, array &$params = []): ?RouteInterface
@@ -55,20 +66,13 @@ class TreeStrategy implements ResolverInterface
 
         $part = array_shift($parts);
         foreach ($routes as $segment => $remaining) {
-            $compiled = $this->compile((string) $segment);
+            if (preg_match("~^{$segment}$~i", (string) $part, $matches) > 0) {
+                foreach ($matches as $index => $value) {
+                    $params[$index] = $value;
+                }
 
-            foreach ($compiled as $segment => $param) {
-                $segment = trim($segment, '/');
-
-
-                if (preg_match("~^{$segment}$~i", $part, $matches, PREG_OFFSET_CAPTURE) > 0) {
-                    foreach ($param as $index => $key) {
-                        $params[$key] = $matches[$index][0];
-                    }
-
-                    if (is_array($remaining)) {
-                        return $this->match($remaining, $parts, $params);
-                    }
+                if (is_array($remaining)) {
+                    return $this->match($remaining, $parts, $params);
                 }
             }
         }
@@ -78,8 +82,7 @@ class TreeStrategy implements ResolverInterface
 
     private function compile(string $pattern): array
     {
-        $segments = explode('/', $pattern);
-        $params = [];
+        $segments = explode('~~', $pattern);
         $patterns = [];
         $path = '';
 
@@ -90,20 +93,21 @@ class TreeStrategy implements ResolverInterface
             $matched = preg_match(self::PARAM_REGEX, $segment, $matches);
 
             if ($matched) {
-                $params[] = $matches['name'];
-                $path = "{$path}/(" .
+                if (isset($matches['conditional'])) {
+                    $patterns[] = $path;
+                }
+
+                $path = "{$path}~~(?P<_{$matches['name']}>" .
                     (!empty($matches['pattern']) ? $matches['pattern'] : '[^/]+') .
                     ')' . (isset($matches['conditional']) ? '?' : '');
 
-                $patterns[$path] = $params;
-            }
-
-            if (!$matched) {
-                $path = "{$path}/{$segment}";
+                $patterns[] = trim($path, '~~');
+            } else {
+                $path = trim("{$path}~~{$segment}", '~~');
             }
         }
 
-        $patterns[$path] = $params;
+        $patterns[] = $path;
 
         return $patterns;
     }
