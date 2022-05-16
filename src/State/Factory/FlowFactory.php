@@ -16,7 +16,7 @@ class FlowFactory implements ContextFactoryInterface
     public function build(ContainerInterface $container, string $key = null): FlowInterface
     {
         $flow = new Flow(
-            $key,
+            (string) $key,
             $container->get("workflows.{$key}.initial"),
             $container->has("workflows.{$key}.history") ?
                 $container->get($container->get("workflows.{$key}.history")) :
