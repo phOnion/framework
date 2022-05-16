@@ -32,7 +32,7 @@ class Container extends ReflectionContainer implements ContainerInterface
 
     public function singleton(string $service, string|object $binding): static
     {
-        $this->singleton[$service] = true;
+        $this->singleton[$service] = $service;
 
         if (is_string($binding) || $binding instanceof FactoryInterface || $binding instanceof Closure) {
             $this->bind($service, $binding);
@@ -51,9 +51,7 @@ class Container extends ReflectionContainer implements ContainerInterface
             $binding = fn () => parent::get($binding);
         }
 
-        if ($binding instanceof Closure) {
-            $this->bindings[$service] = $binding;
-        }
+        $this->bindings[$service] = $binding;
 
         return $this;
     }

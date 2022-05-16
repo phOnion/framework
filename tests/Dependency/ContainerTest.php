@@ -288,6 +288,12 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
                     return $queue;
                 });
 
+                $provider->extend('bar', function (SplQueue $queue) {
+                    $queue->enqueue(2);
+
+                    return $queue;
+                });
+
                 $provider->extend('baz', function (SplQueue $queue) {
                     $queue->enqueue(1);
 
@@ -299,7 +305,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf(stdClass::class, $container->get(stdClass::class));
         $this->assertSame($container->get(stdClass::class), $container->get(stdClass::class));
         $this->assertInstanceOf(SplQueue::class, $container->get('bar'));
-        $this->assertCount(1, $container->get('bar'));
+        $this->assertCount(2, $container->get('bar'));
         $this->assertEmpty($container->get('baz'));
     }
 }
