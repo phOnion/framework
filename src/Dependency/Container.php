@@ -98,7 +98,8 @@ class Container extends ReflectionContainer implements ContainerInterface
         }
 
         /** @var Closure|null $factory */
-        $instance = ($this->bindings[$service] ?? fn () => parent::get($service))($this, $id);
+        $instance = ($this->bindings[$service] ??
+            fn (self $container, string $id) => parent::get($service))($this, $id);
 
         if (isset($this->extend[$id])) {
             foreach ($this->extend[$id] as $decorator) {
