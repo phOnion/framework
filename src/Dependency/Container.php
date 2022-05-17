@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Onion\Framework\Dependency;
 
 use Closure;
+use LogicException;
+use Onion\Framework\Dependency\Exception\ContainerErrorException;
 use Onion\Framework\Dependency\Exception\UnknownDependencyException;
 use Onion\Framework\Dependency\Interfaces\{ContainerInterface, FactoryInterface, ServiceProviderInterface};
 use Onion\Framework\Dependency\ReflectionContainer;
@@ -16,7 +18,7 @@ class Container extends ReflectionContainer implements ContainerInterface
 {
     use ContainerTrait;
 
-    private bool $initialized = false;
+    private bool $allowBindingOverwrite = true;
 
     private array $serviceProviders = [];
 
@@ -49,8 +51,33 @@ class Container extends ReflectionContainer implements ContainerInterface
         return $this;
     }
 
+    public function unbind(string $service): void
+    {
+        assert(
+            $this->allowBindingOverwrite,
+            new LogicException('Overwriting dependencies during non-loading phase should not be done'),
+        );
+
+        if (isset($this->instances[$service])) {
+            unset($this->instances[$service]);
+        }
+
+        if (isset($this->singleton[$service])) {
+            unset($this->singleton[$service]);
+        }
+
+        if (isset($this->bindings[$service])) {
+            unset($this->bindings[$service]);
+        }
+    }
+
     public function bind(string $service, string|Closure|FactoryInterface $binding, array $tags = []): static
     {
+        assert(
+            !isset($this->bindings[$service]),
+            new ContainerErrorException("Unable to overwrite an existing service, maybe 'unbind' it first?"),
+        );
+
         if ($binding instanceof FactoryInterface) {
             $binding = $binding->build(...);
         } elseif (is_string($binding)) {
@@ -108,6 +135,7 @@ class Container extends ReflectionContainer implements ContainerInterface
     public function get(string $id): mixed
     {
         if ($this->serviceProviders) {
+            $this->allowBindingOverwrite = true;
             foreach ($this->serviceProviders as $provider) {
                 $provider->register($this);
             }
@@ -119,6 +147,7 @@ class Container extends ReflectionContainer implements ContainerInterface
             }
 
             $this->serviceProviders = [];
+            $this->allowBindingOverwrite = false;
         }
 
         $instance = null;
