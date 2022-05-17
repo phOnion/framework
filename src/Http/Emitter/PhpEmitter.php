@@ -10,7 +10,6 @@ use Psr\Http\Message\ResponseInterface;
 
 class PhpEmitter implements EmitterInterface
 {
-
     public function emit(ResponseInterface $response): void
     {
         header(sprintf(

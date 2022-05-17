@@ -11,7 +11,6 @@ use Onion\Framework\Router\Strategy\Factory\TreeStrategyFactory;
 
 class RouterServiceProvider implements ServiceProviderInterface
 {
-
     public function register(ContainerInterface $provider): void
     {
         $provider->bind(ResolverInterface::class, TreeStrategyFactory::class);
