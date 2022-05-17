@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Onion\Framework\Router;
 
-use Onion\Framework\Http\Header\Accept;
 use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
 use Onion\Framework\Router\Exceptions\MissingHeaderException;
 use Onion\Framework\Router\Interfaces\RouteInterface;
