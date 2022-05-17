@@ -10,6 +10,8 @@ use Onion\Framework\Dependency\Interfaces\{ContainerInterface, FactoryInterface,
 use Onion\Framework\Dependency\ReflectionContainer;
 use Onion\Framework\Dependency\Traits\ContainerTrait;
 
+use function Onion\Framework\generator;
+
 class Container extends ReflectionContainer implements ContainerInterface
 {
     use ContainerTrait;
@@ -25,12 +27,14 @@ class Container extends ReflectionContainer implements ContainerInterface
     private array $singleton = [];
     private array $extend = [];
 
+    private array $taggedGroups = [];
+
     public function register(ServiceProviderInterface $provider): void
     {
         $this->serviceProviders[] = $provider;
     }
 
-    public function singleton(string $service, string|object $binding): static
+    public function singleton(string $service, string|object $binding, array $tags = []): static
     {
         $this->singleton[$service] = $service;
 
@@ -40,10 +44,12 @@ class Container extends ReflectionContainer implements ContainerInterface
             $this->instances[$service] = $binding;
         }
 
+        $this->tag($service, ...$tags);
+
         return $this;
     }
 
-    public function bind(string $service, string|Closure|FactoryInterface $binding): static
+    public function bind(string $service, string|Closure|FactoryInterface $binding, array $tags = []): static
     {
         if ($binding instanceof FactoryInterface) {
             $binding = $binding->build(...);
@@ -52,6 +58,8 @@ class Container extends ReflectionContainer implements ContainerInterface
         }
 
         $this->bindings[$service] = $binding;
+
+        $this->tag($service, ...$tags);
 
         return $this;
     }
@@ -72,6 +80,29 @@ class Container extends ReflectionContainer implements ContainerInterface
         $this->extend[$service][] = $decorator;
 
         return $this;
+    }
+
+    public function tag(string $service, string ...$tags): void
+    {
+        foreach ($tags as $tag) {
+            if (!isset($this->taggedGroups[$tag])) {
+                $this->taggedGroups[$tag] = [];
+            }
+
+            $this->taggedGroups[$tag][] = $service;
+        }
+    }
+
+    public function tagged(string $tag): iterable
+    {
+        $group = $this->taggedGroups[$tag] ?? [];
+        $resolver = $this->get(...);
+
+        return generator(static function () use ($resolver, $group) {
+            foreach ($group as $item) {
+                yield $resolver($item);
+            }
+        });
     }
 
     public function get(string $id): mixed
