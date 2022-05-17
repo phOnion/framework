@@ -18,7 +18,7 @@ class Container extends ReflectionContainer implements ContainerInterface
 {
     use ContainerTrait;
 
-    private bool $allowBindingOverwrite = true;
+    private bool $allowBindingOverwrite = false;
 
     private array $serviceProviders = [];
 
@@ -55,7 +55,7 @@ class Container extends ReflectionContainer implements ContainerInterface
     {
         assert(
             $this->allowBindingOverwrite,
-            new LogicException('Overwriting dependencies during non-loading phase should not be done'),
+            new LogicException('Removing dependencies during non-loading phase should not be done'),
         );
 
         if (isset($this->instances[$service])) {
