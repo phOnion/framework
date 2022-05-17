@@ -20,25 +20,6 @@ class TreeStrategyFactoryTest extends TestCase
         $this->factory = new TreeStrategyFactory();
     }
 
-    public function testBadResolver()
-    {
-        $container = $this->prophesize(ContainerInterface::class);
-        $container->has('router.groups')
-            ->willReturn(false)
-            ->shouldBeCalledOnce();
-        $container->has('router.resolver')
-            ->willReturn(true)
-            ->shouldBeCalledOnce();
-        $container->get('router.resolver')
-            ->willReturn('foo')
-            ->shouldBeCalledOnce();
-
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage("Provided 'foo' does not exist.");
-
-        $this->factory->build($container->reveal());
-    }
-
     public function testBasicResolution()
     {
         $container = $this->prophesize(ContainerInterface::class);
@@ -47,15 +28,6 @@ class TreeStrategyFactoryTest extends TestCase
             ->shouldBeCalledOnce();
         $container->get('router.groups')
             ->willReturn(['foo' => ['prefix' => '/foo']])
-            ->shouldBeCalledOnce();
-        $container->has('router.resolver')
-            ->willReturn(false)
-            ->shouldBeCalledOnce();
-        $container->has('router.count')
-            ->willReturn(true)
-            ->shouldBeCalledOnce();
-        $container->get('router.count')
-            ->willReturn(10)
             ->shouldBeCalledOnce();
         $container->has(ResponseInterface::class)
             ->willReturn(true)
