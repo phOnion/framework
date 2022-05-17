@@ -20,9 +20,6 @@ class TreeStrategyFactory implements FactoryInterface
 {
     public function build(ContainerInterface $container): mixed
     {
-        $target = $container->has('router.resolver') ?
-            $container->get('router.resolver') : TreeStrategy::class;
-
         $groups = $container->has('router.groups') ?
             $container->get('router.groups') : [];
 
@@ -37,10 +34,6 @@ class TreeStrategyFactory implements FactoryInterface
                 $groups[$name] = merge($group, $groups[$group['extends']]);
             }
         }
-
-        assert(class_exists($target), new \InvalidArgumentException(
-            "Provided '{$target}' does not exist."
-        ));
 
         $routes = $container->get('routes');
         $generator = generator(function () use ($groups, $routes, $container) {
@@ -85,9 +78,6 @@ class TreeStrategyFactory implements FactoryInterface
             }
         });
 
-        return new $target(
-            $generator,
-            $container->has('router.count') ? $container->get('router.count') : null
-        );
+        return new TreeStrategy($generator);
     }
 }
