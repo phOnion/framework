@@ -6,6 +6,7 @@
     </include>
     <exclude>
       <directory suffix="Exception.php">src</directory>
+      <directory suffix="ServiceProvider.php">src</directory>
     </exclude>
   </coverage>
   <testsuite name="all">
