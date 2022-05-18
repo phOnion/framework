@@ -120,9 +120,9 @@ class Container extends ReflectionContainer implements ContainerInterface
         }
     }
 
-    public function tagged(string $tag): iterable
+    public function tagged(string $name): iterable
     {
-        $group = $this->taggedGroups[$tag] ?? [];
+        $group = $this->taggedGroups[$name] ?? [];
         $resolver = $this->get(...);
 
         return generator(static function () use ($resolver, $group) {
