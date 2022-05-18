@@ -4,20 +4,19 @@ declare(strict_types=1);
 
 namespace Onion\Framework\Http\RequestHandler;
 
+use Iterator;
 use Psr\Http\Message;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
+use function Onion\Framework\generator;
+
 final class RequestHandler implements RequestHandlerInterface
 {
-    /**
-     * @param \Iterator $middleware Middleware of the frame
-     */
-    public function __construct(private iterable $middleware, private ?Message\ResponseInterface $response = null)
+    private readonly Iterator $middleware;
+    public function __construct(iterable $middleware, private ?Message\ResponseInterface $response = null)
     {
-        if (is_array($middleware)) {
-            $this->middleware = new \ArrayIterator($middleware);
-        }
+        $this->middleware = generator($middleware);
     }
 
     public function __clone()
