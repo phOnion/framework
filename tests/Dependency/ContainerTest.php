@@ -2,6 +2,7 @@
 
 namespace Tests\Dependency;
 
+use LogicException;
 use Onion\Framework\Dependency\Container;
 use Onion\Framework\Dependency\Exception\ContainerErrorException;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
@@ -218,7 +219,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         $container->get(DependencyG::class);
     }
 
-    public function testCreationFromFactoryWithInvalidResult()
+    public function testBindingFromFactoryWithInvalidResult()
     {
         $class = new class implements FactoryInterface
         {
@@ -229,6 +230,24 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         };
         $container = new Container();
         $container->bind(\stdClass::class, $class);
+
+        $this->assertTrue($container->has(\stdClass::class));
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('No factory available');
+        $container->get(\stdClass::class);
+    }
+
+    public function testSingletonFromFactoryWithInvalidResult()
+    {
+        $class = new class implements FactoryInterface
+        {
+            public function build(\Psr\Container\ContainerInterface $container): mixed
+            {
+                return false;
+            }
+        };
+        $container = new Container();
+        $container->singleton(\stdClass::class, $class);
 
         $this->assertTrue($container->has(\stdClass::class));
         $this->expectException(RuntimeException::class);
@@ -307,5 +326,68 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf(SplQueue::class, $container->get('bar'));
         $this->assertCount(2, $container->get('bar'));
         $this->assertEmpty($container->get('baz'));
+    }
+
+    public function testDependencyTagging()
+    {
+        $container = new Container();
+        $container->bind('foo', fn () => new stdClass, ['baz']);
+        $container->singleton('bar', fn () => new stdClass, ['baz']);
+        $container->tag('foo', 'bar');
+
+
+        $this->assertIsIterable($container->tagged('baz'));
+        $this->assertContainsOnlyInstancesOf(stdClass::class, $container->tagged('baz'));
+        $this->assertCount(2, $container->tagged('baz'));
+
+        $this->assertIsIterable($container->tagged('bar'));
+        $this->assertContainsOnly(stdClass::class, $container->tagged('bar'));
+        $this->assertCount(1, $container->tagged('bar'));
+    }
+
+    public function testDirectOverwriteOfExistingDependencyException()
+    {
+        $container = new Container();
+        $container->bind('foo', fn () => new stdClass());
+
+        $this->expectException(ContainerErrorException::class);
+        $container->bind('foo', fn () => 'baz');
+    }
+
+    public function testOverwriteFromServiceProviderWithUnbinding()
+    {
+        $container = new Container();
+        $container->bind('foo', stdClass::class);
+        $container->register(new class implements ServiceProviderInterface
+        {
+            public function register(ContainerInterface $provider): void
+            {
+                $provider->unbind('foo');
+                $provider->bind('foo', SplQueue::class);
+            }
+        });
+
+        $this->assertInstanceOf(SplQueue::class, $container->get('foo'));
+    }
+
+    public function testExceptionWhenUnbindingFromOutsideOfServiceProvider()
+    {
+        $container = new Container();
+
+        $container->bind('foo', stdClass::class);
+        $container->bind('baz', stdClass::class);
+        $container->register(new class implements ServiceProviderInterface
+        {
+            public function register(ContainerInterface $provider): void
+            {
+                $provider->unbind('baz');
+            }
+        });
+        $this->expectException(LogicException::class);
+        $this->assertInstanceOf(stdClass::class, $container->get('foo'));
+
+        $container->unbind('foo');
+        $this->assertFalse($container->has('baz'));
+        $this->assertTrue($container->has('foo'));
     }
 }
