@@ -16,9 +16,6 @@ class TreeStrategy implements ResolverInterface
     /** @var RouteInterface[] $routes */
     private $routes = [];
 
-    /**
-     * @param RouteInterface[] $routes
-     */
     public function __construct(iterable $routes)
     {
         foreach ($routes as $route) {
