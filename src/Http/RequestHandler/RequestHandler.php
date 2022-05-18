@@ -10,9 +10,6 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 final class RequestHandler implements RequestHandlerInterface
 {
-    /**
-     * @param \Iterator $middleware Middleware of the frame
-     */
     public function __construct(private iterable $middleware, private ?Message\ResponseInterface $response = null)
     {
         if (is_array($middleware)) {
@@ -22,7 +19,7 @@ final class RequestHandler implements RequestHandlerInterface
 
     public function __clone()
     {
-        $this->middleware->rewind();
+        reset($this->middleware);
     }
 
     /**
@@ -33,10 +30,11 @@ final class RequestHandler implements RequestHandlerInterface
      */
     public function handle(Message\ServerRequestInterface $request): Message\ResponseInterface
     {
-        if ($this->middleware->valid()) {
-            $middleware = $this->middleware->current();
+
+        if (current($this->middleware) !== false) {
+            $middleware = current($this->middleware);
             assert($middleware instanceof MiddlewareInterface, new \TypeError('Invalid middleware type'));
-            $this->middleware->next();
+            next($this->middleware);
 
             return $middleware->process($request, $this);
         }
