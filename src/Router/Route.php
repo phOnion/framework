@@ -4,20 +4,15 @@ declare(strict_types=1);
 
 namespace Onion\Framework\Router;
 
-use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
-use Onion\Framework\Router\Exceptions\MissingHeaderException;
+use Closure;
 use Onion\Framework\Router\Interfaces\RouteInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Http\Server\MiddlewareInterface;
 
 class Route implements RouteInterface
 {
-    private ?RequestHandlerInterface $handler = null;
+    private ?Closure $action = null;
     /** @var string[] */
     private array $methods = [];
-    /** @var bool[] $headers*/
-    private array $headers = [];
 
     /** @var string[] $parameters */
     private $parameters = [];
@@ -43,13 +38,13 @@ class Route implements RouteInterface
         return $this->pattern;
     }
 
-    public function getRequestHandler(): RequestHandlerInterface
+    public function getAction(): Closure
     {
-        assert($this->handler !== null, new \RuntimeException(
+        assert($this->action !== null, new \RuntimeException(
             "No handler provided for route {$this->getName()}"
         ));
 
-        return $this->handler;
+        return $this->action;
     }
 
     public function getParameters(): array
@@ -60,11 +55,6 @@ class Route implements RouteInterface
     public function getParameter(string $name, $default = null)
     {
         return $this->parameters[$name] ?? $default;
-    }
-
-    public function getHeaders(): array
-    {
-        return $this->headers;
     }
 
     public function hasName(): bool
@@ -87,20 +77,10 @@ class Route implements RouteInterface
         return $self;
     }
 
-    public function withRequestHandler(RequestHandlerInterface $requestHandler): RouteInterface
+    public function withAction(Closure|MiddlewareInterface $action): RouteInterface
     {
         $self = clone $this;
-        $self->handler = $requestHandler;
-
-        return $self;
-    }
-
-    public function withHeaders(array $headers): RouteInterface
-    {
-        $self = clone $this;
-        foreach ($headers as $header => $required) {
-            $self->headers[strtolower($header)] = $required;
-        }
+        $self->action = $action instanceof MiddlewareInterface ? $action->process(...) : $action;
 
         return $self;
     }
@@ -111,21 +91,5 @@ class Route implements RouteInterface
         $self->parameters = $parameters;
 
         return $self;
-    }
-
-    public function handle(ServerRequestInterface $request): ResponseInterface
-    {
-        foreach ($this->getHeaders() as $header => $required) {
-            if ($required && !$request->hasHeader($header)) {
-                throw new MissingHeaderException($header);
-            }
-        }
-
-        if (!$this->hasMethod($request->getMethod())) {
-            throw new MethodNotAllowedException($this->getMethods());
-        }
-
-        return $this->getRequestHandler()
-            ->handle($request->withAttribute('route', $this));
     }
 }
