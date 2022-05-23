@@ -21,7 +21,7 @@ class Router implements RouterInterface
     {
         foreach ($this->collector as $pattern => $data) {
 
-            if (!\preg_match("~^(?|{$pattern})$~J", $request->getUri()->getPath(), $matches)) {
+            if (!\preg_match("~^(?|{$pattern})$~J", $request->getUri()->getPath(), $matches, PREG_UNMATCHED_AS_NULL)) {
                 continue;
             }
             /** @var RouteInterface $route */
