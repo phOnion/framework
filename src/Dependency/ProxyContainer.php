@@ -20,7 +20,7 @@ class ProxyContainer implements ContainerInterface, DelegateContainerInterface, 
 
     public function get($id): mixed
     {
-        if (count($this) === 0) {
+        if (\count($this) === 0) {
             throw new UnknownDependencyException("No containers provided, can't retrieve '{$id}'");
         }
 
@@ -39,7 +39,7 @@ class ProxyContainer implements ContainerInterface, DelegateContainerInterface, 
         foreach ($resolvers as $resolver) {
             try {
                 $r = $resolver->get($id);
-                if (!is_array($r)) {
+                if (!\is_array($r)) {
                     return $r;
                 }
 

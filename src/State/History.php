@@ -6,8 +6,6 @@ namespace Onion\Framework\State;
 
 use Onion\Framework\State\Interfaces\HistoryInterface;
 
-use function Onion\Framework\generator;
-
 class History implements \IteratorAggregate, HistoryInterface, \Countable
 {
     private $transitions = [];
@@ -26,6 +24,6 @@ class History implements \IteratorAggregate, HistoryInterface, \Countable
 
     public function count(): int
     {
-        return count($this->transitions);
+        return \count($this->transitions);
     }
 }

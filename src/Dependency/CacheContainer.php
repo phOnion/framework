@@ -74,7 +74,7 @@ class CacheContainer implements ContainerInterface, WrappingContainerInterface
         }
 
         $dependency = $this->getWrappedContainer()->get($id);
-        if (!in_array($id, $this->blacklist, true)) {
+        if (!\in_array($id, $this->blacklist, true)) {
             $this->cache->set($id, $dependency);
         }
 

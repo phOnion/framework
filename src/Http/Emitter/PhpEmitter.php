@@ -12,7 +12,7 @@ class PhpEmitter implements EmitterInterface
 {
     public function emit(ResponseInterface $response): void
     {
-        header(sprintf(
+        \header(\sprintf(
             "HTTP/%s %d %s",
             $response->getProtocolVersion(),
             $response->getStatusCode(),
@@ -21,7 +21,7 @@ class PhpEmitter implements EmitterInterface
 
         foreach ($response->getHeaders() as $header => $values) {
             foreach ($values as $idx => $value) {
-                header("{$header}: {$value}", $idx === 0);
+                \header("{$header}: {$value}", $idx === 0);
             }
         }
 

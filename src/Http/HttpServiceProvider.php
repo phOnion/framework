@@ -14,7 +14,7 @@ use Onion\Framework\Http\Middleware\{
     RouteDispatchingMiddleware
 };
 use Onion\Framework\Http\RequestHandler\RequestHandler;
-use Onion\Framework\Router\Interfaces\ResolverInterface;
+use Onion\Framework\Router\Interfaces\RouterInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
@@ -35,7 +35,7 @@ class HttpServiceProvider implements ServiceProviderInterface
         $provider->singleton(
             RouteDispatchingMiddleware::class,
             static fn (ContainerInterface $c) => new RouteDispatchingMiddleware(
-                $c->get(ResolverInterface::class)
+                $c->get(RouterInterface::class)
             ),
         );
         $provider->bind(

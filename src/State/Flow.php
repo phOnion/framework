@@ -30,7 +30,7 @@ class Flow implements Interfaces\FlowInterface
 
     public function getBranches(): ?array
     {
-        return isset($this->transitions[$this->state]) ? array_keys($this->transitions[$this->state]) : null;
+        return isset($this->transitions[$this->state]) ? \array_keys($this->transitions[$this->state]) : null;
     }
 
     public function addTransition(string $from, string $to, \Closure $transition): void

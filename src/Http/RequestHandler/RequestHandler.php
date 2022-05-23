@@ -34,7 +34,7 @@ final class RequestHandler implements RequestHandlerInterface
     {
         if ($this->middleware->valid()) {
             $middleware = $this->middleware->current();
-            assert($middleware instanceof MiddlewareInterface, new \TypeError('Invalid middleware type'));
+            \assert($middleware instanceof MiddlewareInterface, new \TypeError('Invalid middleware type'));
             $this->middleware->next();
 
             return $middleware->process($request, $this);

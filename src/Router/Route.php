@@ -64,14 +64,14 @@ class Route implements RouteInterface
 
     public function hasMethod(string $method): bool
     {
-        return $this->methods === [] || in_array(strtolower($method), $this->methods, true);
+        return $this->methods === [] || \in_array(\strtolower($method), $this->methods, true);
     }
 
     public function withMethods(array $methods): RouteInterface
     {
         $self = clone $this;
         foreach ($methods as $method) {
-            $self->methods[] = strtolower($method);
+            $self->methods[] = \strtolower($method);
         }
 
         return $self;

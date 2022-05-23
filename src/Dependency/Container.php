@@ -40,7 +40,7 @@ class Container extends ReflectionContainer implements ContainerInterface
     {
         $this->singleton[$service] = $service;
 
-        if (is_string($binding) || $binding instanceof FactoryInterface || $binding instanceof Closure) {
+        if (\is_string($binding) || $binding instanceof FactoryInterface || $binding instanceof Closure) {
             $this->bind($service, $binding);
         } else {
             $this->instances[$service] = $binding;
@@ -53,7 +53,7 @@ class Container extends ReflectionContainer implements ContainerInterface
 
     public function unbind(string $service): void
     {
-        assert(
+        \assert(
             $this->allowBindingOverwrite,
             new LogicException('Removing dependencies during non-loading phase should not be done'),
         );
@@ -73,14 +73,14 @@ class Container extends ReflectionContainer implements ContainerInterface
 
     public function bind(string $service, string|Closure|FactoryInterface $binding, array $tags = []): static
     {
-        assert(
+        \assert(
             !isset($this->bindings[$service]),
             new ContainerErrorException("Unable to overwrite an existing service, maybe 'unbind' it first?"),
         );
 
         if ($binding instanceof FactoryInterface) {
             $binding = $binding->build(...);
-        } elseif (is_string($binding)) {
+        } elseif (\is_string($binding)) {
             $binding = fn () => parent::get($binding);
         }
 
@@ -141,7 +141,7 @@ class Container extends ReflectionContainer implements ContainerInterface
             }
 
             foreach ($this->serviceProviders as $provider) {
-                if (method_exists($provider, 'boot')) {
+                if (\method_exists($provider, 'boot')) {
                     $provider->boot($this);
                 }
             }
@@ -171,7 +171,7 @@ class Container extends ReflectionContainer implements ContainerInterface
             $this->instances[$service] = $instance;
         }
 
-        assert(
+        \assert(
             $instance !== null,
             new UnknownDependencyException("Unable to resolve dependency '$id'"),
         );

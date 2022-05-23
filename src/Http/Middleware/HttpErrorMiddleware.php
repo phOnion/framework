@@ -81,7 +81,7 @@ class HttpErrorMiddleware implements MiddlewareInterface
             ]);
 
             return (new Response(
-                in_array(strtolower($request->getMethod()), ['get', 'head']) ? 503 : 501
+                \in_array(\strtolower($request->getMethod()), ['get', 'head']) ? 503 : 501
             ));
         } catch (\Throwable $ex) {
             $this->logger?->critical("Unexpected error while accessing resource", [
@@ -94,6 +94,7 @@ class HttpErrorMiddleware implements MiddlewareInterface
                     'trace' => $ex->getTrace(),
                 ],
             ]);
+
             return new Response(500);
         }
     }

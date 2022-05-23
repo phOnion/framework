@@ -23,14 +23,14 @@ class Accept implements Interfaces\AcceptInterface
         $this->name = $name;
         $this->value = $headerValue;
 
-        $contentTypes = explode(',', $headerValue);
+        $contentTypes = \explode(',', $headerValue);
 
         foreach ($contentTypes as $pair) {
             if (
-                preg_match(
+                \preg_match(
                     '~^(?P<type>[a-z0-9+-/.*]+)(?:[a-z0-9=\-;]+)?' .
                         '(?:;q=(?P<priority>[0-9.]{1,3}))?(?:[a-z0-9=\-;]+)?$~i',
-                    trim($pair),
+                    \trim($pair),
                     $matches
                 )
             ) {
@@ -42,7 +42,7 @@ class Accept implements Interfaces\AcceptInterface
 
     public function getName(): string
     {
-        return ucwords($this->name, '-');
+        return \ucwords($this->name, '-');
     }
 
     public function getRawValue(): string
@@ -63,9 +63,9 @@ class Accept implements Interfaces\AcceptInterface
      */
     public function supports(string $value): bool
     {
-        foreach (array_keys($this->types) as $pattern) {
-            $pattern = str_replace(['.', '*', '/', '+'], ['\.', '(.*)', '\/', '\+'], $pattern);
-            if (preg_match("#^$pattern$#i", $value) > 0) {
+        foreach (\array_keys($this->types) as $pattern) {
+            $pattern = \str_replace(['.', '*', '/', '+'], ['\.', '(.*)', '\/', '\+'], $pattern);
+            if (\preg_match("#^$pattern$#i", $value) > 0) {
                 return true;
             }
         }
@@ -78,8 +78,8 @@ class Accept implements Interfaces\AcceptInterface
     public function getPriority(string $value): float
     {
         foreach ($this->types as $pattern => $weight) {
-            $pattern = str_replace(['*', '.', '/', '+'], ['(.*)', '.', '\/', '\+'], $pattern);
-            if (preg_match("#^$pattern$#i", $value) > 0) {
+            $pattern = \str_replace(['*', '.', '/', '+'], ['(.*)', '.', '\/', '\+'], $pattern);
+            if (\preg_match("#^$pattern$#i", $value) > 0) {
                 return $weight;
             }
         }

@@ -34,7 +34,7 @@ class MethodNotAllowedException extends \Exception implements NotAllowedExceptio
      */
     public function getAllowedMethods(): array
     {
-        return is_array($this->allowedMethods) ? $this->allowedMethods : iterator_to_array($this->allowedMethods);
+        return \is_array($this->allowedMethods) ? $this->allowedMethods : \iterator_to_array($this->allowedMethods);
     }
 
     /**

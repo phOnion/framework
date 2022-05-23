@@ -22,8 +22,8 @@ class ReflectionContainer implements ContainerInterface, AttachableContainer
 
     public function get(string $id): mixed
     {
-        assert(
-            class_exists($id),
+        \assert(
+            \class_exists($id),
             new UnknownDependencyException("Provided key '{$id}' is not a FQN of a class or could not be auto-loaded")
         );
 
@@ -36,7 +36,7 @@ class ReflectionContainer implements ContainerInterface, AttachableContainer
                 $type = $parameter->getType();
 
                 if (($type instanceof ReflectionNamedType && !$type->isBuiltin())) {
-                    assert(
+                    \assert(
                         $this->getDelegate()->has($type->getName()) || $type->allowsNull(),
                         new UnknownDependencyException(sprintf(
                             "Unable to resolve non-nullable type '\$%s(%s)'",
@@ -58,9 +58,8 @@ class ReflectionContainer implements ContainerInterface, AttachableContainer
                         $this->convertVariableName($parameter->getName())
                     );
                 } else {
-                    $r = new \ReflectionIntersectionType();
                     $typeName = $type instanceof ReflectionUnionType ?
-                        implode(' | ', $type->getTypes()) : ($type instanceof \ReflectionNamedType ?
+                        \implode(' | ', $type->getTypes()) : ($type instanceof \ReflectionNamedType ?
                             $type->getName() :
                             'unknown'
                         );
@@ -70,7 +69,7 @@ class ReflectionContainer implements ContainerInterface, AttachableContainer
                 }
             }
         } catch (UnknownDependencyException $ex) {
-            throw new UnknownDependencyException(sprintf(
+            throw new UnknownDependencyException(\sprintf(
                 'Unable to resolve %s: %s',
                 $id,
                 $ex->getMessage()
@@ -87,6 +86,6 @@ class ReflectionContainer implements ContainerInterface, AttachableContainer
 
     public function has(string $id): bool
     {
-        return class_exists($id, true);
+        return \class_exists($id, true);
     }
 }
