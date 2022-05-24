@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Onion\Framework\Http\Middleware;
 
-use Onion\Framework\Router\Router;
 use Onion\Framework\Router\Interfaces\RouteInterface;
+use Onion\Framework\Router\Interfaces\RouterInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -13,7 +13,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 class RouteDispatchingMiddleware implements MiddlewareInterface
 {
-    public function __construct(private readonly Router $router)
+    public function __construct(private readonly RouterInterface $router)
     {
     }
 
