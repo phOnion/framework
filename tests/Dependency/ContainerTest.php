@@ -18,6 +18,7 @@ use Tests\Dependency\Doubles\DependencyI;
 use Tests\Dependency\Doubles\DependencyJ;
 use Tests\Dependency\Doubles\FactoryStub;
 use Onion\Framework\Dependency\Exception\UnknownDependencyException;
+use Onion\Framework\Dependency\Interfaces\BootableServiceProviderInterface;
 use Onion\Framework\Dependency\Interfaces\ContainerInterface;
 use Onion\Framework\Dependency\Interfaces\ContextFactoryInterface;
 use Onion\Framework\Dependency\Interfaces\ServiceProviderInterface;
@@ -289,7 +290,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
     public function testServiceProviderRegistration()
     {
         $container = new Container();
-        $container->register(new class implements ServiceProviderInterface
+        $container->register(new class implements BootableServiceProviderInterface
         {
             public function register(ContainerInterface $provider): void
             {
