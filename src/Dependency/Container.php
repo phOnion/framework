@@ -151,7 +151,7 @@ class Container extends ReflectionContainer implements ContainerInterface
             }
 
             foreach ($this->serviceProviders as $provider) {
-                if (\method_exists($provider, 'boot')) {
+                if ($provider instanceof BootableServiceProviderInterface) {
                     $provider->boot($this);
                 }
             }
