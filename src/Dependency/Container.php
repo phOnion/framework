@@ -9,7 +9,12 @@ use InvalidArgumentException;
 use LogicException;
 use Onion\Framework\Dependency\Exception\ContainerErrorException;
 use Onion\Framework\Dependency\Exception\UnknownDependencyException;
-use Onion\Framework\Dependency\Interfaces\{BootableServiceProviderInterface, ContainerInterface, FactoryInterface, ServiceProviderInterface};
+use Onion\Framework\Dependency\Interfaces\{
+    BootableServiceProviderInterface,
+    ContainerInterface,
+    FactoryInterface,
+    ServiceProviderInterface
+};
 use Onion\Framework\Dependency\ReflectionContainer;
 use Onion\Framework\Dependency\Traits\ContainerTrait;
 
