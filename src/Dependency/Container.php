@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Onion\Framework\Dependency;
 
 use Closure;
+use InvalidArgumentException;
 use LogicException;
 use Onion\Framework\Dependency\Exception\ContainerErrorException;
 use Onion\Framework\Dependency\Exception\UnknownDependencyException;
-use Onion\Framework\Dependency\Interfaces\{ContainerInterface, FactoryInterface, ServiceProviderInterface};
+use Onion\Framework\Dependency\Interfaces\{BootableServiceProviderInterface, ContainerInterface, FactoryInterface, ServiceProviderInterface};
 use Onion\Framework\Dependency\ReflectionContainer;
 use Onion\Framework\Dependency\Traits\ContainerTrait;
 
@@ -58,16 +59,25 @@ class Container extends ReflectionContainer implements ContainerInterface
             new LogicException('Removing dependencies during non-loading phase should not be done'),
         );
 
-        if (isset($this->instances[$service])) {
-            unset($this->instances[$service]);
-        }
+        \assert(
+            isset($this->singleton[$service]) || isset($this->bindings[$service]),
+            new InvalidArgumentException("Attempting to unbind an unbound dependency"),
+        );
 
         if (isset($this->singleton[$service])) {
             unset($this->singleton[$service]);
+
+            if (isset($this->instances[$service])) {
+                unset($this->instances[$service]);
+            }
         }
 
         if (isset($this->bindings[$service])) {
             unset($this->bindings[$service]);
+        }
+
+        if (isset($this->extend[$service])) {
+            unset($this->extend[$service]);
         }
     }
 
