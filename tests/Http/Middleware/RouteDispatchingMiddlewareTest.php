@@ -5,7 +5,9 @@ namespace Tests\Http\Middleware;
 use Onion\Framework\Http\Middleware\RouteDispatchingMiddleware;
 use Onion\Framework\Router\Interfaces\ResolverInterface;
 use Onion\Framework\Router\Interfaces\RouteInterface;
+use Onion\Framework\Router\Interfaces\RouterInterface;
 use PHPUnit\Framework\TestCase;
+use Prophecy\Argument;
 use Prophecy\Argument\Token\TypeToken;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Message\ResponseInterface;
@@ -18,62 +20,28 @@ class RouteDispatchingMiddlewareTest extends TestCase
 {
     use ProphecyTrait;
 
-    public function testProcessingWithHeaders()
+    public function testProcessing()
     {
-        $response = $this->prophesize(ResponseInterface::class);
-        $response->getHeaders()->willReturn(['foo' => 'bar', 'bar' => 'baz']);
-        $response->getStatusCode()->willReturn(200);
-        $response->getProtocolVersion()->willReturn('1.1');
-        $response->getBody()->willReturn($this->prophesize(StreamInterface::class)->reveal());
-        $response->hasHeader('foo')->willReturn(false);
-        $response->hasHeader('bar')->willReturn(true);
-
-        $response->withStatus(200)
-            ->willReturn($response->reveal())
-            ->shouldBeCalledOnce();
-        $response->withBody(new TypeToken(StreamInterface::class))
-            ->willReturn($response->reveal())
-            ->shouldBeCalledOnce();
-        $response->withProtocolVersion('1.1')
-            ->willReturn($response->reveal())
-            ->shouldBeCalledOnce();
-        $response->withHeader('foo', 'bar')
-            ->willReturn($response->reveal())
-            ->shouldBeCalledOnce();
-        $response->withAddedHeader('bar', 'baz')
-            ->willReturn($response->reveal())
-            ->shouldBeCalledOnce();
-
-        $route = $this->prophesize(RouteInterface::class);
-        $route->handle(new TypeToken(ServerRequestInterface::class))
-            ->willReturn($response->reveal());
-
         $uri = $this->prophesize(UriInterface::class);
         $uri->getPath()->willReturn('/');
 
         $request = $this->prophesize(ServerRequestInterface::class);
-        $request->getMethod()->willReturn('GET');
         $request->getUri()->willReturn($uri->reveal());
 
-        $request->withAttribute('route', new TypeToken(RouteInterface::class))
+        $request->withAttribute(RouteInterface::class, Argument::type(RouteInterface::class))
+            ->willReturn($request->reveal())
+            ->shouldBeCalledOnce();
+        $request->withAttribute('route', Argument::type(RouteInterface::class))
             ->willReturn($request->reveal())
             ->shouldBeCalledOnce();
 
-        $resolver = $this->prophesize(ResolverInterface::class);
-        $resolver->resolve('GET', '/')
-            ->willReturn($route->reveal());
+        $route = $this->prophesize(RouteInterface::class);
+        $route->getAction()->willReturn(fn () => $this->prophesize(ResponseInterface::class)->reveal());
 
-        $handler = $this->prophesize(RequestHandlerInterface::class);
-        $handler->handle(new TypeToken(ServerRequestInterface::class))
-            ->willReturn($response->reveal());
+        $router = $this->prophesize(RouterInterface::class);
+        $router->match($request->reveal())->willReturn($route->reveal());
 
-        $middleware = new RouteDispatchingMiddleware(
-            $resolver->reveal()
-        );
-
-        $this->assertInstanceOf(ResponseInterface::class, $middleware->process(
-            $request->reveal(),
-            $handler->reveal()
-        ));
+        $middleware = new RouteDispatchingMiddleware($router->reveal());
+        $this->isInstanceOf(ResponseInterface::class,  $middleware->process($request->reveal(), $this->prophesize(RequestHandlerInterface::class)->reveal()));
     }
 }
