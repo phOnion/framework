@@ -1,46 +1,33 @@
 ## About
 
-This is a minimalistic core framework that complies with, supports and uses various
-PSRs:
+A minimal core framework that has been designed to provide the absolute minimum
+of what is necessary to get an application up and running. Using `PSR-7`, `PSR-11` and `PSR-15`
+you can plug in a lot of the code available in the wild to cover things that are not
+available as part of this package. As of now this package doesn't aim to become a
+full blown application framework, but rather allow for easy development of APIs.
+And while there are many great frameworks that allow us to do that, I thought I
+could share my take on the approach with the world (and I've learned a lot along
+the way too!). So if you are interested in delving deeper in my silent madness,
+feel free to check this and [other `onion` packages](https://packagist.org/packages/onion/)
+and let me know what you think.
 
-- PSR-2 (Coding Standard)
-- PSR-4 (Autoloading)
-- PSR-7 (HTTP Message)
-- PSR-11 (Container Interface)
-- PSR-15 (HTTP Middleware)
-- PSR-16 (Simple Caching) - *container wrapper only*
-
-While it can be used to power a full-blown application framework as of now
-it is mainly oriented towards the core tools needed for building an API.
-Being maily API oriented, now there is a package `onion/rest` that provides
-a few classes that should simplify the generation of API-standard responses
-as well as `onion/interfaces`'s `Onion\Framework\Rest` namespace has a couple
-of interfaces aimed specifically at that.
-
-In the latest release a lot of changes have been made, to note a few major ones
-
-- PHP >= 7.2 is the minimal version required
-- Many components that might increase the loading times have been made 'lazy' with the help of generators
-- There is no router! Everything is oriented towards true middleware architecture, so middleware and request handlers are used heavily
-- Route's now can be initialized using a custom classes instead of the old approach with matchers/parsers
-- Modularity is now possible through combination of appropriate PrefixRoutes and Application (no more delegate classes)
-
-Content Negotiation is something that is planned but since it is not so trivial task, it is postponed for future minor release
+P.S: I know the documentation is not the best, but if you have an idea to
+improve it I would be really happy to see your input (and a PR is always welcome).
 
 ## Requirements
 
- 1. PHP 7.2+
- 2. php.ini (Optional but recommended while development)
+1.  PHP 8.1+ 🎉
+2.  php.ini (Optional but recommended while development)
     - `zend.assertions=1`
     - `assert.exceptions=1`
 
-The php.ini configuration is suggested only while development, so that some errors, which
-could happen only while developing (misspelled array key, invalid configuration, etc.) are
-not checked all the time while running on production environment - squeezing as much
-performance as possible.
+The ini configuration is a nice-to-have thing, because that way some checks
+such as if the `middleware` key is defined and contains only valid middleware
+items is redundant on production, because it should be caught during development
+and testing (you do at least <kbd>F5</kbd> tests right?) and by doing so
+these checks can save a millisecond or two
 
-For a quick start you can clone [`onion/bootstrap`](https://github.com/phOnion/bootstrap) and
-see how the basic setup looks like and play around to test the features available.
+A quick-start application is coming soon-ish :)
 
 ## Configuration
 
