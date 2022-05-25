@@ -3,6 +3,8 @@
 namespace Tests\Router;
 
 use ArrayIterator;
+use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
+use Onion\Framework\Router\Exceptions\NotFoundException;
 use Onion\Framework\Router\Interfaces\CollectorInterface;
 use Onion\Framework\Router\Interfaces\RouteInterface;
 use Onion\Framework\Router\Router;
@@ -15,7 +17,7 @@ class RouterTest extends TestCase
 {
     use ProphecyTrait;
 
-    public function testFoo()
+    public function testSimpleMatching()
     {
         $route = $this->prophesize(RouteInterface::class);
         $route->hasMethod('GET')->willReturn(true)
@@ -44,5 +46,51 @@ class RouterTest extends TestCase
             RouteInterface::class,
             $router->match($request->reveal())
         );
+    }
+
+    public function testUnsupportedMethodException()
+    {
+
+        $route = $this->prophesize(RouteInterface::class);
+        $route->hasMethod('GET')->willReturn(false)
+            ->shouldBeCalledOnce();
+        $route->getMethods()->willReturn(['POST']);
+
+        $collector = $this->prophesize(CollectorInterface::class);
+        $collector->getIterator()->willReturn(new ArrayIterator([
+            '/(*MARK:1)' => ['1' => $route->reveal()],
+        ]));
+
+        $uri = $this->prophesize(UriInterface::class);
+        $uri->getPath()->willReturn('/')
+            ->shouldBeCalledOnce();
+        $request = $this->prophesize(RequestInterface::class);
+        $request->getMethod()->willReturn('GET')
+            ->shouldBeCalledOnce();
+        $request->getUri()->willReturn($uri->reveal())
+            ->shouldBeCalledOnce();
+
+        $this->expectException(MethodNotAllowedException::class);
+        $router = new Router($collector->reveal());
+        $router->match($request->reveal());
+    }
+
+    public function testNotFoundException()
+    {
+        $collector = $this->prophesize(CollectorInterface::class);
+        $collector->getIterator()->willReturn(new ArrayIterator([]));
+
+        $uri = $this->prophesize(UriInterface::class);
+        $uri->getPath()->willReturn('/')
+            ->shouldBeCalledOnce();
+        $request = $this->prophesize(RequestInterface::class);
+        $request->getMethod()->willReturn('GET')
+            ->shouldBeCalledOnce();
+        $request->getUri()->willReturn($uri->reveal())
+            ->shouldBeCalledOnce();
+
+        $this->expectException(NotFoundException::class);
+        $router = new Router($collector->reveal());
+        $router->match($request->reveal());
     }
 }
