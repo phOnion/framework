@@ -2,14 +2,13 @@
 
 namespace Tests\Router;
 
+use Closure;
 use Onion\Framework\Router\Route;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument\Token\AnyValueToken;
-use Prophecy\Argument\Token\TypeToken;
 use Prophecy\PhpUnit\ProphecyTrait;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Http\Server\MiddlewareInterface;
 
 class RouteTest extends TestCase
 {
@@ -33,11 +32,11 @@ class RouteTest extends TestCase
 
     public function testMethods()
     {
-        $route = (new Route('/'))->withMethods(['head', 'get']);
+        $route = (new Route('/'))->withMethods(['HEAD', 'GET']);
         $this->assertSame(['head', 'get'], $route->getMethods());
         $this->assertTrue($route->hasMethod('HEAD'));
         $this->assertFalse($route->hasMethod('PUT'));
-        $this->assertNotSame($route, $route->withMethods(['head', 'get']));
+        $this->assertNotSame($route, $route->withMethods(['HEAD', 'GET']));
     }
 
     public function testEmptyActionHandler()
@@ -45,6 +44,14 @@ class RouteTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('No handler provided for route');
         (new Route('/'))->getAction();
+    }
+
+    public function testMiddlewareAsAction()
+    {
+        $middleware = $this->prophesize(MiddlewareInterface::class);
+        $route = (new Route('/'))->withAction($middleware->reveal());
+
+        $this->assertInstanceOf(Closure::class, $route->getAction());
     }
 
     public function testParameters()
