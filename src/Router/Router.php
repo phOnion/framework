@@ -9,6 +9,7 @@ use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
 use Onion\Framework\Router\Exceptions\NotFoundException;
 use Onion\Framework\Router\Interfaces\RouteInterface;
 use Psr\Http\Message\RequestInterface;
+use RuntimeException;
 
 class Router implements RouterInterface
 {
@@ -23,6 +24,11 @@ class Router implements RouterInterface
         $method = $request->getMethod();
         foreach ($this->collector as $pattern => $data) {
             if (\preg_match("~^(?|{$pattern})$~J", $path, $matches, PREG_UNMATCHED_AS_NULL)) {
+                \assert(
+                    isset($matches['MARK']),
+                    new RuntimeException("Pattern matched but it is missing a (*MARK:N) entry"),
+                );
+
                 /** @var RouteInterface $route */
                 $route = $data[$matches['MARK']];
 
