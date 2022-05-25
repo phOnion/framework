@@ -19,22 +19,23 @@ class Router implements RouterInterface
 
     public function match(RequestInterface $request): RouteInterface
     {
+        $path = $request->getUri()->getPath();
+        $method = $request->getMethod();
         foreach ($this->collector as $pattern => $data) {
-            if (!\preg_match("~^(?|{$pattern})$~J", $request->getUri()->getPath(), $matches, PREG_UNMATCHED_AS_NULL)) {
-                continue;
-            }
-            /** @var RouteInterface $route */
-            $route = $data[$matches['MARK']];
+            if (\preg_match("~^(?|{$pattern})$~J", $path, $matches, PREG_UNMATCHED_AS_NULL)) {
+                /** @var RouteInterface $route */
+                $route = $data[$matches['MARK']];
 
-            if (!$route->hasMethod($request->getMethod())) {
-                throw new MethodNotAllowedException($route->getMethods());
-            }
+                if (!$route->hasMethod($method)) {
+                    throw new MethodNotAllowedException($route->getMethods());
+                }
 
-            return $route->withParameters(\array_filter(
-                $matches,
-                fn ($key) => !\is_int($key) && $key !== 'MARK',
-                ARRAY_FILTER_USE_KEY
-            ));
+                return $route->withParameters(\array_filter(
+                    $matches,
+                    fn ($key) => !\is_int($key) && $key !== 'MARK',
+                    ARRAY_FILTER_USE_KEY
+                ));
+            }
         }
 
         throw new NotFoundException();
