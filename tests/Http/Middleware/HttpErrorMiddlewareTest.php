@@ -33,16 +33,18 @@ class HttpErrorMiddlewareTest extends \PHPUnit\Framework\TestCase
         $this->request = $request;
     }
 
-    public function loggerProvider(): array
+    public function withLoggerProvider(): array
     {
-        return [[null], [$this->prophesize(LoggerInterface::class)]];
+        return [[true], [false]];
     }
 
     /**
-     * @dataProvider loggerProvider()
+     * @dataProvider withLoggerProvider()
      */
-    public function testAuthorizationException($logger)
+    public function testAuthorizationException($withLogger)
     {
+        $logger = $withLogger ? $this->prophesize(LoggerInterface::class) : null;
+
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new MissingHeaderException('authorization'));
 
@@ -55,10 +57,12 @@ class HttpErrorMiddlewareTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @dataProvider loggerProvider()
+     * @dataProvider withLoggerProvider()
      */
-    public function testProxyAuthorizationException($logger)
+    public function testProxyAuthorizationException($withLogger)
     {
+        $logger = $withLogger ? $this->prophesize(LoggerInterface::class) : null;
+
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new MissingHeaderException('proxy-authorization'));
 
@@ -71,10 +75,11 @@ class HttpErrorMiddlewareTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @dataProvider loggerProvider()
+     * @dataProvider withLoggerProvider()
      */
-    public function testConditionalMatchException($logger)
+    public function testConditionalMatchException($withLogger)
     {
+        $logger = $withLogger ? $this->prophesize(LoggerInterface::class) : null;
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new MissingHeaderException('if-match'));
 
@@ -86,10 +91,11 @@ class HttpErrorMiddlewareTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @dataProvider loggerProvider()
+     * @dataProvider withLoggerProvider()
      */
-    public function testConditionalNonMatchException($logger)
+    public function testConditionalNonMatchException($withLogger)
     {
+        $logger = $withLogger ? $this->prophesize(LoggerInterface::class) : null;
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new MissingHeaderException('if-none-match'));
 
@@ -101,10 +107,11 @@ class HttpErrorMiddlewareTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @dataProvider loggerProvider()
+     * @dataProvider withLoggerProvider()
      */
-    public function testConditionalModifiedSinceException($logger)
+    public function testConditionalModifiedSinceException($withLogger)
     {
+        $logger = $withLogger ? $this->prophesize(LoggerInterface::class) : null;
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new MissingHeaderException('if-modified-since'));
 
@@ -116,10 +123,11 @@ class HttpErrorMiddlewareTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @dataProvider loggerProvider()
+     * @dataProvider withLoggerProvider()
      */
-    public function testConditionalUnmodifiedSinceException($logger)
+    public function testConditionalUnmodifiedSinceException($withLogger)
     {
+        $logger = $withLogger ? $this->prophesize(LoggerInterface::class) : null;
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new MissingHeaderException('if-unmodified-since'));
 
@@ -131,10 +139,11 @@ class HttpErrorMiddlewareTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @dataProvider loggerProvider()
+     * @dataProvider withLoggerProvider()
      */
-    public function testConditionalRangeException($logger)
+    public function testConditionalRangeException($withLogger)
     {
+        $logger = $withLogger ? $this->prophesize(LoggerInterface::class) : null;
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new MissingHeaderException('if-range'));
 
@@ -146,10 +155,11 @@ class HttpErrorMiddlewareTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @dataProvider loggerProvider()
+     * @dataProvider withLoggerProvider()
      */
-    public function testCustomHeaderException($logger)
+    public function testCustomHeaderException($withLogger)
     {
+        $logger = $withLogger ? $this->prophesize(LoggerInterface::class) : null;
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new MissingHeaderException('x-custom'));
 
@@ -161,10 +171,11 @@ class HttpErrorMiddlewareTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @dataProvider loggerProvider()
+     * @dataProvider withLoggerProvider()
      */
-    public function testNotFoundException($logger)
+    public function testNotFoundException($withLogger)
     {
+        $logger = $withLogger ? $this->prophesize(LoggerInterface::class) : null;
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new NotFoundException());
 
@@ -176,10 +187,11 @@ class HttpErrorMiddlewareTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @dataProvider loggerProvider()
+     * @dataProvider withLoggerProvider()
      */
-    public function testUnsupportedMethodException($logger)
+    public function testUnsupportedMethodException($withLogger)
     {
+        $logger = $withLogger ? $this->prophesize(LoggerInterface::class) : null;
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new MethodNotAllowedException(['get', 'head']));
 
@@ -193,10 +205,11 @@ class HttpErrorMiddlewareTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @dataProvider loggerProvider()
+     * @dataProvider withLoggerProvider()
      */
-    public function testNotImplementedException($logger)
+    public function testNotImplementedException($withLogger)
     {
+        $logger = $withLogger ? $this->prophesize(LoggerInterface::class) : null;
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new \BadMethodCallException());
         $this->request->getMethod()->willReturn('GET');
@@ -214,10 +227,11 @@ class HttpErrorMiddlewareTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @dataProvider loggerProvider()
+     * @dataProvider withLoggerProvider()
      */
-    public function testUnknownErrorException($logger)
+    public function testUnknownErrorException($withLogger)
     {
+        $logger = $withLogger ? $this->prophesize(LoggerInterface::class) : null;
         $this->handler->handle(new AnyValueToken())
             ->willThrow(new \Exception());
 
