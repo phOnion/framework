@@ -149,21 +149,7 @@ class Container extends ReflectionContainer implements ContainerInterface
 
     public function get(string $id): mixed
     {
-        if ($this->serviceProviders) {
-            $this->allowBindingOverwrite = true;
-            foreach ($this->serviceProviders as $provider) {
-                $provider->register($this);
-            }
-
-            foreach ($this->serviceProviders as $provider) {
-                if ($provider instanceof BootableServiceProviderInterface) {
-                    $provider->boot($this);
-                }
-            }
-
-            $this->serviceProviders = [];
-            $this->allowBindingOverwrite = false;
-        }
+        $this->loadProviders();
 
         $instance = null;
         $service = $this->aliases[$id] ?? $id;
@@ -196,8 +182,30 @@ class Container extends ReflectionContainer implements ContainerInterface
 
     public function has(string $id): bool
     {
+        $this->loadProviders();
         $service = $this->aliases[$id] ?? $id;
 
         return isset($this->bindings[$service]) || parent::has($service);
+    }
+
+    private function loadProviders(): void
+    {
+        if ($this->serviceProviders) {
+            $providers = $this->serviceProviders;
+            $this->serviceProviders = [];
+            $this->allowBindingOverwrite = true;
+            foreach ($providers as $provider) {
+                $provider->register($this);
+            }
+
+            foreach ($providers as $provider) {
+                if ($provider instanceof BootableServiceProviderInterface) {
+                    $provider->boot($this);
+                }
+            }
+
+
+            $this->allowBindingOverwrite = false;
+        }
     }
 }
