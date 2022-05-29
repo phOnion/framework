@@ -177,7 +177,7 @@ class Container extends ReflectionContainer implements ContainerInterface
             new UnknownDependencyException("Unable to resolve dependency '$id'"),
         );
 
-        return $this->enforceReturnType($id, $instance);
+        return $instance;
     }
 
     public function has(string $id): bool
