@@ -90,7 +90,7 @@ class Container extends ReflectionContainer implements ContainerInterface
     {
         \assert(
             !isset($this->bindings[$service]),
-            new ContainerErrorException("Unable to overwrite an existing service, maybe 'unbind' it first?"),
+            new ContainerErrorException("Unable to overwrite an existing service '{$service}', maybe 'unbind' it first?"),
         );
 
         if ($binding instanceof FactoryInterface) {
