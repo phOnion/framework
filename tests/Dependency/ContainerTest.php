@@ -21,13 +21,16 @@ use Onion\Framework\Dependency\Exception\UnknownDependencyException;
 use Onion\Framework\Dependency\Interfaces\BootableServiceProviderInterface;
 use Onion\Framework\Dependency\Interfaces\ContainerInterface;
 use Onion\Framework\Dependency\Interfaces\ContextFactoryInterface;
+use Onion\Framework\Dependency\Interfaces\DelegateContainerInterface;
 use Onion\Framework\Dependency\Interfaces\ServiceProviderInterface;
+use Prophecy\PhpUnit\ProphecyTrait;
 use RuntimeException;
 use SplQueue;
 use stdClass;
 
 class ContainerTest extends \PHPUnit\Framework\TestCase
 {
+    use ProphecyTrait;
     public function testHasParameterCheck()
     {
         $container = new Container(['bar' => 'baz']);
@@ -68,11 +71,8 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
 
     public function testRetrievalWhenUsingAFactory()
     {
-        $container = new Container([
-            'factories' =>  [
-                \stdClass::class => FactoryStub::class
-            ],
-        ]);
+        $container = new Container();
+        $container->bind(stdClass::class, new FactoryStub);
 
         $this->assertTrue($container->has(FactoryStub::class));
         $this->assertTrue($container->has(\stdClass::class));
@@ -83,7 +83,7 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
     public function testExceptionOnNonExistingEntry()
     {
         $container = new Container();
-        $this->expectExceptionMessage("Provided key 'foo' is not a FQN");
+        $this->expectExceptionMessage("Unable to resolve dependency 'foo'");
         $this->expectException(UnknownDependencyException::class);
         $container->get('foo');
     }
@@ -132,24 +132,6 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         $container->bind(\stdClass::class, 'FooBarDoesNotExistMan');
 
         $this->assertInstanceOf(\stdClass::class, $container->get(\stdClass::class));
-    }
-
-    public function testExceptionWhenResultIsNotInstanceOfIdentifier()
-    {
-        if (ini_get('zend.assertions') === '-1') {
-            $this->markTestSkipped('In production mode assertions probably are disabled and this test will fail');
-        }
-
-        if (ini_get('assert.exception') === '0') {
-            $this->markTestSkipped('The "assert.exception" should be set to "1" to throw the exception');
-        }
-
-        $this->expectExceptionMessage('Unable to verify that "stdClass" is of type "SplFixedArray"');
-        $this->expectException(RuntimeException::class);
-        $container = new Container();
-        $container->bind(\SplFixedArray::class, \stdClass::class);
-
-        $container->get(\SplFixedArray::class);
     }
 
     public function testDependencyResolutionFromReflection()
@@ -220,40 +202,36 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         $container->get(DependencyG::class);
     }
 
-    public function testBindingFromFactoryWithInvalidResult()
+    public function testBindingFromFactory()
     {
         $class = new class implements FactoryInterface
         {
             public function build(\Psr\Container\ContainerInterface $container): mixed
             {
-                return false;
+                return true;
             }
         };
         $container = new Container();
         $container->bind(\stdClass::class, $class);
 
         $this->assertTrue($container->has(\stdClass::class));
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('No factory available');
-        $container->get(\stdClass::class);
+        $this->assertTrue($container->get(\stdClass::class));
     }
 
-    public function testSingletonFromFactoryWithInvalidResult()
+    public function testSingletonFromFactory()
     {
         $class = new class implements FactoryInterface
         {
             public function build(\Psr\Container\ContainerInterface $container): mixed
             {
-                return false;
+                return true;
             }
         };
         $container = new Container();
         $container->singleton(\stdClass::class, $class);
 
         $this->assertTrue($container->has(\stdClass::class));
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('No factory available');
-        $container->get(\stdClass::class);
+        $this->assertTrue($container->get(\stdClass::class));
     }
 
     public function testFactoryBuilderCreation()
@@ -285,6 +263,34 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         $container = new Container([]);
         $this->expectException(ContainerErrorException::class);
         $container->get(DependencyJ::class);
+    }
+
+    public function testServiceProviderLoadedOnHas()
+    {
+        $container = new Container();
+        $container->register(new class implements ServiceProviderInterface
+        {
+            public function register(ContainerInterface $provider): void
+            {
+                $provider->bind('foo', fn () => 'bar');
+            }
+        });
+
+        $this->assertTrue($container->has('foo'));
+    }
+
+    public function testServiceProviderLoadedOnGet()
+    {
+        $container = new Container();
+        $container->register(new class implements ServiceProviderInterface
+        {
+            public function register(ContainerInterface $provider): void
+            {
+                $provider->bind('foo', fn () => 'bar');
+            }
+        });
+
+        $this->assertSame('bar', $container->get('foo'));
     }
 
     public function testServiceProviderRegistration()
@@ -390,5 +396,23 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         $container->unbind('foo');
         $this->assertFalse($container->has('baz'));
         $this->assertTrue($container->has('foo'));
+    }
+
+    public function testResolutionDelegation()
+    {
+        $delegate = $this->prophesize(ContainerInterface::class)
+            ->willImplement(DelegateContainerInterface::class);
+
+        $delegate->has('foo')
+            ->willReturn(true)
+            ->shouldBeCalledOnce();
+        $delegate->get('foo')
+            ->willReturn('bar')
+            ->shouldBeCalledOnce();
+
+        $container = new Container();
+        $container->attach($delegate->reveal());
+
+        $this->assertSame('bar', $container->get('foo'));
     }
 }
