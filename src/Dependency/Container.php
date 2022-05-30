@@ -160,9 +160,10 @@ class Container extends ReflectionContainer implements ContainerInterface
             return $this->instances[$service];
         }
 
-        /** @var Closure|null $factory */
+
         $instance = ($this->bindings[$service] ??
-            fn (self $container, string $id) => $this->getDelegate()->get($service))($this, $id);
+            fn (self $container, string $id) => parent::has($service) ? parent::get($service) : null
+        )($this, $id);
 
         if ($instance === null && $this->getDelegate()->has($service)) {
             $instance = $this->getDelegate()->get($service);
