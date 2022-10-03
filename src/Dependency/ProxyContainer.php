@@ -38,12 +38,12 @@ class ProxyContainer implements ContainerInterface, DelegateContainerInterface, 
 
         foreach ($resolvers as $resolver) {
             try {
-                $r = $resolver->get($id);
-                if (!\is_array($r)) {
-                    return $r;
+                $intermediateResult = $resolver->get($id);
+                if (!\is_array($intermediateResult)) {
+                    return $intermediateResult;
                 }
 
-                $result = merge(($result ?? []), $r);
+                $result = merge(($result ?? []), $intermediateResult);
             } catch (ContainerErrorException $ex) {
                 continue;
             }
