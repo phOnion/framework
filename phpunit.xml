@@ -9,7 +9,21 @@
       <directory suffix="ServiceProvider.php">src</directory>
     </exclude>
   </coverage>
-  <testsuite name="all">
-    <directory suffix="Test.php">tests</directory>
-  </testsuite>
+  <testsuites>
+    <testsuite name="rest">
+      <directory suffix="Test.php">tests/Controller</directory>
+    </testsuite>
+    <testsuite name="container">
+      <directory suffix="Test.php">tests/Dependency</directory>
+    </testsuite>
+    <testsuite name="http">
+      <directory suffix="Test.php">tests/Http</directory>
+    </testsuite>
+    <testsuite name="router">
+      <directory suffix="Test.php">tests/Router</directory>
+    </testsuite>
+    <testsuite name="state">
+      <directory suffix="Test.php">tests/State</directory>
+    </testsuite>
+  </testsuites>
 </phpunit>
