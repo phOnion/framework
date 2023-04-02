@@ -165,8 +165,8 @@ class Container extends ReflectionContainer implements ContainerInterface
             fn (self $container, string $id) => parent::has($service) ? parent::get($service) : null
         )($this, $id);
 
-        if ($instance === null && $this->getDelegate()->has($service)) {
-            $instance = $this->getDelegate()->get($service);
+        if ($instance === null && $this->getDelegate()?->has($service)) {
+            $instance = $this->getDelegate()?->get($service);
         }
 
         if (isset($this->extend[$id])) {
