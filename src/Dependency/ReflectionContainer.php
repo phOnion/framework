@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Onion\Framework\Dependency;
 
-use InvalidArgumentException;
 use Onion\Framework\Dependency\Traits\AttachableContainerTrait;
 use Onion\Framework\Dependency\Traits\ContainerTrait;
 use Onion\Framework\Dependency\Exception\ContainerErrorException;
@@ -68,6 +67,8 @@ class ReflectionContainer implements ContainerInterface, AttachableContainer
                     );
                 }
             }
+
+            return $reflection->newInstance(...$parameters);
         } catch (UnknownDependencyException $ex) {
             throw new UnknownDependencyException(\sprintf(
                 'Unable to resolve %s: %s',
@@ -80,8 +81,6 @@ class ReflectionContainer implements ContainerInterface, AttachableContainer
                 previous: $ex
             );
         }
-
-        return $reflection->newInstanceArgs($parameters);
     }
 
     public function has(string $id): bool
