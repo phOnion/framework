@@ -102,7 +102,7 @@ class ReflectionContainerTest extends TestCase
         $container->attach($delegate->reveal());
 
         $this->expectException(ContainerErrorException::class);
-        $this->expectDeprecationMessage(sprintf('Unable to build dependency %s', DependencyA::class));
+        $this->expectExceptionMessage(sprintf('Unable to build dependency %s', DependencyA::class));
 
 
         $container->get(DependencyA::class);
