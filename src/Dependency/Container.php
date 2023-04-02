@@ -24,7 +24,7 @@ class Container extends ReflectionContainer implements ContainerInterface
 {
     use ContainerTrait;
 
-    private bool $allowBindingOverwrite = false;
+    private bool $allowOverwrite = false;
 
     private array $serviceProviders = [];
 
@@ -60,7 +60,7 @@ class Container extends ReflectionContainer implements ContainerInterface
     public function unbind(string $service): void
     {
         \assert(
-            $this->allowBindingOverwrite,
+            $this->allowOverwrite,
             new LogicException('Removing dependencies during non-loading phase should not be done'),
         );
 
@@ -200,7 +200,7 @@ class Container extends ReflectionContainer implements ContainerInterface
         if ($this->serviceProviders) {
             $providers = $this->serviceProviders;
             $this->serviceProviders = [];
-            $this->allowBindingOverwrite = true;
+            $this->allowOverwrite = true;
             foreach ($providers as $provider) {
                 $provider->register($this);
             }
@@ -212,7 +212,7 @@ class Container extends ReflectionContainer implements ContainerInterface
             }
 
 
-            $this->allowBindingOverwrite = false;
+            $this->allowOverwrite = false;
         }
     }
 }
