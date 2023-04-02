@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Onion\Framework\Controller;
 
 use GuzzleHttp\Psr7\Stream;
@@ -13,17 +15,17 @@ abstract class RestController implements MiddlewareInterface
 {
     private function getEmptyStream(string $mode = 'r'): StreamInterface
     {
-        return new Stream(fopen('php://memory', $mode));
+        return new Stream(\fopen('php://memory', $mode));
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $httpMethod = strtolower($request->getMethod());
-        if ($httpMethod === 'head' && !method_exists($this, 'head')) {
+        $httpMethod = \strtolower($request->getMethod());
+        if ($httpMethod === 'head' && !\method_exists($this, 'head')) {
             $httpMethod = 'get';
         }
 
-        if (!method_exists($this, $httpMethod)) {
+        if (!\method_exists($this, $httpMethod)) {
             throw new \BadMethodCallException('Method not implemented');
         }
 
@@ -37,7 +39,7 @@ abstract class RestController implements MiddlewareInterface
         if ($httpMethod === 'options' && !$response->hasHeader('allow')) {
             $methods = $request->getAttribute('route')->getMethods();
 
-            $response = $response->withAddedHeader('allow', implode(', ', $methods));
+            $response = $response->withAddedHeader('allow', \implode(', ', $methods));
         }
 
         return $response;

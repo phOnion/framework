@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<psalm totallyTyped="false">
+<psalm>
     <projectFiles>
         <directory name="src" />
         <ignoreFiles>
@@ -23,7 +23,7 @@
         <MissingReturnType errorLevel="info" />
         <MissingPropertyType errorLevel="info" />
         <InvalidDocblock errorLevel="info" />
-        <MisplacedRequiredParam errorLevel="info" />
+        <!-- <MisplacedRequiredParam errorLevel="info" /> -->
 
         <PropertyNotSetInConstructor errorLevel="info" />
         <MissingConstructor errorLevel="info" />
@@ -40,5 +40,6 @@
         <RawObjectIteration errorLevel="info" />
 
         <InvalidStringClass errorLevel="info" />
+        <InvalidThrow errorLevel="info" />
     </issueHandlers>
 </psalm>

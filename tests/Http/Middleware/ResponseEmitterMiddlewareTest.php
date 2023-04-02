@@ -1,16 +1,20 @@
 <?php
+
 namespace Tests\Http\Middleware;
 
 use Onion\Framework\Http\Emitter\Interfaces\EmitterInterface;
 use Onion\Framework\Http\Middleware\ResponseEmitterMiddleware;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument\Token\TypeToken;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 class ResponseEmitterMiddlewareTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testConstruction()
     {
         $emitter = $this->prophesize(EmitterInterface::class);

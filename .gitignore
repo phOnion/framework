@@ -54,3 +54,4 @@ build/
 composer.lock
 *.swp
 tags
+infection.build.log

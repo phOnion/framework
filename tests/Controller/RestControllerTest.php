@@ -1,10 +1,12 @@
 <?php
+
 namespace Tests\Controller;
 
 use GuzzleHttp\Psr7\Response;
 use Onion\Framework\Controller\RestController;
 use Onion\Framework\Router\Interfaces\RouteInterface;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Tests\Controller\Stub\DummyController;
@@ -13,6 +15,8 @@ class RestControllerTest extends TestCase
 {
     private $request;
     private $handler;
+
+    use ProphecyTrait;
 
     public function setUp(): void
     {
@@ -50,8 +54,10 @@ class RestControllerTest extends TestCase
 
     public function testExceptionOnNotImplemented()
     {
-        $controller = new class extends RestController {
-            public function get() {
+        $controller = new class extends RestController
+        {
+            public function get()
+            {
                 return new Response(200);
             }
         };
@@ -64,8 +70,10 @@ class RestControllerTest extends TestCase
 
     public function testInterchangeableGetAndHead()
     {
-        $controller = new class extends RestController {
-            public function get() {
+        $controller = new class extends RestController
+        {
+            public function get()
+            {
                 return new Response(200);
             }
         };
@@ -78,12 +86,15 @@ class RestControllerTest extends TestCase
 
     public function testGetAndHeadInterference()
     {
-        $controller = new class extends RestController {
-            public function get() {
+        $controller = new class extends RestController
+        {
+            public function get()
+            {
                 return new Response(200);
             }
 
-            public function head() {
+            public function head()
+            {
                 return new Response(204);
             }
         };

@@ -1,14 +1,11 @@
 <?php
+
 namespace Tests\Dependency;
 
+use LogicException;
 use Onion\Framework\Dependency\Container;
 use Onion\Framework\Dependency\Exception\ContainerErrorException;
-use Onion\Framework\Dependency\Exception\UnknownDependency;
-use Onion\Framework\Dependency\Interfaces\FactoryBuilderInterface;
 use Onion\Framework\Dependency\Interfaces\FactoryInterface;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use Tests\Dependency\Doubles\DependencyA;
 use Tests\Dependency\Doubles\DependencyB;
 use Tests\Dependency\Doubles\DependencyC;
@@ -18,13 +15,25 @@ use Tests\Dependency\Doubles\DependencyF;
 use Tests\Dependency\Doubles\DependencyG;
 use Tests\Dependency\Doubles\DependencyH;
 use Tests\Dependency\Doubles\DependencyI;
+use Tests\Dependency\Doubles\DependencyJ;
 use Tests\Dependency\Doubles\FactoryStub;
+use Onion\Framework\Dependency\Exception\UnknownDependencyException;
+use Onion\Framework\Dependency\Interfaces\BootableServiceProviderInterface;
+use Onion\Framework\Dependency\Interfaces\ContainerInterface;
+use Onion\Framework\Dependency\Interfaces\ContextFactoryInterface;
+use Onion\Framework\Dependency\Interfaces\DelegateContainerInterface;
+use Onion\Framework\Dependency\Interfaces\ServiceProviderInterface;
+use Prophecy\PhpUnit\ProphecyTrait;
+use RuntimeException;
+use SplQueue;
+use stdClass;
 
 class ContainerTest extends \PHPUnit\Framework\TestCase
 {
+    use ProphecyTrait;
     public function testHasParameterCheck()
     {
-        $container = new Container( ['bar' => 'baz']);
+        $container = new Container(['bar' => 'baz']);
         $this->assertFalse($container->has('foo'));
         $this->assertFalse($container->has('bar'));
         $this->assertFalse($container->has(1));
@@ -32,127 +41,50 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
 
     public function testRetrievalOfInvokables()
     {
-        $container = new Container([
-            'invokables' =>  [
-                \stdClass::class => \stdClass::class
-            ]
-        ]);
+        $container = new Container();
+        $container->bind(\stdClass::class, \stdClass::class);
 
         $this->assertTrue($container->has(\stdClass::class));
         $this->assertInstanceOf(\stdClass::class, $container->get(\stdClass::class));
         $this->assertNotSame($container->get(\stdClass::class), $container->get(\stdClass::class));
     }
 
+    public function testRetrievalByAlias()
+    {
+        $container = new Container();
+        $container->bind(stdClass::class, stdClass::class);
+        $container->alias('f', stdClass::class);
+
+        $this->assertTrue($container->has('f'));
+        $this->assertInstanceOf(\stdClass::class, $container->get('f'));
+    }
+
     public function testRetrievalOfInvokablesWithBadMapping()
     {
-        $container = new Container( [
-            'invokables' =>  [
-                \stdClass::class => 1
-            ]
-        ]);
+        $container = new Container();
+        $container->bind(\stdClass::class, 1);
 
-        $this->expectExceptionMessage('Unable to resolve');
-        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage("Provided key '1' is not a FQN");
+        $this->expectException(ContainerErrorException::class);
         $container->get(\stdClass::class);
     }
 
     public function testRetrievalWhenUsingAFactory()
     {
-        $container = new Container( [
-            'factories' =>  [
-                \stdClass::class => FactoryStub::class
-            ]
-        ]);
+        $container = new Container();
+        $container->bind(stdClass::class, new FactoryStub);
 
+        $this->assertTrue($container->has(FactoryStub::class));
         $this->assertTrue($container->has(\stdClass::class));
         $this->assertInstanceOf(\stdClass::class, $container->get(\stdClass::class));
         $this->assertNotSame($container->get(\stdClass::class), $container->get(\stdClass::class));
     }
 
-    public function testRetrievalOfSharedDependenciesFromFactory()
-    {
-        $container = new Container([
-            'factories' =>  [
-                \stdClass::class => FactoryStub::class,
-            ],
-            'shared' => [
-                \stdClass::class
-            ]
-        ]);
-
-        $this->assertTrue($container->has(\stdClass::class));
-        $this->assertInstanceOf(
-            \stdClass::class,
-            $container->get(\stdClass::class)
-        );
-        $this->assertInstanceOf(
-            \stdClass::class,
-            $container->get(\stdClass::class)
-        );
-        $this->assertSame(
-            $container->get(\stdClass::class),
-            $container->get(\stdClass::class)
-        );
-    }
-
-    public function testRetrievalOfSharedDependenciesFromInvokables()
-    {
-        $container = new Container(
-             [
-                'invokables' =>  [
-                    \stdClass::class => \stdClass::class
-                ],
-                'shared' => [
-                    \stdClass::class
-                ]
-            ]
-        );
-
-        $this->assertTrue($container->has(\stdClass::class));
-        $this->assertInstanceOf(
-            \stdClass::class,
-            $container->get(\stdClass::class)
-        );
-        $this->assertInstanceOf(
-            \stdClass::class,
-            $container->get(\stdClass::class)
-        );
-        $this->assertSame(
-            $container->get(\stdClass::class),
-            $container->get(\stdClass::class)
-        );
-    }
-
-    public function testMultipleSharedDependencies()
-    {
-        $container = new Container([
-            'invokables' => [
-                \stdClass::class => \stdClass::class
-            ],
-            'factories' => [
-                'foo' => FactoryStub::class,
-                'bar' => FactoryStub::class,
-            ],
-            'shared' => [
-                'foo',
-                'bar',
-                \stdClass::class
-            ]
-        ]);
-        $std = $container->get(\stdClass::class);
-        $foo = $container->get('foo');
-        $bar = $container->get('bar');
-
-        $this->assertSame($std, $container->get(\stdClass::class));
-        $this->assertSame($foo, $container->get('foo'));
-        $this->assertSame($bar, $container->get('bar'));
-    }
-
     public function testExceptionOnNonExistingEntry()
     {
-        $container = new Container( []);
-        $this->expectExceptionMessage('Unable to resolve');
-        $this->expectException(NotFoundExceptionInterface::class);
+        $container = new Container();
+        $this->expectExceptionMessage("Unable to resolve dependency 'foo'");
+        $this->expectException(UnknownDependencyException::class);
         $container->get('foo');
     }
 
@@ -166,13 +98,11 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
             $this->markTestSkipped('The "assert.exception" should be set to "1" to throw the exception');
         }
 
-        $this->expectExceptionMessage('Registered factory for \'stdClass\' must be a valid FQCN');
-        $this->expectException(ContainerExceptionInterface::class);
-        $container = new Container([
-            'factories' =>  [
-                \stdClass::class => true,
-            ]
-        ]);
+        $this->expectExceptionMessage("Provided key '1' is not a FQN");
+        $this->expectException(ContainerErrorException::class);
+        $container = new Container();
+        $container->bind(\stdClass::class, true);
+
         $container->get(\stdClass::class);
     }
 
@@ -186,51 +116,22 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
             $this->markTestSkipped('The "assert.exception" should be set to "1" to throw the exception');
         }
 
-        $this->expectExceptionMessage('Factory for \'stdClass\' does not implement any of Dependency\\Interfaces');
-        $this->expectException(ContainerExceptionInterface::class);
-        $container = new Container(
-             [
-                'factories' =>  [
-                    \stdClass::class => \stdClass::class
-                ]
-            ]
-        );
+        $this->expectExceptionMessage("Provided key 'FooBar' is not a FQN");
+        $this->expectException(ContainerErrorException::class);
+        $container = new Container();
+        $container->bind(\stdClass::class, 'FooBar');
+
         $this->assertInstanceOf(\stdClass::class, $container->get(\stdClass::class));
     }
 
     public function testExceptionWhenInvokableIsStringButNotAClass()
     {
-        $this->expectExceptionMessage('Unable to resolve');
-        $this->expectException(UnknownDependency::class);
-        $container = new Container(
-             [
-                'invokables' =>  [
-                    \stdClass::class => 'FooBarDoesNotExistMan'
-                ]
-            ]
-        );
+        $this->expectExceptionMessage("Provided key 'FooBarDoesNotExistMan' is not a FQN");
+        $this->expectException(UnknownDependencyException::class);
+        $container = new Container();
+        $container->bind(\stdClass::class, 'FooBarDoesNotExistMan');
+
         $this->assertInstanceOf(\stdClass::class, $container->get(\stdClass::class));
-    }
-
-    public function testExceptionWhenResultIsNotInstanceOfIdentifier()
-    {
-        if (ini_get('zend.assertions') === '-1') {
-            $this->markTestSkipped('In production mode assertions probably are disabled and this test will fail');
-        }
-
-        if (ini_get('assert.exception') === '0') {
-            $this->markTestSkipped('The "assert.exception" should be set to "1" to throw the exception');
-        }
-
-        $this->expectExceptionMessage('Unable to verify that "stdClass" is of type "SplFixedArray"');
-        $this->expectException(ContainerExceptionInterface::class);
-        $container = new Container([
-            'invokables' =>  [
-                \SplFixedArray::class => \stdClass::class
-            ]
-        ]);
-
-        $container->get(\SplFixedArray::class);
     }
 
     public function testDependencyResolutionFromReflection()
@@ -239,47 +140,48 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf(DependencyD::class, $container->get(DependencyD::class));
     }
 
-    public function testDependencyResolutionFromReflectionException()
+    public function testDependencyTypeResolutionFromReflectionException()
     {
-        $this->expectException(ContainerErrorException::class);
-        $this->expectExceptionMessage('Unable to find match for type: "c (' . DependencyC::class . ')');
+        $this->expectException(UnknownDependencyException::class);
+        $this->expectExceptionMessage(sprintf(
+            "Unable to resolve %s: Unable to resolve %s: Unable to resolve non-nullable type '\$c(%s)'",
+            DependencyA::class,
+            DependencyB::class,
+            DependencyC::class,
+        ));
         $container = new Container([]);
-        $this->assertInstanceOf(DependencyD::class, $container->get(DependencyA::class));
+        $container->get(DependencyA::class);
     }
 
     public function testDependencyLookupWhenBoundToInterface()
     {
-        $container = new Container( [
-            'invokables' =>  [
-                DependencyC::class => DependencyD::class
-            ]
-        ]);
+
+        $container = new Container();
+        $container->bind(DependencyC::class, DependencyD::class);
 
         $this->assertInstanceOf(DependencyB::class, $container->get(DependencyB::class));
     }
 
     public function testDependencyWithParameterOfUnknownType()
     {
-        $container = new Container( []);
+        $container = new Container([]);
 
-        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectException(ContainerErrorException::class);
         $container->get(DependencyE::class);
     }
 
     public function testUnknownInterfaceResolution()
     {
-        $container = new Container( []);
-        $this->expectException(ContainerExceptionInterface::class);
+        $container = new Container([]);
+        $this->expectException(ContainerErrorException::class);
         $container->get(DependencyF::class);
     }
 
     public function testExceptionOnConstructorParameterNotAvailable()
     {
         $container = new Container([]);
-        $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage(
-            'Unable to find match for type: "foo (mixed)"'
-        );
+        $this->expectException(UnknownDependencyException::class);
+        $this->expectExceptionMessage(sprintf('Unable to resolve %s: Missing $foo(unknown)', DependencyH::class));
         $container->get(DependencyH::class);
     }
 
@@ -293,100 +195,224 @@ class ContainerTest extends \PHPUnit\Framework\TestCase
     {
         $container = new Container([]);
         $this->expectException(ContainerErrorException::class);
+        $this->expectExceptionMessage(sprintf(
+            'Unable to resolve %s: Missing $testMockName(string)',
+            DependencyG::class,
+        ));
         $container->get(DependencyG::class);
     }
 
-    public function testCreationFromFactoryWithInvalidReslut()
+    public function testBindingFromFactory()
     {
-        $class = new class implements FactoryInterface {
-            public function build(\Psr\Container\ContainerInterface $container)
+        $class = new class implements FactoryInterface
+        {
+            public function build(\Psr\Container\ContainerInterface $container): mixed
             {
-                // nothing is returned
+                return true;
             }
         };
-        $container = new Container([
-            'factories' => [
-                \StdClass::class => get_class($class),
-            ],
-            'invokables' => [
-                get_class($class) => $class,
-            ]
-        ]);
-        $this->assertTrue($container->has(\StdClass::class));
-        $this->expectException(ContainerErrorException::class);
-        $this->expectExceptionMessage('No factory available');
-        $container->get(\StdClass::class);
+        $container = new Container();
+        $container->bind(\stdClass::class, $class);
+
+        $this->assertTrue($container->has(\stdClass::class));
+        $this->assertTrue($container->get(\stdClass::class));
     }
 
-    public function testExceptionOnHasInvalidKey()
+    public function testSingletonFromFactory()
     {
-        $container = new Container([]);
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Provided key must be a string');
-        $this->assertFalse($container->has(new \stdClass));
-    }
-
-    public function testExceptionOnGetInvalidKey()
-    {
-        $container = new Container([]);
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Provided key must be a string');
-        $container->get(new \stdClass);
-    }
-
-    public function testKeyIsStringCompatible()
-    {
-        $key = new class {
-            public function __toString()
+        $class = new class implements FactoryInterface
+        {
+            public function build(\Psr\Container\ContainerInterface $container): mixed
             {
-                return 'key';
+                return true;
             }
         };
+        $container = new Container();
+        $container->singleton(\stdClass::class, $class);
 
-        $this->assertFalse((new Container([]))->has($key));
-
-        $this->expectException(UnknownDependency::class);
-        (new Container([]))->get($key);
+        $this->assertTrue($container->has(\stdClass::class));
+        $this->assertTrue($container->get(\stdClass::class));
     }
 
     public function testFactoryBuilderCreation()
     {
-        $class = new class implements FactoryBuilderInterface {
-            public function build(\Psr\Container\ContainerInterface $container, string $key): FactoryInterface
+        $class = new class implements ContextFactoryInterface
+        {
+            public function build(\Psr\Container\ContainerInterface $container, string $key = null): object
             {
-                return new class ($key) implements FactoryInterface {
-                    private $key;
-                    public function __construct(string $name)
-                    {
-                        $this->key = $name;
-                    }
-
-                    public function build(ContainerInterface $container) {
-                        return $container->get("Tests\\Dependency\\Doubles\\Dependency{$this->key}");
-                    }
-                };
+                return $container->get("Tests\\Dependency\\Doubles\\Dependency{$key}");
             }
         };
-        $container = new Container([
-            'factories' => [
-                'D' => get_class($class),
-            ],
-        ]);
+        $container = new Container();
+        $container->bind('D', new $class);
         $this->assertTrue($container->has('D'));
         $this->assertInstanceOf(DependencyD::class, $container->get('D'));
     }
 
     public function testClosureFactory()
     {
-        $container = new Container([
-            'factories' => [
-                'D' => function () {
-                    return new DependencyD;
-                }
-            ]
-        ]);
+        $container = new Container();
+        $container->bind('D', fn () => new DependencyD);
 
         $this->assertTrue($container->has('D'));
         $this->assertInstanceOf(DependencyD::class, $container->get('D'));
+    }
+
+    public function testNonExistingDependency()
+    {
+        $container = new Container([]);
+        $this->expectException(ContainerErrorException::class);
+        $container->get(DependencyJ::class);
+    }
+
+    public function testServiceProviderLoadedOnHas()
+    {
+        $container = new Container();
+        $container->register(new class implements ServiceProviderInterface
+        {
+            public function register(ContainerInterface $provider): void
+            {
+                $provider->bind('foo', fn () => 'bar');
+            }
+        });
+
+        $this->assertTrue($container->has('foo'));
+    }
+
+    public function testServiceProviderLoadedOnGet()
+    {
+        $container = new Container();
+        $container->register(new class implements ServiceProviderInterface
+        {
+            public function register(ContainerInterface $provider): void
+            {
+                $provider->bind('foo', fn () => 'bar');
+            }
+        });
+
+        $this->assertSame('bar', $container->get('foo'));
+    }
+
+    public function testServiceProviderRegistration()
+    {
+        $container = new Container();
+        $container->register(new class implements BootableServiceProviderInterface
+        {
+            public function register(ContainerInterface $provider): void
+            {
+                $provider->singleton(stdClass::class, fn () => new stdClass);
+                $provider->bind('foo', fn () => new stdClass);
+            }
+
+            public function boot(ContainerInterface $provider): void
+            {
+                $provider->singleton('bar', fn () => new SplQueue());
+                $provider->singleton('baz', new SplQueue());
+                $provider->extend('bar', function (SplQueue $queue) {
+                    $queue->enqueue(1);
+
+                    return $queue;
+                });
+
+                $provider->extend('bar', function (SplQueue $queue) {
+                    $queue->enqueue(2);
+
+                    return $queue;
+                });
+
+                $provider->extend('baz', function (SplQueue $queue) {
+                    $queue->enqueue(1);
+
+                    return $queue;
+                });
+            }
+        });
+
+        $this->assertInstanceOf(stdClass::class, $container->get(stdClass::class));
+        $this->assertSame($container->get(stdClass::class), $container->get(stdClass::class));
+        $this->assertInstanceOf(SplQueue::class, $container->get('bar'));
+        $this->assertCount(2, $container->get('bar'));
+        $this->assertEmpty($container->get('baz'));
+    }
+
+    public function testDependencyTagging()
+    {
+        $container = new Container();
+        $container->bind('foo', fn () => new stdClass, ['baz']);
+        $container->singleton('bar', fn () => new stdClass, ['baz']);
+        $container->tag('foo', 'bar');
+
+
+        $this->assertIsIterable($container->tagged('baz'));
+        $this->assertContainsOnlyInstancesOf(stdClass::class, $container->tagged('baz'));
+        $this->assertCount(2, $container->tagged('baz'));
+
+        $this->assertIsIterable($container->tagged('bar'));
+        $this->assertContainsOnly(stdClass::class, $container->tagged('bar'));
+        $this->assertCount(1, $container->tagged('bar'));
+    }
+
+    public function testDirectOverwriteOfExistingDependencyException()
+    {
+        $container = new Container();
+        $container->bind('foo', fn () => new stdClass());
+
+        $this->expectException(ContainerErrorException::class);
+        $container->bind('foo', fn () => 'baz');
+    }
+
+    public function testOverwriteFromServiceProviderWithUnbinding()
+    {
+        $container = new Container();
+        $container->bind('foo', stdClass::class);
+        $container->register(new class implements ServiceProviderInterface
+        {
+            public function register(ContainerInterface $provider): void
+            {
+                $provider->unbind('foo');
+                $provider->bind('foo', SplQueue::class);
+            }
+        });
+
+        $this->assertInstanceOf(SplQueue::class, $container->get('foo'));
+    }
+
+    public function testExceptionWhenUnbindingFromOutsideOfServiceProvider()
+    {
+        $container = new Container();
+
+        $container->bind('foo', stdClass::class);
+        $container->bind('baz', stdClass::class);
+        $container->register(new class implements ServiceProviderInterface
+        {
+            public function register(ContainerInterface $provider): void
+            {
+                $provider->unbind('baz');
+            }
+        });
+        $this->expectException(LogicException::class);
+        $this->assertInstanceOf(stdClass::class, $container->get('foo'));
+
+        $container->unbind('foo');
+        $this->assertFalse($container->has('baz'));
+        $this->assertTrue($container->has('foo'));
+    }
+
+    public function testResolutionDelegation()
+    {
+        $delegate = $this->prophesize(ContainerInterface::class)
+            ->willImplement(DelegateContainerInterface::class);
+
+        $delegate->has('foo')
+            ->willReturn(true)
+            ->shouldBeCalledOnce();
+        $delegate->get('foo')
+            ->willReturn('bar')
+            ->shouldBeCalledOnce();
+
+        $container = new Container();
+        $container->attach($delegate->reveal());
+
+        $this->assertSame('bar', $container->get('foo'));
     }
 }

@@ -1,38 +1,26 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Onion\Framework\State;
 
-use Onion\Framework\State\Interfaces\FlowInterface;
-use Onion\Framework\State\Interfaces\TransitionInterface;
 use Onion\Framework\State\Exceptions\TransitionException;
+use Onion\Framework\State\Interfaces\FlowInterface;
 use Onion\Framework\State\Interfaces\HistoryInterface;
 
 class Flow implements Interfaces\FlowInterface
 {
-    /** @var string $name */
-    private $name;
-    /** @var string $state */
-    private $state;
-    /** @var string $initialState */
-    private $initialState;
+    private string $state;
 
-    /** @var TransitionInterface[] $transitions */
-    private $transitions = [];
+    /** @var \Closure[][] $transitions */
+    private array $transitions = [];
 
-    private $history = [];
-
-    public function __construct(string $name, string $state, HistoryInterface $history = null)
-    {
-        $this->name = $name;
-        $this->state = $this->initialState = $state;
-        if ($history === null) {
-            $history = new History();
-        }
-        $this->history = $history;
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
+    public function __construct(
+        public readonly string $name,
+        public readonly string $initialState,
+        public readonly ?HistoryInterface $history = null
+    ) {
+        $this->state = $initialState;
     }
 
     public function getState(): string
@@ -40,75 +28,65 @@ class Flow implements Interfaces\FlowInterface
         return $this->state;
     }
 
-    public function addTransition(TransitionInterface $transition): void
+    public function getBranches(): ?array
     {
-        $this->transitions["{$transition->getSource()}:{$transition->getDestination()}"] = $transition;
+        return isset($this->transitions[$this->state]) ? \array_keys($this->transitions[$this->state]) : null;
+    }
+
+    public function addTransition(string $from, string $to, \Closure $transition): void
+    {
+        if (!isset($this->transitions[$from])) {
+            $this->transitions[$from] = [];
+        }
+
+        $this->transitions[$from][$to] = $transition;
     }
 
     public function can(string $state): bool
     {
-        return isset($this->transitions["{$this->getState()}:{$state}"]);
+        return isset($this->transitions[$this->getState()][$state]);
     }
 
-    public function getPossibleTransitions(): array
+    public function apply(string $state, object $target, mixed ...$arguments): bool
     {
-        $values = [];
-        foreach (array_keys($this->transitions) as $states) {
-            if (stripos($states, "{$this->getState()}:") === 0) {
-                $values[] = substr($states, strlen($this->getState()) + 1);
-            }
-        }
+        $transition = $this->transitions[$this->state][$state] ?? null;
+        $this->history?->add($this->state, $state, $arguments);
 
-        return $values;
-    }
-
-    public function apply(string $state, object $target, ...$arguments): bool
-    {
-        $target = clone $target;
-
-        $key = "{$this->getState()}:{$state}";
-
-        if (!isset($this->transitions[$key])) {
-            $this->getHistory()
-                ->add((new Transition($this->getState(), $state))->withArguments($target, ...$arguments));
-
+        if ($transition === null) {
             throw new TransitionException(
                 "Moving from '{$this->getState()}' to '{$state}' is not part of the defined flow",
-                $this->getHistory()
+                $this->history
             );
         }
 
-        $transition = $this->transitions[$key]->withArguments($target, ...$arguments);
-        $this->getHistory()->add($transition);
 
         try {
-            if ($transition()) {
+            if ($transition($target, ...$arguments)) {
                 $this->state = $state;
+
                 return true;
             }
 
             return false;
         } catch (\Throwable $ex) {
             throw new TransitionException(
-                "Transition from '{$this->getState()}' to '{$state}' failed",
-                $this->getHistory(),
+                "Transition from '{$this->state}' to '{$state}' failed",
+                $this->history,
                 $ex
             );
         }
-
-        return false;
     }
 
     public function reset(): FlowInterface
     {
-        $self = new self($this->getName(), $this->initialState);
-        array_map([$self, 'addTransition'], $this->transitions);
+        $self = new Flow($this->name, $this->initialState);
+        foreach ($this->transitions as $from => $destinations) {
+            foreach ($destinations as $to => $handler) {
+                $self->addTransition($from, $to, $handler);
+            }
+        }
+
 
         return $self;
-    }
-
-    public function getHistory(): HistoryInterface
-    {
-        return $this->history;
     }
 }
