@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Onion\Framework\Http\Emitter;
 
-use GuzzleHttp\Stream\StreamInterface;
 use Onion\Framework\Http\Emitter\Interfaces\EmitterInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
 
 class StreamEmitter implements EmitterInterface
 {

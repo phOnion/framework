@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Onion\Framework\Http;
 
 use GuzzleHttp\Psr7\Response;
-use GuzzleHttp\Stream\StreamInterface;
 use Onion\Framework\Dependency\Interfaces\{ContainerInterface, ServiceProviderInterface};
 use Onion\Framework\Http\Emitter\PhpEmitter;
 use Onion\Framework\Http\Emitter\StreamEmitter;
@@ -16,6 +15,7 @@ use Onion\Framework\Http\Middleware\{
 use Onion\Framework\Http\RequestHandler\RequestHandler;
 use Onion\Framework\Router\Interfaces\RouterInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 
