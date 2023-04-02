@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Onion\Framework\Dependency;
 
+use InvalidArgumentException;
 use Onion\Framework\Dependency\Traits\AttachableContainerTrait;
 use Onion\Framework\Dependency\Traits\ContainerTrait;
 use Onion\Framework\Dependency\Exception\ContainerErrorException;
@@ -36,7 +37,7 @@ class ReflectionContainer implements ContainerInterface, AttachableContainer
 
                 if (($type instanceof ReflectionNamedType && !$type->isBuiltin())) {
                     \assert(
-                        $this->getDelegate()?->has($type->getName()) || $type->allowsNull(),
+                        $this->getDelegate()->has($type->getName()) || $type->allowsNull(),
                         new UnknownDependencyException(sprintf(
                             "Unable to resolve non-nullable type '\$%s(%s)'",
                             $parameter->getName(),
@@ -46,14 +47,14 @@ class ReflectionContainer implements ContainerInterface, AttachableContainer
                     );
 
                     $parameters[$parameter->getPosition()] =
-                        $this->getDelegate()?->has($type->getName()) ?
-                        $this->getDelegate()?->get($type->getName()) : null;
+                        $this->getDelegate()->has($type->getName()) ?
+                        $this->getDelegate()->get($type->getName()) : null;
                 } elseif ($parameter->isOptional()) {
                     $parameters[$parameter->getPosition()] = $parameter->getDefaultValue();
                 } elseif ($parameter->allowsNull() && $parameter->getType()) {
                     $parameters[$parameter->getPosition()] = null;
-                } elseif ($this->getDelegate()?->has($parameter->getName())) {
-                    $parameters[$parameter->getPosition()] = $this->getDelegate()?->get(
+                } elseif ($this->getDelegate()->has($parameter->getName())) {
+                    $parameters[$parameter->getPosition()] = $this->getDelegate()->get(
                         $this->convertVariableName($parameter->getName())
                     );
                 } else {
@@ -67,8 +68,6 @@ class ReflectionContainer implements ContainerInterface, AttachableContainer
                     );
                 }
             }
-
-            return $reflection->newInstance(...$parameters);
         } catch (UnknownDependencyException $ex) {
             throw new UnknownDependencyException(\sprintf(
                 'Unable to resolve %s: %s',
@@ -81,6 +80,8 @@ class ReflectionContainer implements ContainerInterface, AttachableContainer
                 previous: $ex
             );
         }
+
+        return $reflection->newInstanceArgs($parameters);
     }
 
     public function has(string $id): bool
