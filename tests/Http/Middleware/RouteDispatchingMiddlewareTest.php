@@ -3,16 +3,13 @@
 namespace Tests\Http\Middleware;
 
 use Onion\Framework\Http\Middleware\RouteDispatchingMiddleware;
-use Onion\Framework\Router\Interfaces\ResolverInterface;
 use Onion\Framework\Router\Interfaces\RouteInterface;
 use Onion\Framework\Router\Interfaces\RouterInterface;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
-use Prophecy\Argument\Token\TypeToken;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
