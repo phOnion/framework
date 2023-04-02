@@ -12,14 +12,14 @@ jobs:
     strategy:
       matrix:
         operating-system: [ubuntu-latest, windows-latest, macos-latest]
-        php-versions: ["8.1", "8.2"]
+        php-versions: ["8.1", "8.2", "8.3"]
         ts: ["ts", "nts"]
     name: PHP ${{matrix.php-versions}} (${{matrix.ts}}) on ${{matrix.operating-system}}
     steps:
       - uses: actions/checkout@v3
 
       - name: Setup PHP
-        continue-on-error: ${{ matrix.php-versions != '8.1' }}
+        continue-on-error: ${{ matrix.php-versions == '8.3' }}
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{matrix.php-versions}}
@@ -29,11 +29,11 @@ jobs:
           phpts: ${{matrix.ts}}
           update: true
       - name: Validate composer.json and composer.lock
-        continue-on-error: ${{ matrix.php-versions != '8.1' }}
+        continue-on-error: ${{ matrix.php-versions == '8.3' }}
         run: composer validate --strict
 
       - name: Cache Composer packages
-        continue-on-error: ${{ matrix.php-versions != '8.1' }}
+        continue-on-error: ${{ matrix.php-versions == '8.3' }}
         id: composer-cache
         uses: actions/cache@v2
         with:
@@ -43,21 +43,21 @@ jobs:
             ${{ runner.os }}-php-
 
       - name: Install dependencies
-        continue-on-error: ${{ matrix.php-versions != '8.1' }}
+        continue-on-error: ${{ matrix.php-versions == '8.3' }}
         run: composer install --no-progress --no-interaction --ignore-platform-reqs
 
       # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
       # Docs: https://getcomposer.org/doc/articles/scripts.md
 
       - name: Lint
-        continue-on-error: ${{ matrix.php-versions != '8.1' }}
+        continue-on-error: ${{ matrix.php-versions == '8.3' }}
         run: composer lint
       - name: Run test suite
-        continue-on-error: ${{ matrix.php-versions != '8.1' }}
+        continue-on-error: ${{ matrix.php-versions == '8.3' }}
         run: composer test
       - name: Run infection tests
-        continue-on-error: ${{ matrix.php-versions != '8.1' }}
+        continue-on-error: ${{ matrix.php-versions == '8.3' }}
         run: composer infect
       - name: Psalm
-        continue-on-error: ${{ matrix.php-versions != '8.1' }}
+        continue-on-error: ${{ matrix.php-versions == '8.3' }}
         run: composer psalm
