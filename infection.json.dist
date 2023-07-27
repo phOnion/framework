@@ -5,16 +5,37 @@
             "src"
         ],
         "excludes": [
-            "/RouteStrategyFactory\\.php/"
+            "/RouteStrategyFactory\\.php/",
+            "/Exception\\.php/",
+            "/Factory\\.php/",
+            "/.*ServiceProvider\\.php/"
         ]
     },
     "logs": {
-        "text": "infection.build.log",
-        "badge": {
-            "branch": "master"
-        }
+        "text": "infection.build.log"
     },
     "mutators": {
-        "@default": true
+        "@default": true,
+        "@number": true,
+        "ArrayOneItem": {
+            "ignore": [
+                "Onion\\Framework\\Router\\Strategy\\TreeStrategy::compile::104"
+            ]
+        },
+        "ArrayItemRemoval": {
+            "ignore": [
+                "Onion\\Framework\\Http\\Middleware\\HttpErrorMiddleware"
+            ]
+        },
+        "ArrayItem": {
+            "ignore": [
+                "Onion\\Framework\\Http\\Middleware\\HttpErrorMiddleware"
+            ]
+        },
+        "CastString": {
+            "ignore": [
+                "Onion\\Framework\\Http\\Middleware\\HttpErrorMiddleware"
+            ]
+        }
     }
 }

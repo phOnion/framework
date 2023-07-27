@@ -1,18 +1,19 @@
 <?php
+
 namespace Tests\Router;
 
-use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
-use Onion\Framework\Router\Exceptions\MissingHeaderException;
+use Closure;
 use Onion\Framework\Router\Route;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument\Token\AnyValueToken;
-use Prophecy\Argument\Token\TypeToken;
-use Psr\Http\Message\ResponseInterface;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Http\Server\MiddlewareInterface;
 
 class RouteTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testNaming()
     {
         $route = new Route('/', 'home');
@@ -21,7 +22,6 @@ class RouteTest extends TestCase
         $route = new Route('/');
         $this->assertSame('/', $route->getName());
         $this->assertFalse($route->hasName());
-
     }
 
     public function testPattern()
@@ -32,17 +32,26 @@ class RouteTest extends TestCase
 
     public function testMethods()
     {
-        $route = (new Route('/'))->withMethods(['head', 'get']);
+        $route = (new Route('/'))->withMethods(['HEAD', 'GET']);
         $this->assertSame(['head', 'get'], $route->getMethods());
         $this->assertTrue($route->hasMethod('HEAD'));
         $this->assertFalse($route->hasMethod('PUT'));
+        $this->assertNotSame($route, $route->withMethods(['HEAD', 'GET']));
     }
 
-    public function testEmptyRequestHandler()
+    public function testEmptyActionHandler()
     {
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('No handler provided for route');
-        (new Route('/'))->getRequestHandler();
+        (new Route('/'))->getAction();
+    }
+
+    public function testMiddlewareAsAction()
+    {
+        $middleware = $this->prophesize(MiddlewareInterface::class);
+        $route = (new Route('/'))->withAction($middleware->reveal());
+
+        $this->assertInstanceOf(Closure::class, $route->getAction());
     }
 
     public function testParameters()
@@ -51,75 +60,19 @@ class RouteTest extends TestCase
         $this->assertSame(['foo' => 'bar'], $route->getParameters());
         $this->assertSame('bar', $route->getParameter('foo'));
         $this->assertNull($route->getParameter('baz'));
-    }
-
-    public function testHeaders()
-    {
-        $route = (new Route('/'))->withHeaders(['accept' => 'application/json']);
-        $this->assertSame(['accept' => 'application/json'], $route->getHeaders());
+        $this->assertNotSame($route, $route->withParameters(['foo' => 'bar']));
     }
 
     public function testRequestHandling()
     {
-        $requestHandler = $this->prophesize(RequestHandlerInterface::class);
-        $requestHandler->handle(new TypeToken(ServerRequestInterface::class))
-            ->willReturn($this->prophesize(ResponseInterface::class)->reveal());
-
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getMethod()->willReturn('get');
-        $request->hasHeader('accept')->willReturn(true)->shouldBeCalledOnce();
-        $request->getHeaderLine('accept')->willReturn('application/json')->shouldBeCalledOnce();
-        $request->hasHeader('accept-encoding')->willReturn(true)->shouldBeCalledOnce();
-        $request->getHeaderLine('accept-encoding')->willReturn('gzip')->shouldBeCalledOnce();
-        $request->hasHeader('accept-charset')->willReturn(true)->shouldBeCalledOnce();
-        $request->getHeaderLine('accept-charset')->willReturn('utf-8')->shouldBeCalledOnce();
-        $request->hasHeader('accept-language')->wilLReturn(true);
-        $request->getHeaderLine('accept-language')->willReturn('en, en-us;q=0.5');
         $request->withAttribute(new AnyValueToken, new AnyValueToken)->willReturn($request->reveal());
 
         $route = (new Route('/'))
             ->withMethods(['GET'])
-            ->withRequestHandler($requestHandler->reveal());
-        $route->handle($request->reveal());
-    }
-
-    public function testRequestHandlingWithMissingRequiredHeader()
-    {
-        $requestHandler = $this->prophesize(RequestHandlerInterface::class);
-        $requestHandler->handle(new TypeToken(ServerRequestInterface::class))
-            ->willReturn($this->prophesize(ResponseInterface::class)->reveal());
-
-        $request = $this->prophesize(ServerRequestInterface::class);
-        $request->getMethod()->willReturn('get');
-        $request->hasHeader('x-foo')->willReturn(false);
-        $request->hasHeader('x-test')->willReturn(false);
-
-        $this->expectException(MissingHeaderException::class);
-        $this->expectExceptionMessage("Missing header 'x-test'");
-
-        $route = (new Route('/'))
-            ->withRequestHandler($requestHandler->reveal())
-            ->withHeaders([
-                'X-FOO' => false,
-                'X-TEST' => true,
-            ]);
-        $route->handle($request->reveal());
-    }
-
-    public function testRequestHandlingWithUnsupportedMethod()
-    {
-        $requestHandler = $this->prophesize(RequestHandlerInterface::class);
-        $requestHandler->handle(new TypeToken(ServerRequestInterface::class))
-            ->willReturn($this->prophesize(ResponseInterface::class)->reveal());
-
-        $request = $this->prophesize(ServerRequestInterface::class);
-        $request->getMethod()->willReturn('get');
-
-        $this->expectException(MethodNotAllowedException::class);
-
-        $route = (new Route('/'))
-            ->withRequestHandler($requestHandler->reveal())
-            ->withMethods(['PUT', 'PATCH']);
-        $route->handle($request->reveal());
+            ->withAction(fn () => null);
+        $route->getAction($request->reveal());
+        $this->assertNotSame($route, $route->withAction(fn () => null));
     }
 }

@@ -1,4 +1,7 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
 namespace Onion\Framework\Router\Exceptions;
 
 use Onion\Framework\Router\Interfaces\Exception\NotAllowedException;
@@ -10,8 +13,7 @@ use Onion\Framework\Router\Interfaces\Exception\NotAllowedException;
  */
 class MethodNotAllowedException extends \Exception implements NotAllowedException
 {
-    /** @var iterable $allowedMethods */
-    protected $allowedMethods = [];
+    protected iterable $allowedMethods = [];
 
     /**
      * MethodNotAllowedException constructor.
@@ -22,17 +24,17 @@ class MethodNotAllowedException extends \Exception implements NotAllowedExceptio
      */
     public function __construct(iterable $methods)
     {
-        $this->setAllowedMethods($methods);
+        $this->allowedMethods = $methods;
     }
 
     /**
      * Returns the list of methods supported by the route
      *
-     * @return iterable
+     * @return array
      */
-    public function getAllowedMethods(): iterable
+    public function getAllowedMethods(): array
     {
-        return $this->allowedMethods;
+        return \is_array($this->allowedMethods) ? $this->allowedMethods : \iterator_to_array($this->allowedMethods);
     }
 
     /**

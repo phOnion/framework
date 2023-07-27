@@ -1,28 +1,29 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Onion\Framework\Http\Emitter;
 
+use GuzzleHttp\Psr7\Utils;
 use Onion\Framework\Http\Emitter\Interfaces\EmitterInterface;
 use Psr\Http\Message\ResponseInterface;
 
-/**
- * @codeCoverageIgnore
- */
 class PhpEmitter implements EmitterInterface
 {
     public function emit(ResponseInterface $response): void
     {
-        header(
+        \header(
             "HTTP/{$response->getProtocolVersion()} {$response->getStatusCode()} {$response->getReasonPhrase()}",
             true,
             $response->getStatusCode()
         );
 
         foreach ($response->getHeaders() as $header => $values) {
-            foreach ($values as $index => $value) {
-                header("{$header}: {$value}", $index === 0);
+            foreach ($values as $idx => $value) {
+                \header("{$header}: {$value}", $idx === 0);
             }
         }
 
-        echo $response->getBody();
+        echo Utils::copyToString($response->getBody());
     }
 }

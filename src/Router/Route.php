@@ -1,39 +1,31 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
 namespace Onion\Framework\Router;
 
-use Onion\Framework\Http\Header\Accept;
-use Onion\Framework\Router\Exceptions\MethodNotAllowedException;
-use Onion\Framework\Router\Exceptions\MissingHeaderException;
+use Closure;
 use Onion\Framework\Router\Interfaces\RouteInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Http\Server\MiddlewareInterface;
 
 class Route implements RouteInterface
 {
-    /** @var string $name */
-    private $name;
-    /** @var string $pattern */
-    private $pattern;
-    /** @var RequestHandlerInterface|null $handler */
-    private $handler = null;
+    private ?Closure $action = null;
     /** @var string[] */
-    private $methods = [];
-    /** @var bool[] $headers*/
-    private $headers = [];
+    private array $methods = [];
 
     /** @var string[] $parameters */
     private $parameters = [];
 
-    public function __construct(string $pattern, ?string $name = null)
-    {
-        $this->pattern = $pattern;
-        $this->name = $name ?? $pattern;
+    public function __construct(
+        private readonly string $pattern,
+        private readonly ?string $name = null,
+    ) {
     }
 
     public function getName(): string
     {
-        return $this->name;
+        return $this->name ?? $this->pattern;
     }
 
     public function getMethods(): array
@@ -46,13 +38,13 @@ class Route implements RouteInterface
         return $this->pattern;
     }
 
-    public function getRequestHandler(): RequestHandlerInterface
+    public function getAction(): Closure
     {
-        assert($this->handler !== null, new \RuntimeException(
+        assert($this->action !== null, new \RuntimeException(
             "No handler provided for route {$this->getName()}"
         ));
 
-        return $this->handler;
+        return $this->action;
     }
 
     public function getParameters(): array
@@ -65,45 +57,30 @@ class Route implements RouteInterface
         return $this->parameters[$name] ?? $default;
     }
 
-    public function getHeaders(): array
-    {
-        return $this->headers;
-    }
-
     public function hasName(): bool
     {
-        return $this->name !== $this->getPattern();
+        return $this->name !== null;
     }
 
     public function hasMethod(string $method): bool
     {
-        return $this->methods === [] || in_array(strtolower($method), $this->methods, true);
+        return $this->methods === [] || \in_array(\strtolower($method), $this->methods, true);
     }
 
     public function withMethods(array $methods): RouteInterface
     {
         $self = clone $this;
         foreach ($methods as $method) {
-            $self->methods[] = strtolower($method);
+            $self->methods[] = \strtolower($method);
         }
 
         return $self;
     }
 
-    public function withRequestHandler(RequestHandlerInterface $requestHandler): RouteInterface
+    public function withAction(Closure|MiddlewareInterface $action): RouteInterface
     {
         $self = clone $this;
-        $self->handler = $requestHandler;
-
-        return $self;
-    }
-
-    public function withHeaders(array $headers): RouteInterface
-    {
-        $self = clone $this;
-        foreach ($headers as $header => $required) {
-            $self->headers[strtolower($header)] = $required;
-        }
+        $self->action = $action instanceof MiddlewareInterface ? $action->process(...) : $action;
 
         return $self;
     }
@@ -114,41 +91,5 @@ class Route implements RouteInterface
         $self->parameters = $parameters;
 
         return $self;
-    }
-
-    public function handle(ServerRequestInterface $request): ResponseInterface
-    {
-        foreach ($this->getHeaders() as $header => $required) {
-            if ($required && !$request->hasHeader($header)) {
-                throw new MissingHeaderException($header);
-            }
-        }
-
-        if (!$this->hasMethod($request->getMethod())) {
-            throw new MethodNotAllowedException($this->getMethods());
-        }
-
-        if ($request->hasHeader('accept')) {
-            $accept = new Accept('accept', $request->getHeaderLine('accept'));
-            $request = $request->withAttribute('content', $accept);
-        }
-
-        if ($request->hasHeader('accept-encoding')) {
-            $accept = new Accept('accept-encoding', $request->getHeaderLine('accept-encoding'));
-            $request = $request->withAttribute('encoding', $accept);
-        }
-
-        if ($request->hasHeader('accept-charset')) {
-            $accept = new Accept('accept-charset', $request->getHeaderLine('accept-charset'));
-            $request = $request->withAttribute('charset', $accept);
-        }
-
-        if ($request->hasHeader('accept-language')) {
-            $accept = new Accept('accept-language', $request->getHeaderLine('accept-language'));
-            $request = $request->withAttribute('language', $accept);
-        }
-
-        return $this->getRequestHandler()
-            ->handle($request->withAttribute('route', $this));
     }
 }

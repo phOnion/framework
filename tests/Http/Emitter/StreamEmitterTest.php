@@ -1,14 +1,17 @@
 <?php
+
 namespace Tests\Http\Emitter;
 
-use GuzzleHttp\Stream\StreamInterface;
 use Onion\Framework\Http\Emitter\StreamEmitter;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamInterface as HttpStream;
+use Psr\Http\Message\StreamInterface;
 
 class StreamEmitterTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testEmitting()
     {
         $stream = $this->prophesize(StreamInterface::class);
@@ -19,7 +22,7 @@ class StreamEmitterTest extends TestCase
         $stream->write("Hello, World\r\n")->shouldBeCalledOnce();
         $stream->write("\r\n")->shouldBeCalledTimes(2);
 
-        $body = $this->prophesize(HttpStream::class);
+        $body = $this->prophesize(StreamInterface::class);
         $body->getContents()->willReturn('Hello, World');
 
         $response = $this->prophesize(ResponseInterface::class);

@@ -1,36 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/7.5/phpunit.xsd"
-         executionOrder="random"
-         resolveDependencies="true" 
-         backupGlobals="true"
-         backupStaticAttributes="false"
-         cacheResult="false"
-         cacheTokens="false"
-         colors="false"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         forceCoversAnnotation="false"
-         processIsolation="false"
-         stopOnError="true"
-         stopOnFailure="false"
-         stopOnIncomplete="false"
-         stopOnSkipped="false"
-         stopOnRisky="false"
-         timeoutForSmallTests="5"
-         timeoutForMediumTests="15"
-         timeoutForLargeTests="60"
-         verbose="true">
-
-    <testsuite name="all">
-        <directory suffix="Test.php">tests</directory>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd" executionOrder="random" resolveDependencies="true" backupGlobals="true" backupStaticAttributes="false" cacheResult="false" colors="false" convertErrorsToExceptions="true" convertNoticesToExceptions="true" convertWarningsToExceptions="true" forceCoversAnnotation="false" processIsolation="true" stopOnError="true" stopOnFailure="false" stopOnIncomplete="false" stopOnSkipped="false" stopOnRisky="false" timeoutForSmallTests="5" timeoutForMediumTests="15" timeoutForLargeTests="60" verbose="true">
+  <coverage processUncoveredFiles="false">
+    <include>
+      <directory suffix=".php">src</directory>
+    </include>
+    <exclude>
+      <directory suffix="Exception.php">src</directory>
+      <directory suffix="ServiceProvider.php">src</directory>
+    </exclude>
+  </coverage>
+  <testsuites>
+    <testsuite name="rest">
+      <directory suffix="Test.php">tests/Controller</directory>
     </testsuite>
-
-    <filter >
-        <whitelist processUncoveredFilesFromWhitelist="false">
-            <directory suffix=".php">src</directory>
-        </whitelist>
-    </filter>
+    <testsuite name="container">
+      <directory suffix="Test.php">tests/Dependency</directory>
+    </testsuite>
+    <testsuite name="http">
+      <directory suffix="Test.php">tests/Http</directory>
+    </testsuite>
+    <testsuite name="router">
+      <directory suffix="Test.php">tests/Router</directory>
+    </testsuite>
+    <testsuite name="state">
+      <directory suffix="Test.php">tests/State</directory>
+    </testsuite>
+  </testsuites>
 </phpunit>

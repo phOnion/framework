@@ -1,9 +1,11 @@
 <?php
+
 namespace Tests\Http;
 
 use Onion\Framework\Http\RequestHandler\RequestHandler as Delegate;
 use Prophecy\Argument;
 use Prophecy\Argument\Token\AnyValueToken;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
@@ -11,6 +13,7 @@ use Psr\Http\Server\MiddlewareInterface;
 
 class DelegateTest extends \PHPUnit\Framework\TestCase
 {
+    use ProphecyTrait;
     public function testExceptionWhenMiddlewareDoesNotImplementRequiredInterfaces()
     {
         $this->expectException(\TypeError::class);
@@ -72,6 +75,7 @@ class DelegateTest extends \PHPUnit\Framework\TestCase
         }
 
         $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Invalid middleware type');
         $request = $this->prophesize(ServerRequestInterface::class);
         $delegate = new Delegate(['bad-middleware']);
         $delegate->handle($request->reveal());
